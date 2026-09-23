@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School360 - Student Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css?v=contrast-8">
+    <script>
+        (function() {
+            var t = localStorage.getItem('theme') || 'dark';
+            if (t === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <span>🏫 School360</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item active" id="menu-id"><a href="#" onclick="switchTab('id')">🪪 Digital Student ID</a></li>
+            <li class="sidebar-item" id="menu-courses"><a href="#" onclick="switchTab('courses')">🎓 Course Enrollment</a></li>
+            <li class="sidebar-item" id="menu-timetable"><a href="#" onclick="switchTab('timetable')">📅 Timetable & Notices</a></li>
+            <li class="sidebar-item" id="menu-exams"><a href="#" onclick="switchTab('exams')">🏆 Exam Timetables & Results</a></li>
+            <li class="sidebar-item" id="menu-library"><a href="#" onclick="switchTab('library')" style="white-space:nowrap;font-size:0.86rem;">📚 Library Book Reservation</a></li>
+            <li class="sidebar-item" id="menu-tickets"><a href="#" onclick="switchTab('tickets')">🎫 Support Tickets</a></li>
+            <li class="sidebar-item" id="menu-profile"><a href="#" onclick="switchTab('profile')">👤 My Profile</a></li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <button class="btn btn-qr btn-block" onclick="logout()">🚪 Logout</button>
+        </div>
+    </nav>
+
+    <!-- Main Workspace -->
+    <main class="main-content">
+        <header class="header-bar">
+            <div class="header-title">
+                <h2 id="welcome-message">Hello, Student</h2>
+                <p>Welcome to your personal learning & collaborative support workspace.</p>
+            </div>
+            <div class="header-actions">
+                <div style="position:relative;display:inline-block;">
+                    <button class="theme-toggle" id="notif-bell-btn" onclick="toggleNotifDropdown()" title="Support Notifications" style="position:relative;">
+                        🔔 <span id="notif-count-badge" class="badge badge-danger" style="display:none;position:absolute;top:-6px;right:-6px;font-size:0.65rem;padding:2px 5px;border-radius:10px;">0</span>
+                    </button>
+                    <div id="notif-dropdown" style="display:none;position:absolute;right:0;top:45px;width:320px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.25);z-index:999;padding:0.8rem;">
+                        <div style="font-size:0.85rem;font-weight:700;margin-bottom:0.6rem;display:flex;justify-content:space-between;align-items:center;">
+                            <span>📢 Support Alerts</span>
+                            <span style="font-size:0.75rem;color:var(--text-muted);cursor:pointer;" onclick="toggleNotifDropdown()">✕</span>
+                        </div>
+                        <div id="notif-list-container" style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:0.5rem;">
+                            <div style="font-size:0.8rem;color:var(--text-muted);text-align:center;padding:1rem;">No new notifications.</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme(); return false;" title="Toggle Theme">🌙</button>
+            </div>
+        </header>
+
+        <!-- Tab 1: Digital ID Card -->
+        <section id="tab-id" class="tab-content active">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Digital Student ID Card</h3>
+                </div>
+                <div class="digital-id-container">
+                    <div class="digital-id-card" id="student-id-card">
+                        <div class="id-header">
+                            <span class="id-brand">SCHOOL 360</span>
+                            <div class="id-chip"></div>
+                        </div>
+                        <div class="id-body">
+                            <div class="id-avatar" id="id-card-avatar">S</div>
+                            <div class="id-details">
+                                <h3 id="id-card-name">Sameeha</h3>
+                                <p id="id-card-num">ADM: ADM-360-001</p>
+                                <p id="id-card-course">Software Engineering</p>
+                                <p id="id-card-class">Year 3 - Sec A</p>
+                                <span class="id-role">Student</span>
+                            </div>
+                        </div>
+                        <div class="id-footer">
+                            <div class="id-qr" id="id-card-qr"></div>
+                            <div class="id-signature">
+                                <p style="font-family:'Courier New', monospace;font-weight:bold;margin-bottom:2px;">School360</p>
+                                <p>System Registrar</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;">Your QR Code contains your unique authentication signature token.</p>
+                    <button class="btn btn-primary" onclick="window.print()">🖨️ Download / Print Student ID</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 2: Course Enrollment -->
+        <section id="tab-courses" class="tab-content" style="display:none;">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Course Enrollment</h3>
+                </div>
+                <div id="enrollment-workflow-status" style="margin-bottom:1.5rem;">
+                    <!-- Enrollment states rendered dynamically -->
+                </div>
+                <div id="available-courses-section">
+                    <h4 style="margin-bottom:1rem;">Browse Available Programs</h4>
+                    <div class="courses-grid" id="courses-list">
+                        <!-- Loaded dynamically as modern cards -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 3: Timetable & Notices -->
+        <section id="tab-timetable" class="tab-content" style="display:none;">
+            <div class="dashboard-grid">
+                <div>
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3>My Module Timetable</h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Module</th>
+                                        <th>Room</th>
+                                        <th>Timing</th>
+                                        <th>Lecture Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="student-timetable-list">
+                                    <tr><td colspan="4" style="text-align:center;color:var(--text-muted);">Please enroll in a course to view modules.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3>📥 Learning Materials</h3>
+                        </div>
+                        <div id="student-materials-list" style="display:flex;flex-direction:column;gap:0.6rem;">
+                            <!-- Dynamic materials -->
+                        </div>
+                    </div>
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3>Notices & Notices</h3>
+                        </div>
+                        <div id="student-announcements-list" style="display:flex;flex-direction:column;gap:1rem;">
+                            <!-- Dynamic announcements -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 3.5: Exam Timetables & Results -->
+        <section id="tab-exams" class="tab-content" style="display:none;">
+            <div class="dashboard-grid">
+                <div>
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3>Official Exam Timetables</h3>
+                            <p style="color:var(--text-muted);font-size:0.85rem;">Released examination schedules for your course.</p>
+                        </div>
+                        <div class="table-container">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Exam Title</th>
+                                        <th>Subject</th>
+                                        <th>Date & Time</th>
+                                        <th>Venue</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="student-exam-timetables-list">
+                                    <tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Loading exam timetables...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3>Released Examination Results</h3>
+                            <p style="color:var(--text-muted);font-size:0.85rem;">Published examination marks, grade reports, and feedback.</p>
+                        </div>
+                        <div class="table-container">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Exam / Subject</th>
+                                        <th>Score</th>
+                                        <th>Grade</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="student-exam-results-list">
+                                    <tr><td colspan="4" style="text-align:center;color:var(--text-muted);">No published examination results available yet.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Tab 4: Tickets Center -->
+        <section id="tab-tickets" class="tab-content" style="display:none;">
+            <!-- Support Action Requested Banner -->
+            <div id="support-action-banner" style="display:none;background:var(--warning-light);border:1px solid var(--warning);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.2rem;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:0.8rem;">
+                        <span style="font-size:1.6rem;">⚠️</span>
+                        <div>
+                            <h4 style="font-size:0.95rem;font-weight:700;color:var(--warning);margin-bottom:0.2rem;" id="banner-title">Support Team Requested Action</h4>
+                            <p style="font-size:0.83rem;color:var(--text-secondary);" id="banner-msg">Support team requested additional details or a file attachment for your ticket.</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" id="btn-banner-action" onclick="openTargetNotifTicket()">📎 Respond & Attach File</button>
+                </div>
+            </div>
+            <div class="dashboard-grid">
+                <div>
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3>My Raised Tickets</h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Title</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="student-tickets-list">
+                                    <!-- Dynamic ticket rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3>Raise New Support Ticket</h3>
+                        </div>
+                        <form onsubmit="handleRaiseTicket(event)">
+                            <div class="form-group">
+                                <label class="form-label" for="ticket-title">Issue Summary</label>
+                                <input type="text" id="ticket-title" class="form-input" placeholder="e.g. TIMETABLE missing SE-302" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="ticket-desc">Detailed Description</label>
+                                <textarea id="ticket-desc" class="form-input" rows="4" placeholder="Explain the issue clearly..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Raise Ticket</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 4.5: Library Book Reservations -->
+        <section id="tab-library" class="tab-content" style="display:none;">
+            <!-- Library Header Bar & Stats -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:1rem;margin-bottom:1.5rem;">
+                <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:14px;padding:1.1rem 1.3rem;display:flex;align-items:center;gap:1rem;box-shadow:var(--card-shadow);">
+                    <div style="width:46px;height:46px;border-radius:12px;background:rgba(107,50,148,.12);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">📚</div>
+                    <div><div style="font-size:0.75rem;color:var(--text-muted);font-weight:500;">Library Books</div><div style="font-size:1.5rem;font-weight:700;color:var(--text-primary);" id="student-lib-stat-books">0</div></div>
+                </div>
+                <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:14px;padding:1.1rem 1.3rem;display:flex;align-items:center;gap:1rem;box-shadow:var(--card-shadow);">
+                    <div style="width:46px;height:46px;border-radius:12px;background:rgba(107,50,148,.12);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">✅</div>
+                    <div><div style="font-size:0.75rem;color:var(--text-muted);font-weight:500;">Available Books</div><div style="font-size:1.5rem;font-weight:700;color:var(--text-primary);" id="student-lib-stat-avail">0</div></div>
+                </div>
+                <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:14px;padding:1.1rem 1.3rem;display:flex;align-items:center;gap:1rem;box-shadow:var(--card-shadow);">
+                    <div style="width:46px;height:46px;border-radius:12px;background:rgba(107,50,148,.12);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">🔖</div>
+                    <div><div style="font-size:0.75rem;color:var(--text-muted);font-weight:500;">My Reservations</div><div style="font-size:1.5rem;font-weight:700;color:var(--text-primary);" id="student-lib-stat-myres">0</div></div>
+                </div>
+                <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:14px;padding:1.1rem 1.3rem;display:flex;align-items:center;gap:1rem;box-shadow:var(--card-shadow);">
+                    <div style="width:46px;height:46px;border-radius:12px;background:rgba(107,50,148,.12);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">🎉</div>
+                    <div><div style="font-size:0.75rem;color:var(--text-muted);font-weight:500;">Book Reserved</div><div style="font-size:1.5rem;font-weight:700;color:var(--text-primary);" id="student-lib-stat-approved">0</div></div>
+                </div>
+            </div>
+
+            <!-- Top Action / Notification Banner for Approved Reservations -->
+            <div id="student-lib-approved-banner" style="display:none;background:rgba(107,50,148,.12);border:1px solid var(--success);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.5rem;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:0.8rem;">
+                        <span style="font-size:1.6rem;">🎉</span>
+                        <div>
+                            <h4 style="font-size:0.95rem;font-weight:700;color:var(--success);margin-bottom:0.2rem;" id="student-lib-banner-title">Book Reserved & Ready for Pickup!</h4>
+                            <p style="font-size:0.83rem;color:var(--text-secondary);" id="student-lib-banner-msg">Library Management has approved your book reservation request.</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="scrollToMyReservations()">📖 View My Reservations</button>
+                </div>
+            </div>
+
+            <!-- Library Catalog Explorer Bar & Grid -->
+            <div class="section-card" style="margin-bottom:1.5rem;">
+                <div class="section-header" style="flex-wrap:wrap;gap:0.8rem;">
+                    <div>
+                        <h3>📖 Explore Library Catalog & Reserve Books</h3>
+                        <p style="font-size:0.83rem;color:var(--text-muted);margin-top:0.2rem;">Browse available library books, check stock, and submit reservation requests for Library Management approval.</p>
+                    </div>
+                    <div style="display:flex;gap:0.6rem;flex-wrap:wrap;align-items:center;">
+                        <div style="position:relative;">
+                            <span style="position:absolute;left:0.7rem;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:0.85rem;">🔍</span>
+                            <input type="text" id="student-search-books" class="form-input" placeholder="Search title, author, category..." style="padding-left:2.1rem;width:220px;" oninput="renderStudentBooksCatalog()">
+                        </div>
+                        <select id="student-filter-books-status" class="form-input" style="width:150px;" onchange="renderStudentBooksCatalog()">
+                            <option value="ALL">All Catalog</option>
+                            <option value="AVAILABLE" selected>Available Only</option>
+                        </select>
+                        <button class="btn btn-outline btn-sm" onclick="loadStudentLibraryData(true)">🔄 Refresh</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Book Title</th>
+                                <th>Author</th>
+                                <th>Category</th>
+                                <th>Edition</th>
+                                <th>Copies</th>
+                                <th>Status</th>
+                                <th>Shelf Location</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="student-books-list">
+                            <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem;">Loading library catalog...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- My Book Reservations Section Bar -->
+            <div class="section-card" id="section-my-reservations">
+                <div class="section-header">
+                    <div>
+                        <h3>🔖 My Library Book Reservations</h3>
+                        <p style="font-size:0.83rem;color:var(--text-muted);margin-top:0.2rem;">Track status of book reservations sent to Library Management for approval.</p>
+                    </div>
+                    <button class="btn btn-outline btn-sm" onclick="loadStudentLibraryData(true)">🔄 Refresh</button>
+                </div>
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Book Title</th>
+                                <th>Reserved On</th>
+                                <th>Expiry Date</th>
+                                <th>Reservation Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="student-reservations-list">
+                            <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:2rem;">No active reservations.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        </section>
+    </main>
+
+    <!-- Reserve Confirmation Modal -->
+    <div id="modal-student-reserve" class="modal">
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3>🔖 Confirm Book Reservation</h3>
+                <span style="cursor:pointer;font-size:1.5rem;" onclick="closeStudentReserveModal()">✕</span>
+            </div>
+            <form onsubmit="handleStudentSubmitReservation(event)" style="margin-top:1rem;">
+                <input type="hidden" id="student-res-book-id">
+                <div style="background:var(--bg-tertiary);border-radius:10px;padding:0.9rem;margin-bottom:1rem;">
+                    <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;">Selected Book</div>
+                    <div style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-top:0.2rem;" id="student-res-book-title-display">Book Title</div>
+                    <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.1rem;" id="student-res-book-author-display">Author Name</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Reserving For Student</label>
+                    <input type="text" id="student-res-student-name" class="form-input" readonly style="opacity:0.8;">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="student-res-date">Reservation Date</label>
+                        <input type="date" id="student-res-date" class="form-input" required readonly style="opacity:0.8;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="student-res-expiry">Pickup Expiry Date</label>
+                        <input type="date" id="student-res-expiry" class="form-input" required>
+                    </div>
+                </div>
+                <div style="display:flex;gap:0.6rem;margin-top:1.2rem;">
+                    <button type="submit" class="btn btn-primary" style="flex:1;">Submit Reservation Request</button>
+                    <button type="button" class="btn btn-outline" onclick="closeStudentReserveModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js?v=contrast-8"></script>
+    <script>
+        let currentStudentData = null;
+        let selectedTicketId = null;
+        let selectedFileBase64 = null;
+        let selectedFileName = null;
+
+        async function ensureStudentData() {
+            if (currentStudentData && currentStudentData.id) {
+                return currentStudentData;
+            }
+            if (currentUser && currentUser.id) {
+                try {
+                    const student = await apiCall(`/students/profile/${currentUser.id}`);
+                    if (student) {
+                        currentStudentData = student;
+                        return currentStudentData;
+                    }
+                } catch (err) {
+                    console.warn("Could not fetch profile from server, using local session user:", err);
+                }
+            }
+            if (currentUser) {
+                currentStudentData = {
+                    id: currentUser.id,
+                    user: currentUser,
+                    admissionNumber: 'PENDING',
+                    className: '',
+                    section: '',
+                    enrollmentStatus: 'UNENROLLED'
+                };
+                return currentStudentData;
+            }
+            return null;
+        }
+
+        // Override checkAuth fallback for load actions
+        const oldCheckAuth = checkAuth;
+        checkAuth = async function() {
+            oldCheckAuth();
+            if (currentUser && currentUser.role === 'STUDENT') {
+                const welcomeElem = document.getElementById('welcome-message');
+                if (welcomeElem) welcomeElem.innerText = `Hello, ${currentUser.fullName || 'Student'}`;
+                await loadStudentProfile();
+                await loadCoursesList();
+                await loadAnnouncements();
+            }
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            if (targetTab) targetTab.style.display = 'block';
+            const targetMenu = document.getElementById(`menu-${tabId}`);
+            if (targetMenu) targetMenu.classList.add('active');
+        }
+
+        async function loadStudentProfile() {
+            try {
+                let student;
+                try {
+                    student = await apiCall(`/students/profile/${currentUser.id}`);
+                } catch (e) {
+                    console.warn("Using local student profile fallback:", e);
+                    student = {
+                        id: currentUser ? currentUser.id : null,
+                        user: currentUser,
+                        admissionNumber: 'PENDING',
+                        className: '',
+                        section: '',
+                        enrollmentStatus: 'UNENROLLED'
+                    };
+                }
+                currentStudentData = student;
+                
+                // Update profile form
+                if (document.getElementById('profile-name')) document.getElementById('profile-name').value = currentUser ? (currentUser.fullName || '') : '';
+                if (document.getElementById('profile-email')) document.getElementById('profile-email').value = currentUser ? (currentUser.email || '') : '';
+                if (document.getElementById('profile-contact')) document.getElementById('profile-contact').value = currentUser ? (currentUser.contact || '') : '';
+
+                // Update ID card
+                const avatarElem = document.getElementById('id-card-avatar');
+                if (avatarElem) avatarElem.innerText = currentUser && currentUser.fullName ? currentUser.fullName.charAt(0).toUpperCase() : 'S';
+                const nameElem = document.getElementById('id-card-name');
+                if (nameElem) nameElem.innerText = currentUser ? (currentUser.fullName || 'Student') : 'Student';
+                const numElem = document.getElementById('id-card-num');
+                if (numElem) numElem.innerText = `ADM: ${student.admissionNumber || 'PENDING'}`;
+                
+                // Load course details
+                const courseElem = document.getElementById('id-card-course');
+                if (courseElem) {
+                    if (student && student.courseId) {
+                        try {
+                            const courses = await apiCall('/students/courses');
+                            const course = courses.find(c => c.id === student.courseId);
+                            courseElem.innerText = course ? course.name : 'Unknown Program';
+                        } catch(ce) {
+                            courseElem.innerText = 'Unenrolled';
+                        }
+                    } else {
+                        courseElem.innerText = 'Unenrolled';
+                    }
+                }
+
+                const classElem = document.getElementById('id-card-class');
+                if (classElem) {
+                    classElem.innerText = student && student.className ? `${student.className} - ${student.section || ''}` : 'Class Unassigned';
+                }
+                
+                // Generate QR SVG
+                const qrVal = (student && student.user && student.user.qrCodeToken) ? student.user.qrCodeToken : (currentUser ? (currentUser.qrCodeToken || `QR-STUDENT-${currentUser.id}`) : 'QR-STUDENT');
+                const qrElem = document.getElementById('id-card-qr');
+                if (qrElem) qrElem.innerHTML = generateQRCodeSVG(qrVal, 70);
+
+                // Update Enrollment Status Workflow Display
+                if (typeof renderEnrollmentWorkflow === 'function') {
+                    renderEnrollmentWorkflow(student);
+                }
+                await loadCoursesList();
+                await loadStudentNotifications();
+            } catch (err) {
+                console.warn("Silently handled profile loading:", err);
+            }
+        }
+
+        let studentNotificationsList = [];
+
+        async function loadStudentNotifications() {
+            try {
+                const student = await ensureStudentData();
+                if (!student || !student.id) return;
+                const notifs = await apiCall(`/students/${student.id}/notifications`);
+                studentNotificationsList = notifs || [];
+                renderNotificationsUI();
+            } catch(e) {
+                console.error("Notifications Error:", e);
+            }
+        }
+
+        function renderNotificationsUI() {
+            const unreadList = studentNotificationsList.filter(n => !n.isRead);
+            const countBadge = document.getElementById('notif-count-badge');
+            if (countBadge) {
+                if (unreadList.length > 0) {
+                    countBadge.innerText = unreadList.length;
+                    countBadge.style.display = 'inline-block';
+                } else {
+                    countBadge.style.display = 'none';
+                }
+            }
+
+            const container = document.getElementById('notif-list-container');
+            if (container) {
+                if (!studentNotificationsList.length) {
+                    container.innerHTML = '<div style="font-size:0.8rem;color:var(--text-muted);text-align:center;padding:1rem;">No support notifications.</div>';
+                } else {
+                    container.innerHTML = studentNotificationsList.map(n => `
+                        <div onclick="handleNotifClick('${n.type}', ${n.ticketId || 0}, ${n.id})" style="padding:0.6rem;background:${n.isRead ? 'var(--bg-primary)' : (n.type === 'BOOK_RESERVED' ? 'rgba(107,50,148,.12)' : 'var(--warning-light)')};border:1px solid ${n.isRead ? 'var(--border-color)' : (n.type === 'BOOK_RESERVED' ? 'var(--success)' : 'var(--warning)')};border-radius:8px;cursor:pointer;">
+                            <div style="font-size:0.8rem;font-weight:700;color:${n.isRead ? 'var(--text-primary)' : (n.type === 'BOOK_RESERVED' ? 'var(--success)' : 'var(--warning)')};">
+                                ${n.type === 'BOOK_RESERVED' ? '🎉 Book Reserved' : (n.type === 'RESERVATION_CANCELLED' ? '🔴 Reservation Update' : (n.type === 'ATTACHMENT_REQUEST' ? '📎 File Requested' : (n.type === 'INFO_REQUEST' ? 'ℹ️ Details Requested' : '📩 Support Reply')))}
+                            </div>
+                            <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:2px;">${n.message}</div>
+                            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px;">${n.createdDate}</div>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            // Support action banner logic
+            const banner = document.getElementById('support-action-banner');
+            if (banner) {
+                const topUnreadReq = unreadList.find(n => n.type === 'ATTACHMENT_REQUEST' || n.type === 'INFO_REQUEST');
+                if (topUnreadReq) {
+                    document.getElementById('banner-title').innerText = topUnreadReq.type === 'ATTACHMENT_REQUEST' ? '📎 File Attachment Requested by Support Team' : 'ℹ️ Additional Details Requested by Support Team';
+                    document.getElementById('banner-msg').innerText = topUnreadReq.message;
+                    document.getElementById('btn-banner-action').onclick = () => openNotifTicket(topUnreadReq.ticketId, topUnreadReq.id);
+                    banner.style.display = 'block';
+                } else {
+                    banner.style.display = 'none';
+                }
+            }
+        }
+
+        function toggleNotifDropdown() {
+            const dd = document.getElementById('notif-dropdown');
+            if (dd) {
+                dd.style.display = (dd.style.display === 'none' || !dd.style.display) ? 'block' : 'none';
+            }
+        }
+
+        async function openNotifTicket(ticketId, notifId) {
+            if (notifId) {
+                try {
+                    await apiCall(`/students/notifications/${notifId}/read`, 'POST');
+                    const n = studentNotificationsList.find(x => x.id === notifId);
+                    if (n) n.isRead = true;
+                    renderNotificationsUI();
+                } catch(e){}
+            }
+            const dropdown = document.getElementById('notif-dropdown');
+            if (dropdown) dropdown.style.display = 'none';
+            
+            switchTab('tickets');
+            await viewTicketDetails(ticketId);
+            
+            // Highlight file upload box
+            setTimeout(() => {
+                const attLabel = document.querySelector('label[for="ticket-attachment"]');
+                if (attLabel) {
+                    attLabel.style.boxShadow = '0 0 0 3px var(--primary-color)';
+                    setTimeout(() => { attLabel.style.boxShadow = 'none'; }, 3000);
+                }
+            }, 400);
+        }
+
+        function renderEnrollmentWorkflow(student) {
+            const container = document.getElementById('enrollment-workflow-status');
+            const availableSec = document.getElementById('available-courses-section');
+            
+            // Always keep the course browser visible
+            availableSec.style.display = 'block';
+
+            if (!student.courseId) {
+                container.innerHTML = `
+                    <div style="padding:1rem;background-color:var(--danger-light);color:var(--danger);border-radius:var(--border-radius-md);">
+                        <strong>Unenrolled:</strong> You have not selected an academic path. Please browse the program roster below and enroll.
+                    </div>
+                `;
+                return;
+            }
+
+            let statusHTML = '';
+            if (student.enrollmentStatus === 'PENDING_EO') {
+                statusHTML = `
+                    <div style="padding:1rem;background-color:var(--warning-light);color:var(--warning);border-radius:var(--border-radius-md);display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <strong>Status: Enrollment Officer Review</strong>
+                            <p style="font-size:0.8rem;margin-top:2px;">Your application has been received and is waiting for admission code assignments.</p>
+                        </div>
+                        <button class="btn btn-qr" style="color:var(--danger);" onclick="cancelEnrollment()">Cancel Request</button>
+                    </div>
+                `;
+            } else if (student.enrollmentStatus === 'APPROVED_EO') {
+                statusHTML = `
+                    <div style="padding:1rem;background-color:var(--info-light);color:var(--info);border-radius:var(--border-radius-md);">
+                        <strong>Status: Accepted by Admissions Officer</strong>
+                        <p style="font-size:0.8rem;margin-top:2px;">Your details are verified. Waiting for administrative clearance to assign your roster schedules.</p>
+                    </div>
+                `;
+            } else if (student.enrollmentStatus === 'APPROVED_STAFF') {
+                statusHTML = `
+                    <div style="padding:1rem;background-color:var(--success-light);color:var(--success);border-radius:var(--border-radius-md);">
+                        <strong>Status: Fully Approved & Active Student</strong>
+                        <p style="font-size:0.8rem;margin-top:2px;">Your course details, class schedules, and teaching modules are now fully unlocked.</p>
+                    </div>
+                `;
+                // Load active schedules & rosters
+                loadTimetables();
+                loadMaterials();
+            } else if (student.enrollmentStatus === 'REJECTED_EO') {
+                statusHTML = `
+                    <div style="padding:1rem;background-color:var(--danger-light);color:var(--danger);border-radius:var(--border-radius-md);">
+                        <strong>Status: Application Rejected</strong>
+                        <p style="font-size:0.8rem;margin-top:2px;">Admissions team rejected your course requests. Please verify details and try again.</p>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = statusHTML;
+        }
+
+        async function loadCoursesList() {
+            try {
+                const courses = await apiCall('/students/courses');
+                const listContainer = document.getElementById('courses-list');
+                listContainer.innerHTML = '';
+                
+                const currentCourseId = currentStudentData ? currentStudentData.courseId : null;
+                const enrollmentStatus = currentStudentData ? currentStudentData.enrollmentStatus : null;
+
+                courses.forEach(c => {
+                    const isCurrent = currentCourseId === c.id;
+                    let actionButtonHTML = '';
+
+                    if (isCurrent) {
+                        if (enrollmentStatus === 'APPROVED_STAFF') {
+                            actionButtonHTML = `<span class="enrolled-badge active">✓ Active Path</span>`;
+                        } else if (enrollmentStatus === 'PENDING_EO' || enrollmentStatus === 'APPROVED_EO') {
+                            actionButtonHTML = `<span class="enrolled-badge pending">⏳ Awaiting Approval</span>`;
+                        } else {
+                            actionButtonHTML = `<button class="btn btn-primary" style="padding:0.5rem 1rem;font-size:0.85rem;" onclick="enroll(${c.id})">Enroll Now</button>`;
+                        }
+                    } else {
+                        // Option to switch/change course paths
+                        if (currentCourseId && (enrollmentStatus === 'APPROVED_STAFF' || enrollmentStatus === 'APPROVED_EO' || enrollmentStatus === 'PENDING_EO')) {
+                            actionButtonHTML = `<button class="btn btn-qr" style="padding:0.5rem 1rem;font-size:0.85rem;color:var(--primary);border-color:var(--primary);" onclick="enroll(${c.id})">Switch to Course</button>`;
+                        } else {
+                            actionButtonHTML = `<button class="btn btn-primary" style="padding:0.5rem 1rem;font-size:0.85rem;" onclick="enroll(${c.id})">Enroll Now</button>`;
+                        }
+                    }
+
+                    listContainer.innerHTML += `
+                        <div class="course-card">
+                            <div class="course-card-header">
+                                <span class="course-code-badge">${c.code}</span>
+                                <span class="course-duration">⏱ 3 Years</span>
+                            </div>
+                            <h4 class="course-card-title">${c.name}</h4>
+                            <p class="course-card-desc">${c.description || 'Full-time undergraduate program designed to equip students with industry-relevant skills.'}</p>
+                            <div class="course-card-footer">
+                                ${actionButtonHTML}
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function enroll(courseId) {
+            try {
+                const student = await ensureStudentData();
+                if (!student || !student.id) {
+                    showToast("Enrollment Failed", "Student profile not loaded.", "danger");
+                    return;
+                }
+                await apiCall('/students/enroll', 'POST', { studentId: student.id, courseId });
+                showToast("Request Submitted", "Admissions team has been notified of your request.", "success");
+                await loadStudentProfile();
+            } catch (e) {
+                showToast("Enrollment Failed", e.message, "danger");
+            }
+        }
+
+        async function cancelEnrollment() {
+            if (!confirm("Are you sure you want to cancel your enrollment request?")) return;
+            try {
+                const student = await ensureStudentData();
+                if (!student || !student.id) return;
+                await apiCall(`/students/enrollment-request/${student.id}`, 'DELETE');
+                showToast("Request Cancelled", "Course enrollment request withdrawn.", "success");
+                await loadStudentProfile();
+                await loadCoursesList();
+            } catch (err) {
+                showToast("Cancellation Failed", err.message, "danger");
+            }
+        }
+
+        async function loadTimetables() {
+            try {
+                const student = await ensureStudentData();
+                if (!student || !student.id) return;
+                const schedules = await apiCall(`/students/${student.id}/timetable`);
+                const tbody = document.getElementById('student-timetable-list');
+                tbody.innerHTML = '';
+
+                if (schedules.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);">No schedules assigned to this course yet.</td></tr>';
+                    return;
+                }
+
+                schedules.forEach(s => {
+                    let statusBadge = `<span class="badge badge-success">Active</span>`;
+                    if (s.status === 'CANCELLED') statusBadge = `<span class="badge badge-danger">Cancelled</span>`;
+                    if (s.status === 'DELAYED') statusBadge = `<span class="badge badge-warning">Delayed</span>`;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${s.moduleName}</strong></td>
+                            <td>${s.room}</td>
+                            <td>${s.dayOfWeek} ${s.startTime} - ${s.endTime}</td>
+                            <td>
+                                ${statusBadge}
+                                ${s.statusMessage ? `<p style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">${s.statusMessage}</p>` : ''}
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadMaterials() {
+            try {
+                const student = await ensureStudentData();
+                if (!student || !student.id) return;
+                const modules = await apiCall(`/students/${student.id}/modules`);
+                const container = document.getElementById('student-materials-list');
+                const allFiles = [];
+                modules.forEach(m => (m.materials || []).forEach(mt => allFiles.push({ ...mt, moduleName: m.name })));
+
+                if (allFiles.length === 0) {
+                    container.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">No lecture materials uploaded yet.</p>';
+                    return;
+                }
+
+                container.innerHTML = allFiles.map(f => `
+                    <a href="${f.data}" download="${f.name}" style="display:block;padding:0.6rem 0.8rem;background:var(--bg-secondary);border-radius:8px;text-decoration:none;color:inherit;">
+                        <strong style="font-size:0.85rem;">📄 ${f.name}</strong>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">${f.moduleName}</div>
+                    </a>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadAnnouncements() {
+            try {
+                const notices = await apiCall('/students/announcements');
+                const list = document.getElementById('student-announcements-list');
+                list.innerHTML = '';
+
+                if (notices.length === 0) {
+                    list.innerHTML = '<p style="text-align:center;color:var(--text-muted);font-size:0.9rem;">No current notices posted.</p>';
+                    return;
+                }
+
+                notices.forEach(n => {
+                    list.innerHTML += `
+                        <div style="padding:1rem;background-color:var(--bg-primary);border:1px solid var(--border-color);border-radius:var(--border-radius-md);">
+                            <h5 style="font-weight:700;margin-bottom:0.25rem;">${n.title}</h5>
+                            <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.5rem;">${n.content}</p>
+                            <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-muted);">
+                                <span>By: ${n.createdBy} (${n.role})</span>
+                                <span>${n.createdDate}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function handleUpdateProfile(event) {
+            event.preventDefault();
+            const fullName = document.getElementById('profile-name').value;
+            const email = document.getElementById('profile-email').value;
+            const contact = document.getElementById('profile-contact').value;
+
+            const nameCheck = validateName(fullName);
+            if (!nameCheck.valid) {
+                showToast("Validation Error", nameCheck.message, "danger");
+                return;
+            }
+            const phoneCheck = validatePhone(contact);
+            if (!phoneCheck.valid) {
+                showToast("Validation Error", phoneCheck.message, "danger");
+                return;
+            }
+
+            try {
+                await apiCall(`/students/profile/${currentUser.id}/edit`, 'POST', { fullName, email, contact });
+                showToast("Profile Updated", "Contact details updated successfully.", "success");
+                
+                // Refresh local user variables
+                currentUser.fullName = fullName;
+                currentUser.email = email;
+                currentUser.contact = contact;
+                localStorage.setItem('s360_current_user', JSON.stringify(currentUser));
+                
+                await loadStudentProfile();
+            } catch (err) {
+                showToast("Update Failed", err.message, "danger");
+            }
+        }
+
+        async function loadStudentTickets() {
+            try {
+                const student = await ensureStudentData();
+                if (!student || !student.id) return;
+                const tickets = await apiCall(`/students/${student.id}/tickets`);
+                const tbody = document.getElementById('student-tickets-list');
+                tbody.innerHTML = '';
+
+                if (tickets.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No tickets raised yet.</td></tr>';
+                    return;
+                }
+
+                tickets.forEach(t => {
+                    let badgeClass = 'badge-info';
+                    if (t.status === 'RESOLVED') badgeClass = 'badge-success';
+                    if (t.status === 'CLOSED') badgeClass = 'badge-danger';
+                    if (t.status === 'PENDING') badgeClass = 'badge-warning';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>#${t.id}</td>
+                            <td>${t.title}</td>
+                            <td><span class="badge ${t.priority === 'HIGH' ? 'badge-danger' : 'badge-info'}">${t.priority}</span></td>
+                            <td><span class="badge ${badgeClass}">${t.status}</span></td>
+                            <td>${t.createdDate}</td>
+                            <td>
+                                <button class="btn btn-qr" style="padding:0.3rem 0.6rem;font-size:0.8rem;" onclick="viewTicketDetails(${t.id})">View/Reply</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function handleRaiseTicket(event) {
+            event.preventDefault();
+            const title = document.getElementById('ticket-title').value;
+            const description = document.getElementById('ticket-desc').value;
+
+            try {
+                const student = await ensureStudentData();
+                if (!student || !student.id) {
+                    showToast("Failed to raise ticket", "Student profile could not be loaded. Please re-login or refresh.", "danger");
+                    return;
+                }
+
+                await apiCall('/students/tickets', 'POST', {
+                    studentId: student.id,
+                    title,
+                    description
+                });
+                showToast("Ticket Raised", "Support desk has been notified. We will review your ticket.", "success");
+                document.getElementById('ticket-title').value = '';
+                document.getElementById('ticket-desc').value = '';
+                await loadStudentTickets();
+            } catch (err) {
+                showToast("Failed to raise ticket", err.message, "danger");
+            }
+        }
+
+        async function viewTicketDetails(ticketId) {
+            selectedTicketId = ticketId;
+            try {
+                const student = await ensureStudentData();
+                if (!student || !student.id) return;
+                const tickets = await apiCall(`/students/${student.id}/tickets`);
+                const ticket = tickets.find(t => t.id === ticketId);
+                if (!ticket) return;
+
+                document.getElementById('modal-ticket-title').innerText = `Ticket #${ticket.id}: ${ticket.title}`;
+                document.getElementById('modal-ticket-desc').innerText = ticket.description;
+                
+                const statusBadge = document.getElementById('modal-ticket-status');
+                statusBadge.innerText = ticket.status;
+                statusBadge.className = `badge ${ticket.status === 'RESOLVED' ? 'badge-success' : 'badge-info'}`;
+
+                const prioBadge = document.getElementById('modal-ticket-priority');
+                prioBadge.innerText = ticket.priority;
+                prioBadge.className = `badge ${ticket.priority === 'HIGH' ? 'badge-danger' : 'badge-info'}`;
+
+                await loadTicketReplies();
+                document.getElementById('ticket-modal').classList.add('active');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadTicketReplies() {
+            try {
+                const replies = await apiCall(`/students/tickets/${selectedTicketId}/replies`);
+                const container = document.getElementById('ticket-chat-messages');
+                container.innerHTML = '';
+
+                replies.forEach(r => {
+                    const bubble = document.createElement('div');
+                    bubble.className = `chat-bubble ${r.senderRole.toLowerCase()}`;
+                    bubble.innerHTML = `
+                        <strong>${r.senderName} (${r.senderRole})</strong>
+                        <p style="margin-top:2px;">${r.message}</p>
+                        ${r.attachmentName ? `<div style="margin-top:5px;font-size:0.75rem;background:rgba(255,246,240,0.2);padding:0.25rem 0.5rem;border-radius:4px;"><a href="${r.attachmentData}" download="${r.attachmentName}" style="color:inherit;text-decoration:underline;">📎 ${r.attachmentName}</a></div>` : ''}
+                        <div class="meta">${r.createdDate}</div>
+                    `;
+                    container.appendChild(bubble);
+                });
+                container.scrollTop = container.scrollHeight;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function handleFileSelected(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            selectedFileName = file.name;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedFileBase64 = e.target.result;
+                document.getElementById('attachment-name').innerText = file.name;
+                document.getElementById('attachment-preview-badge').style.display = 'flex';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearSelectedAttachment() {
+            selectedFileBase64 = null;
+            selectedFileName = null;
+            document.getElementById('ticket-attachment').value = '';
+            document.getElementById('attachment-preview-badge').style.display = 'none';
+        }
+
+        async function sendTicketReply() {
+            const input = document.getElementById('ticket-reply-msg');
+            const message = input.value.trim();
+            
+            if (!message && !selectedFileBase64) return;
+
+            try {
+                await apiCall(`/students/tickets/${selectedTicketId}/replies`, 'POST', {
+                    senderName: currentUser.fullName,
+                    message,
+                    attachmentName: selectedFileName,
+                    attachmentData: selectedFileBase64
+                });
+                
+                input.value = '';
+                clearSelectedAttachment();
+                await loadTicketReplies();
+                await loadStudentTickets();
+            } catch (err) {
+                showToast("Reply Failed", err.message, "danger");
+            }
+        }
+
+        function closeTicketModal() {
+            document.getElementById('ticket-modal').classList.remove('active');
+        }
+
+        async function handleNotifClick(type, ticketId, notifId) {
+            if (notifId) {
+                try {
+                    await apiCall(`/students/notifications/${notifId}/read`, 'POST');
+                    const n = studentNotificationsList.find(x => x.id === notifId);
+                    if (n) n.isRead = true;
+                    renderNotificationsUI();
+                } catch(e){}
+            }
+
+            const dropdown = document.getElementById('notif-dropdown');
+            if (dropdown) dropdown.style.display = 'none';
+
+            if (type === 'BOOK_RESERVED' || type === 'RESERVATION_CANCELLED') {
+                switchTab('library');
+                scrollToMyReservations();
+            } else if (ticketId) {
+                openNotifTicket(ticketId, notifId);
+            }
+        }
+
+        /* ════════════════════════════════════════════════
+           STUDENT LIBRARY BOOK RESERVATIONS LOGIC
+        ════════════════════════════════════════════════ */
+        let studentLibraryBooks = [];
+        let studentReservationsList = [];
+        let activeSelectedBookForReserve = null;
+
+        async function loadStudentLibraryData(showToastFeedback = false) {
+            try {
+                const books = await apiCall('/library/books');
+                studentLibraryBooks = books || [];
+            } catch (e) {
+                console.error("Error loading library books:", e);
+                studentLibraryBooks = [];
+            }
+
+            const student = await ensureStudentData();
+            if (student && student.id) {
+                try {
+                    const res = await apiCall(`/library/reservations/student/${student.id}`);
+                    studentReservationsList = res || [];
+                } catch (e) {
+                    try {
+                        const allRes = await apiCall('/library/reservations');
+                        studentReservationsList = (allRes || []).filter(r => 
+                            r.memberId === student.id || 
+                            (currentUser && r.memberName && r.memberName.toLowerCase() === currentUser.fullName.toLowerCase())
+                        );
+                    } catch(err) {
+                        studentReservationsList = [];
+                    }
+                }
+            }
+
+            updateStudentLibraryStats();
+            renderStudentBooksCatalog();
+            renderStudentReservationsTable();
+
+            if (showToastFeedback && typeof showToast === 'function') {
+                showToast("Refreshed!", "Library catalog and reservation data updated.", "info");
+            }
+        }
+
+        function updateStudentLibraryStats() {
+            const totalBooks = studentLibraryBooks.length;
+            const availableBooks = studentLibraryBooks.filter(b => b.status === 'AVAILABLE' && (b.copies || 0) > 0).length;
+            const myResCount = studentReservationsList.length;
+            const approvedCount = studentReservationsList.filter(r => r.status === 'APPROVED').length;
+
+            if (document.getElementById('student-lib-stat-books')) document.getElementById('student-lib-stat-books').innerText = totalBooks;
+            if (document.getElementById('student-lib-stat-avail')) document.getElementById('student-lib-stat-avail').innerText = availableBooks;
+            if (document.getElementById('student-lib-stat-myres')) document.getElementById('student-lib-stat-myres').innerText = myResCount;
+            if (document.getElementById('student-lib-stat-approved')) document.getElementById('student-lib-stat-approved').innerText = approvedCount;
+
+            const approvedBanner = document.getElementById('student-lib-approved-banner');
+            if (approvedBanner) {
+                const latestApproved = studentReservationsList.find(r => r.status === 'APPROVED');
+                if (latestApproved) {
+                    document.getElementById('student-lib-banner-title').innerText = `🎉 Book Reserved: "${latestApproved.bookTitle}" is ready!`;
+                    document.getElementById('student-lib-banner-msg').innerText = `Library Management approved your reservation. Please pick it up by ${latestApproved.expiry || 'expiry date'}.`;
+                    approvedBanner.style.display = 'block';
+                } else {
+                    approvedBanner.style.display = 'none';
+                }
+            }
+        }
+
+        function renderStudentBooksCatalog() {
+            const tbody = document.getElementById('student-books-list');
+            if (!tbody) return;
+
+            const search = (document.getElementById('student-search-books')?.value || '').toLowerCase().trim();
+            const statusFilter = document.getElementById('student-filter-books-status')?.value || 'AVAILABLE';
+
+            const filtered = studentLibraryBooks.filter(b => {
+                const titleMatch  = (b.title || '').toLowerCase().includes(search);
+                const authorMatch = (b.author || '').toLowerCase().includes(search);
+                const catMatch    = (b.category || '').toLowerCase().includes(search);
+                const isbnMatch   = (b.isbn || '').toLowerCase().includes(search);
+                const locMatch    = (b.location || '').toLowerCase().includes(search);
+                const edMatch     = (b.edition || '').toLowerCase().includes(search);
+                const statusText  = (b.status || '').toLowerCase().includes(search);
+                const matchQuery  = !search || titleMatch || authorMatch || catMatch || isbnMatch || locMatch || edMatch || statusText;
+
+                let matchStatus = true;
+                if (statusFilter === 'AVAILABLE') {
+                    matchStatus = (b.status === 'AVAILABLE' && (b.copies || 0) > 0);
+                }
+
+                return matchQuery && matchStatus;
+            });
+
+            if (!filtered.length) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem;">No library books found matching criteria.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(b => {
+                const isAvailable = (b.status === 'AVAILABLE' && (b.copies || 0) > 0);
+                const existingRes = studentReservationsList.find(r => r.bookTitle === b.title && (r.status === 'PENDING' || r.status === 'APPROVED'));
+
+                let actionBtnHtml = '';
+                if (existingRes) {
+                    const badgeClass = existingRes.status === 'APPROVED' ? 'badge-success' : 'badge-warning';
+                    actionBtnHtml = `<span class="badge ${badgeClass}">${existingRes.status === 'APPROVED' ? 'Book Reserved' : 'Requested'}</span>`;
+                } else if (isAvailable) {
+                    actionBtnHtml = `<button class="btn btn-primary btn-sm" onclick="openStudentReserveModal(${b.id})">🔖 Reserve Book</button>`;
+                } else {
+                    actionBtnHtml = `<button class="btn btn-outline btn-sm" disabled style="opacity:0.5;cursor:not-allowed;">Out of Stock</button>`;
+                }
+
+                return `
+                <tr>
+                    <td><strong>${b.title}</strong></td>
+                    <td>${b.author}</td>
+                    <td><span class="badge badge-purple">${b.category || 'General'}</span></td>
+                    <td>${b.edition || '1st Ed.'}</td>
+                    <td><strong>${b.copies || 0}</strong></td>
+                    <td>
+                        <span class="badge ${isAvailable ? 'badge-success' : 'badge-danger'}">
+                            ${isAvailable ? 'AVAILABLE' : 'UNAVAILABLE'}
+                        </span>
+                    </td>
+                    <td style="font-size:0.8rem;color:var(--text-muted);">${b.location || 'Shelf A-1'}</td>
+                    <td>${actionBtnHtml}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function renderStudentReservationsTable() {
+            const tbody = document.getElementById('student-reservations-list');
+            if (!tbody) return;
+
+            if (!studentReservationsList.length) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:2rem;">No book reservations submitted yet.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = studentReservationsList.map(r => {
+                let badgeClass = 'badge-warning';
+                let statusLabel = 'PENDING APPROVAL';
+
+                if (r.status === 'APPROVED') {
+                    badgeClass = 'badge-success';
+                    statusLabel = '🎉 BOOK RESERVED';
+                } else if (r.status === 'CANCELLED' || r.status === 'REJECTED') {
+                    badgeClass = 'badge-danger';
+                    statusLabel = 'CANCELLED';
+                }
+
+                let actionBtn = '—';
+                if (r.status === 'PENDING') {
+                    actionBtn = `<button class="btn btn-outline btn-sm" onclick="cancelStudentReservation(${r.id})" style="color:var(--danger);border-color:var(--danger);">✕ Cancel Request</button>`;
+                }
+
+                return `
+                <tr>
+                    <td><strong>${r.bookTitle}</strong></td>
+                    <td style="font-size:0.83rem;">${r.reservedOn || 'Today'}</td>
+                    <td style="font-size:0.83rem;">${r.expiry || '7 Days'}</td>
+                    <td><span class="badge ${badgeClass}">${statusLabel}</span></td>
+                    <td>${actionBtn}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function openStudentReserveModal(bookId) {
+            const book = studentLibraryBooks.find(b => b.id === bookId);
+            if (!book) return;
+
+            activeSelectedBookForReserve = book;
+            document.getElementById('student-res-book-id').value = book.id;
+            document.getElementById('student-res-book-title-display').innerText = book.title;
+            document.getElementById('student-res-book-author-display').innerText = `Author: ${book.author} | Edition: ${book.edition || '1st'} | Shelf: ${book.location || 'General'}`;
+            document.getElementById('student-res-student-name').value = `${currentUser.fullName} (${currentUser.username})`;
+
+            const today = new Date().toISOString().split('T')[0];
+            const expiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            document.getElementById('student-res-date').value = today;
+            document.getElementById('student-res-expiry').value = expiry;
+
+            document.getElementById('modal-student-reserve').classList.add('active');
+        }
+
+        function closeStudentReserveModal() {
+            document.getElementById('modal-student-reserve').classList.remove('active');
+        }
+
+        async function handleStudentSubmitReservation(event) {
+            event.preventDefault();
+            const student = await ensureStudentData();
+            if (!activeSelectedBookForReserve || !student || !student.id) return;
+
+            const reservedOn = document.getElementById('student-res-date').value;
+            const expiry = document.getElementById('student-res-expiry').value;
+
+            const payload = {
+                memberId: student.id,
+                memberName: currentUser.fullName,
+                bookId: activeSelectedBookForReserve.id,
+                bookTitle: activeSelectedBookForReserve.title,
+                reservedOn: reservedOn,
+                expiry: expiry,
+                status: 'PENDING'
+            };
+
+            try {
+                await apiCall('/library/reservations', 'POST', payload);
+                showToast("Reservation Submitted!", `Reservation request for "${activeSelectedBookForReserve.title}" sent to Library Management for approval.`, "success");
+                closeStudentReserveModal();
+                await loadStudentLibraryData();
+            } catch (err) {
+                showToast("Reservation Failed", err.message || "Could not submit reservation.", "danger");
+            }
+        }
+
+        async function cancelStudentReservation(resId) {
+            if (!confirm("Are you sure you want to cancel this reservation request?")) return;
+            try {
+                await apiCall(`/library/reservations/${resId}`, 'DELETE');
+                showToast("Reservation Cancelled", "Your book reservation request was cancelled.", "info");
+                await loadStudentLibraryData();
+            } catch (err) {
+                showToast("Error", err.message || "Failed to cancel reservation.", "danger");
+            }
+        }
+
+        function scrollToMyReservations() {
+            const section = document.getElementById('section-my-reservations');
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Initialize lists under ticket/library/exam tab clicking
+        const oldSwitchTab = switchTab;
+        switchTab = function(tabId) {
+            oldSwitchTab(tabId);
+            if (tabId === 'tickets') {
+                loadStudentTickets();
+                loadStudentNotifications();
+            } else if (tabId === 'library') {
+                loadStudentLibraryData();
+                loadStudentNotifications();
+            } else if (tabId === 'exams') {
+                loadStudentExamTimetables();
+                loadStudentExamResults();
+            }
+        };
+
+        async function loadStudentExamTimetables() {
+            if (!currentUser) return;
+            try {
+                const timetables = await apiCall(`/students/${currentUser.id}/exam-timetables`);
+                const tbody = document.getElementById('student-exam-timetables-list');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+
+                if (!timetables || timetables.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No official exam timetables published yet.</td></tr>';
+                    return;
+                }
+
+                timetables.forEach(t => {
+                    let stBadge = t.status === 'UPDATED' ? `<span class="badge badge-info">UPDATED</span>` : `<span class="badge badge-success">SCHEDULED</span>`;
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${t.examTitle}</strong></td>
+                            <td>${t.subject}</td>
+                            <td>${t.examDate} (${t.startTime} - ${t.endTime})</td>
+                            <td>${t.venue}</td>
+                            <td>${stBadge}</td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error("Error loading student exam timetables:", err);
+            }
+        }
+
+        async function loadStudentExamResults() {
+            if (!currentUser) return;
+            try {
+                const results = await apiCall(`/students/${currentUser.id}/exam-results`);
+                const tbody = document.getElementById('student-exam-results-list');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+
+                if (!results || results.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);">No published examination results available yet.</td></tr>';
+                    return;
+                }
+
+                results.forEach(r => {
+                    let badgeClass = 'badge-success';
+                    if (r.grade === 'F') badgeClass = 'badge-danger';
+                    if (r.grade === 'C' || r.grade === 'D') badgeClass = 'badge-warning';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${r.examTitle}</strong><br><small style="color:var(--text-muted);">${r.subject}</small></td>
+                            <td><strong>${r.marksObtained}</strong> / ${r.totalMarks}</td>
+                            <td><span class="badge ${badgeClass}">${r.grade}</span></td>
+                            <td>${r.remarks || '—'}</td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error("Error loading student exam results:", err);
+            }
+        }
+
+    </script>
+</body>
+</html>

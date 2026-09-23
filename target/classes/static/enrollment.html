@@ -1,0 +1,2011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School360 – Enrollment Officer Dashboard</title>
+    <meta name="description" content="Enrollment Officer portal: register students, verify documents, approve enrollment, assign class and batch details, and create student login credentials.">
+    <link rel="stylesheet" href="css/styles.css?v=contrast-8">
+    <script>
+        (function() {
+            var t = localStorage.getItem('theme') || 'dark';
+            if (t === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+    <style>
+        /* ══════════════════════════════════════════
+           ENROLLMENT OFFICER — PREMIUM STYLES
+        ══════════════════════════════════════════ */
+        :root {
+            --eo-accent:   #6b3294;
+            --eo-success:  #6b3294;
+            --eo-warning:  #6b3294;
+            --eo-danger:   #6b3294;
+            --eo-info:     #522b5b;
+        }
+
+        /* Stats row */
+        .eo-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .eo-stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .eo-stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(107,50,148,.15); }
+        .eo-stat-icon {
+            font-size: 2rem;
+            width: 52px; height: 52px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #6b329420, #dfb6b220);
+        }
+        .eo-stat-card.green  .eo-stat-icon { background: linear-gradient(135deg, #6b329420, #dfb6b220); }
+        .eo-stat-card.orange .eo-stat-icon { background: linear-gradient(135deg, #6b329420, #efd0c520); }
+        .eo-stat-card.red    .eo-stat-icon { background: linear-gradient(135deg, #6b329420, #dfb6b220); }
+        .eo-stat-card.blue   .eo-stat-icon { background: linear-gradient(135deg, #522b5b20, #dfb6b220); }
+        .eo-stat-info .label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing:.06em; }
+        .eo-stat-info .value { font-size: 1.8rem; font-weight: 800; color: var(--text-primary); line-height: 1.1; }
+
+        /* Stepper workflow chips */
+        .workflow-steps {
+            display: flex; align-items: center; gap: 0; flex-wrap: wrap;
+            margin-bottom: 1.4rem;
+        }
+        .wf-step {
+            display: flex; align-items: center; gap: 0.45rem;
+            font-size: 0.78rem; font-weight: 600; letter-spacing:.03em;
+            padding: 0.4rem 0.9rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            position: relative;
+        }
+        .wf-step:first-child { border-radius: 20px 0 0 20px; }
+        .wf-step:last-child  { border-radius: 0 20px 20px 0; border-left: none; }
+        .wf-step:not(:first-child):not(:last-child) { border-left: none; }
+        .wf-step.done { background: linear-gradient(135deg, #6b3294, #522b5b); color:#fff; border-color: #522b5b; }
+        .wf-step.active { background: linear-gradient(135deg, #6b3294, #6b3294); color:#fff; border-color: #6b3294; }
+        .wf-step.pending { opacity:.55; }
+
+        /* Document checklist */
+        .doc-checklist { display: flex; flex-direction: column; gap: .9rem; margin: 1.2rem 0 1.5rem; width: 100%; }
+        .doc-item {
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            padding: 1.1rem 1.35rem; border-radius: 12px;
+            background: var(--input-bg); border: 1.5px solid var(--border-color);
+            cursor: pointer; transition: border-color .2s, background .2s, box-shadow .2s;
+            box-sizing: border-box; width: 100%;
+        }
+        .doc-item:hover { border-color: var(--eo-accent); }
+        .doc-item.verified { border-color: var(--eo-success); background: rgba(107,50,148,.07); }
+        .doc-item.verified .doc-status { color: var(--eo-success); }
+        .doc-item.rejected { border-color: var(--eo-danger); background: rgba(107,50,148,.07); }
+        .doc-item.rejected .doc-status { color: var(--eo-danger); }
+        .doc-item.pending  { border-color: rgba(107,50,148,.35); background: rgba(107,50,148,.04); }
+        .doc-item.pending .doc-status  { color: #6b3294; }
+        .doc-item-left { display: flex; align-items: center; gap: .8rem; flex: 1; min-width: 220px; flex-wrap: wrap; }
+        .doc-item-right { display: flex; align-items: center; gap: .85rem; flex-shrink: 0; flex-wrap: wrap; }
+        .doc-checkbox { width: 20px; height: 20px; accent-color: var(--eo-success); cursor: pointer; flex-shrink:0; }
+        .doc-label { font-size: .9rem; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+        .doc-status { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing:.06em; color: var(--text-muted); }
+        .doc-action-btn {
+            font-size: .78rem; padding: .42rem .8rem; border-radius: 8px; border: none;
+            cursor: pointer; font-weight: 600; transition: all .2s;
+            display: inline-flex; align-items: center; gap: .3rem;
+        }
+        .doc-verify-btn  { background: rgba(107,50,148,.15); color: var(--eo-success); }
+        .doc-verify-btn:hover  { background: var(--eo-success); color:#fff; }
+        .doc-reject-btn  { background: rgba(107,50,148,.12); color: var(--eo-danger); }
+        .doc-reject-btn:hover  { background: var(--eo-danger); color:#fff; }
+
+        /* Document upload grid in admission form */
+        .doc-upload-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin: 1.2rem 0 1.8rem;
+        }
+        .doc-upload-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.35rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: border-color .2s, box-shadow .2s, transform .2s;
+        }
+        .doc-upload-card:hover {
+            border-color: var(--eo-accent);
+            transform: translateY(-2px);
+        }
+        .doc-upload-card.verified {
+            border-color: var(--eo-success);
+            background: rgba(107,50,148,.04);
+        }
+        .doc-upload-card.rejected {
+            border-color: var(--eo-danger);
+            background: rgba(107,50,148,.04);
+        }
+        .doc-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: .5rem;
+        }
+        .doc-card-title {
+            font-size: .86rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .doc-file-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            font-size: .78rem;
+            font-family: monospace;
+            padding: .3rem .6rem;
+            border-radius: 6px;
+            background: rgba(107,50,148,.12);
+            color: #49334f;
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .doc-file-tag.empty {
+            background: rgba(150,150,150,.12);
+            color: var(--text-muted);
+            font-family: inherit;
+        }
+
+        /* Credential card */
+        .cred-card {
+            background: linear-gradient(135deg, #190019, #522b5b);
+            border-radius: 16px; padding: 1.4rem;
+            border: 1px solid #6b3294;
+            margin-top: .8rem;
+        }
+        .cred-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .cred-field { flex: 1; min-width: 160px; }
+        .cred-field label { font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; color: #49334f; margin-bottom: .3rem; display: block; }
+        .cred-value {
+            background: rgba(255,246,240,.09);
+            border: 1px solid rgba(255,246,240,.18);
+            border-radius: 8px; padding: .5rem .85rem;
+            font-family: 'Courier New', monospace; font-size: .95rem;
+            color: #49334f; letter-spacing: .04em;
+            display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+        }
+        .copy-btn {
+            background: none; border: none; cursor: pointer; font-size: 1rem;
+            color: #49334f; transition: color .2s;
+        }
+        .copy-btn:hover { color: #fff; }
+
+        /* Status badge pill */
+        .status-pill {
+            display: inline-flex; align-items: center; gap: .35rem;
+            padding: .2rem .65rem; border-radius: 99px;
+            font-size: .72rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+        }
+        .pill-pending  { background: rgba(107,50,148,.15); color: #6b3294; }
+        .pill-verified { background: rgba(107,50,148,.15);  color: #6b3294; }
+        .pill-approved { background: rgba(107,50,148,.15);  color: #49334f; }
+        .pill-active   { background: rgba(107,50,148,.15);  color: #6b3294; }
+        .pill-rejected { background: rgba(107,50,148,.15);   color: #6b3294; }
+
+        /* Action buttons row */
+        .action-row { display: flex; gap: .5rem; flex-wrap: wrap; }
+        .eo-btn {
+            display: inline-flex; align-items: center; gap: .4rem;
+            padding: .32rem .75rem; border-radius: 8px; border: none;
+            font-size: .78rem; font-weight: 600; cursor: pointer; transition: all .2s;
+            white-space: nowrap;
+        }
+        .eo-btn-primary { background: var(--eo-accent); color: #fff; }
+        .eo-btn-primary:hover { background: #6b3294; transform: translateY(-1px); }
+        .eo-btn-success { background: var(--eo-success); color: #fff; }
+        .eo-btn-success:hover { background: #522b5b; transform: translateY(-1px); }
+        .eo-btn-warning { background: var(--eo-warning); color: #fff; }
+        .eo-btn-warning:hover { background: #6b3294; }
+        .eo-btn-danger  { background: var(--eo-danger); color: #fff; }
+        .eo-btn-danger:hover  { background: #522b5b; }
+        .eo-btn-ghost   { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
+        .eo-btn-ghost:hover   { background: var(--card-bg); color: var(--text-primary); }
+
+        /* Tabs inside main */
+        .eo-tabs { display: flex; gap: .4rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+        .eo-tab {
+            padding: .5rem 1.1rem; border-radius: 10px; border: none;
+            font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .2s;
+            background: var(--card-bg); color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+        .eo-tab.active { background: var(--eo-accent); color: #fff; border-color: var(--eo-accent); }
+        .eo-tab:hover:not(.active) { border-color: var(--eo-accent); color: var(--eo-accent); }
+
+        /* Step-by-step modal */
+        .modal-steps { display: flex; gap: 0; margin-bottom: 1.4rem; }
+        .modal-step {
+            flex: 1; text-align: center; padding: .5rem .3rem;
+            font-size: .73rem; font-weight: 600; color: var(--text-muted);
+            border-bottom: 3px solid var(--border-color);
+            cursor: default; transition: all .2s;
+        }
+        .modal-step.active { color: var(--eo-accent); border-bottom-color: var(--eo-accent); }
+        .modal-step.done   { color: var(--eo-success); border-bottom-color: var(--eo-success); }
+        .step-panel { display: none; }
+        .step-panel.active { display: block; animation: fadeIn .25s ease; }
+        @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
+
+        /* Batch/class badge */
+        .batch-badge {
+            display: inline-block; padding: .2rem .6rem; border-radius: 7px;
+            font-size: .72rem; font-weight: 700;
+            background: rgba(107,50,148,.13); color: #49334f;
+        }
+
+        /* Scrollable table */
+        .table-wrap { overflow-x: auto; border-radius: 10px; }
+        .eo-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+        .eo-table thead th {
+            background: var(--input-bg); color: var(--text-muted);
+            font-size: .72rem; text-transform: uppercase; letter-spacing: .06em;
+            padding: .75rem 1rem; text-align: left; white-space: nowrap;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .eo-table tbody tr { border-bottom: 1px solid var(--border-color); transition: background .15s; }
+        .eo-table tbody tr:hover { background: rgba(107,50,148,.05); }
+        .eo-table tbody td { padding: .75rem 1rem; color: var(--text-primary); vertical-align: middle; }
+        .eo-table tbody tr:last-child { border-bottom: none; }
+
+        /* Quick search */
+        .search-bar {
+            display: flex; gap: .6rem; align-items: center; flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .search-bar input { flex: 1; min-width: 180px; }
+
+        /* Password toggle */
+        .pw-wrap { position: relative; }
+        .pw-wrap input { padding-right: 2.5rem !important; }
+        .pw-toggle {
+            position: absolute; right: .7rem; top: 50%; transform: translateY(-50%);
+            background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--text-muted);
+        }
+
+        /* Info banner inside modal */
+        .info-banner {
+            background: rgba(107,50,148,.09);
+            border: 1px solid rgba(107,50,148,.3);
+            border-radius: 10px; padding: .8rem 1rem;
+            font-size: .83rem; color: var(--text-secondary);
+            margin-bottom: 1rem; display: flex; gap: .6rem; align-items: flex-start;
+        }
+        .info-banner .bi { font-size: 1.1rem; flex-shrink: 0; margin-top: .05rem; }
+
+        /* Admitted success state */
+        .admitted-card {
+            border-radius: 14px; padding: 1.2rem;
+            background: linear-gradient(135deg, rgba(107,50,148,.08), rgba(107,50,148,.02));
+            border: 1px solid rgba(107,50,148,.3);
+            margin-top: .7rem;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block; width: 14px; height: 14px;
+            border: 2px solid rgba(255,246,240,.3);
+            border-top-color: #fff; border-radius: 50%;
+            animation: spin .7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Grid layout inside modal */
+        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+        .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .8rem; }
+        @media (max-width: 520px) {
+            .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
+            .modal-steps { overflow-x: auto; }
+            .modal-step { font-size: .65rem; padding: .4rem .2rem; }
+        }
+
+        /* Sidebar extra items */
+        .sidebar-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 20px; height: 20px; border-radius: 99px;
+            background: var(--eo-danger); color: #fff;
+            font-size: .65rem; font-weight: 800; padding: 0 5px; margin-left: auto;
+        }
+
+        .tab-content { animation: fadeIn .2s ease; }
+    </style>
+</head>
+<body>
+<!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+<nav class="sidebar">
+    <div class="sidebar-brand">
+        <span>🏫 School360</span>
+    </div>
+    <ul class="sidebar-menu">
+        <li class="sidebar-item active" id="menu-register">
+            <a href="#" onclick="switchTab('register')">📋 Register Student</a>
+        </li>
+        <li class="sidebar-item" id="menu-queue">
+            <a href="#" onclick="switchTab('queue')">
+                📝 Application Queue
+                <span class="sidebar-badge" id="pending-badge" style="display:none">0</span>
+            </a>
+        </li>
+        <li class="sidebar-item" id="menu-documents">
+            <a href="#" onclick="switchTab('documents')">🔍 Document Verification</a>
+        </li>
+        <li class="sidebar-item" id="menu-accounts">
+            <a href="#" onclick="switchTab('accounts')">🔐 Student Accounts</a>
+        </li>
+        <li class="sidebar-item" id="menu-history">
+            <a href="#" onclick="switchTab('history')">🕰️ Processed Registry</a>
+        </li>
+    </ul>
+    <div class="sidebar-footer">
+        <button class="btn btn-qr btn-block" onclick="logout()">🚪 Logout</button>
+    </div>
+</nav>
+
+<!-- ═══════════════════════ MAIN CONTENT ═══════════════════════ -->
+<main class="main-content">
+    <!-- Header -->
+    <header class="header-bar">
+        <div class="header-title">
+            <h2 id="welcome-message">Hello, Enrollment Officer</h2>
+        </div>
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme(); return false;" title="Toggle Theme">🌙</button>
+        </div>
+    </header>
+
+    <!-- Stats Row -->
+    <div class="eo-stats-grid" id="stats-grid">
+        <div class="eo-stat-card blue">
+            <div class="eo-stat-icon">📥</div>
+            <div class="eo-stat-info">
+                <div class="label">Pending</div>
+                <div class="value" id="stat-pending">—</div>
+            </div>
+        </div>
+        <div class="eo-stat-card green">
+            <div class="eo-stat-icon">✅</div>
+            <div class="eo-stat-info">
+                <div class="label">Approved</div>
+                <div class="value" id="stat-approved">—</div>
+            </div>
+        </div>
+        <div class="eo-stat-card red">
+            <div class="eo-stat-icon">❌</div>
+            <div class="eo-stat-info">
+                <div class="label">Rejected</div>
+                <div class="value" id="stat-rejected">—</div>
+            </div>
+        </div>
+        <div class="eo-stat-card orange">
+            <div class="eo-stat-icon">🎓</div>
+            <div class="eo-stat-info">
+                <div class="label">Total Students</div>
+                <div class="value" id="stat-total">—</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ TAB: REGISTER NEW STUDENT ═══════ -->
+    <section id="tab-register" class="tab-content active">
+        <div class="section-card">
+            <div class="section-header">
+                <h3>📋 Register New Student</h3>
+                <p style="color:var(--text-muted);font-size:.85rem;margin:0;">Fill all fields to create a student account and enrollment application.</p>
+            </div>
+            <form id="register-student-form" onsubmit="handleRegisterStudent(event)" autocomplete="off">
+                <h4 style="margin:.3rem 0 .8rem;color:var(--eo-accent);font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;">👤 Personal Information</h4>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="reg-fullname">Full Name *</label>
+                        <input type="text" id="reg-fullname" class="form-input" placeholder="e.g. Aisha Binte Rashid" required pattern="[A-Za-z\s]+" title="Letters and spaces only" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="reg-email">Email Address *</label>
+                        <div style="display:flex;gap:.4rem;">
+                            <input type="email" id="reg-email" class="form-input" placeholder="student@school360.com" required autocomplete="off">
+                            <button type="button" class="eo-btn eo-btn-ghost" onclick="autoGenEmail()" title="Auto-generate Email" style="flex-shrink:0;">🎲</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="reg-contact">Contact Number *</label>
+                        <input type="text" id="reg-contact" class="form-input" placeholder="e.g. 0771234567" required pattern="\d{1,16}" maxlength="16" inputmode="numeric" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="reg-dob">Date of Birth</label>
+                        <input type="date" id="reg-dob" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="reg-gender">Gender</label>
+                        <select id="reg-gender" class="form-input">
+                            <option value="">— Select —</option>
+                            <option>Male</option>
+                            <option>Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="reg-nic">NIC / Passport No. (16 digits)</label>
+                        <input type="text" id="reg-nic" class="form-input" placeholder="e.g. 2001123456789012" pattern="\d{16}" minlength="16" maxlength="16" inputmode="numeric">
+                    </div>
+                </div>
+
+                <h4 style="margin:1rem 0 .8rem;color:var(--eo-accent);font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;">🎓 Academic Information</h4>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="reg-course">Program / Course *</label>
+                        <select id="reg-course" class="form-input" required>
+                            <option value="">— Select Course —</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="reg-batch">Batch / Year *</label>
+                        <select id="reg-batch" class="form-input" required>
+                            <option value="">— Select Batch —</option>
+                            <option>2024</option>
+                            <option>2025</option>
+                            <option>2026</option>
+                            <option>2027</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="reg-class">Class Name *</label>
+                        <input type="text" id="reg-class" class="form-input" placeholder="e.g. Year 1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="reg-section">Section *</label>
+                        <input type="text" id="reg-section" class="form-input" placeholder="e.g. Section A" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="reg-admission">Admission Number *</label>
+                        <div style="display:flex;gap:.4rem;">
+                            <input type="text" id="reg-admission" class="form-input" placeholder="e.g. ADM-360-010" required oninput="autoGenEmailFromAdmission(true)">
+                            <button type="button" class="eo-btn eo-btn-ghost" onclick="autoGenAdmission()" title="Auto-generate" style="flex-shrink:0;">🎲</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="reg-intake">Intake</label>
+                        <input type="text" id="reg-intake" class="form-input" placeholder="e.g. September 2026">
+                    </div>
+                </div>
+
+                <h4 style="margin:1.2rem 0 .4rem;color:var(--eo-accent);font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;">
+                    📁 Required Admission Documents Upload
+                </h4>
+                <p style="color:var(--text-muted);font-size:.8rem;margin:0 0 .8rem 0;">Upload required certificates/documents for the applicant. Document verification and approval will be performed by the Enrollment Officer after registration.</p>
+
+                <div class="doc-upload-grid" id="reg-doc-grid">
+                    <!-- Populated dynamically via renderRegDocFormGrid() -->
+                </div>
+
+                <h4 style="margin:1rem 0 .8rem;color:var(--eo-accent);font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;">🔐 Login Credentials</h4>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="reg-username">Username *</label>
+                        <div style="display:flex;gap:.4rem;">
+                            <input type="text" id="reg-username" class="form-input" placeholder="e.g. aisha2026" required autocomplete="new-password">
+                            <button type="button" class="eo-btn eo-btn-ghost" onclick="autoGenUsername()" title="Auto-generate" style="flex-shrink:0;">🎲</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="reg-password">Password *</label>
+                        <div class="pw-wrap">
+                            <input type="password" id="reg-password" class="form-input" placeholder="Min 8 characters" required minlength="8" autocomplete="new-password">
+                            <button type="button" class="pw-toggle" onclick="togglePw('reg-password', this)">👁️</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:.8rem;margin-top:1.5rem;flex-wrap:wrap;">
+                    <button type="submit" class="btn btn-primary" style="flex:1;min-width:200px;" id="reg-submit-btn">
+                        ✅ Register Student & Create Account
+                    </button>
+                    <button type="button" class="eo-btn eo-btn-ghost" onclick="clearRegisterForm()">🗑️ Clear</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Generated Credentials Display -->
+        <div id="reg-success-card" class="section-card" style="display:none;margin-top:1rem;">
+            <div class="section-header">
+                <h3>🎉 Student Successfully Registered!</h3>
+            </div>
+            <div class="admitted-card">
+                <p style="color:var(--eo-success);font-weight:600;margin-bottom:.8rem;">✅ Account created and enrollment application submitted.</p>
+                <div class="form-grid-2" style="gap:.6rem;margin-bottom:.8rem;">
+                    <div>
+                        <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;">Student Name</div>
+                        <div style="font-weight:700;" id="cred-name">—</div>
+                    </div>
+                    <div>
+                        <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;">Admission No.</div>
+                        <div style="font-weight:700;" id="cred-adm">—</div>
+                    </div>
+                    <div>
+                        <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;">Class / Section</div>
+                        <div style="font-weight:700;" id="cred-class">—</div>
+                    </div>
+                    <div>
+                        <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;">Course</div>
+                        <div style="font-weight:700;" id="cred-course">—</div>
+                    </div>
+                </div>
+                <div class="cred-card">
+                    <p style="color: #49334f;font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.8rem;">🔐 Dashboard Login Credentials</p>
+                    <div class="cred-row">
+                        <div class="cred-field">
+                            <label>Username</label>
+                            <div class="cred-value">
+                                <span id="cred-username">—</span>
+                                <button class="copy-btn" onclick="copyText('cred-username')" title="Copy">📋</button>
+                            </div>
+                        </div>
+                        <div class="cred-field">
+                            <label>Password</label>
+                            <div class="cred-value">
+                                <span id="cred-password">—</span>
+                                <button class="copy-btn" onclick="copyText('cred-password')" title="Copy">📋</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p style="color:var(--text-muted);font-size:.78rem;margin-top:.8rem;">⚠️ Please share these credentials securely with the student. They can change their password after first login.</p>
+            </div>
+            <div style="display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap;">
+                <button class="eo-btn eo-btn-primary" onclick="switchTab('queue')">📝 View Application Queue</button>
+                <button class="eo-btn eo-btn-ghost" onclick="resetSuccessCard()">➕ Register Another</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ TAB: APPLICATION QUEUE ═══════ -->
+    <section id="tab-queue" class="tab-content" style="display:none;">
+        <div class="section-card">
+            <div class="section-header">
+                <h3>📝 Pending Enrollment Applications</h3>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="search-queue" class="form-input" placeholder="🔍 Search by student name or admission no..." oninput="filterTableRows('queue-tbody', this.value, [0,2])" style="max-width:340px;">
+                <button class="eo-btn eo-btn-ghost" onclick="loadQueue()">🔄 Refresh</button>
+            </div>
+            <div class="table-wrap">
+                <table class="eo-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Program</th>
+                            <th>Admission No.</th>
+                            <th>Class &amp; Section</th>
+                            <th>Documents</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="queue-tbody">
+                        <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem;">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ TAB: DOCUMENT VERIFICATION ═══════ -->
+    <section id="tab-documents" class="tab-content" style="display:none;">
+        <div class="section-card">
+            <div class="section-header">
+                <h3>🔍 Admission Document Verification</h3>
+                <p style="color:var(--text-muted);font-size:.85rem;margin:0;">Select an application to verify required admission documents.</p>
+            </div>
+            <div class="search-bar">
+                <select id="doc-student-select" class="form-input" style="max-width:340px;" onchange="loadDocVerification()">
+                    <option value="">— Select Student Application —</option>
+                </select>
+                <button class="eo-btn eo-btn-ghost" onclick="loadDocStudentList()">🔄 Refresh</button>
+            </div>
+
+            <div id="doc-verification-panel" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.6rem;margin-bottom:.8rem;">
+                    <div>
+                        <strong id="doc-student-name" style="font-size:1rem;">—</strong>
+                        <span id="doc-student-info" style="color:var(--text-muted);font-size:.83rem;margin-left:.6rem;">—</span>
+                    </div>
+                    <div id="doc-overall-status" class="status-pill pill-pending">⏳ Pending Verification</div>
+                </div>
+
+                <div class="doc-checklist" id="doc-checklist">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <div style="display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap;">
+                    <button class="eo-btn eo-btn-success" onclick="verifyAllDocs()">✅ Mark All Verified</button>
+                    <button class="eo-btn eo-btn-danger"  onclick="rejectAllDocs()">❌ Mark All Rejected</button>
+                    <button class="eo-btn eo-btn-primary" id="save-docs-btn" onclick="saveDocVerification()">💾 Save Verification Status</button>
+                    <button class="eo-btn eo-btn-success" id="approve-app-btn" onclick="approveFromDocTab()" style="background:var(--accent-green, #6b3294);">🎓 Save & Approve Application</button>
+                </div>
+
+                <div id="doc-remarks-row" style="margin-top:1rem;">
+                    <label class="form-label" for="doc-remarks">Officer Remarks</label>
+                    <textarea id="doc-remarks" class="form-input" rows="2" placeholder="Optional notes about document review…"></textarea>
+                </div>
+            </div>
+
+            <div id="doc-empty-msg" style="padding:2rem;text-align:center;color:var(--text-muted);">
+                Select a student application above to begin document verification.
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ TAB: STUDENT ACCOUNTS ═══════ -->
+    <section id="tab-accounts" class="tab-content" style="display:none;">
+        <div class="section-card">
+            <div class="section-header">
+                <h3>🔐 Student Account Management</h3>
+                <p style="color:var(--text-muted);font-size:.85rem;margin:0;">View, reset passwords, and manage student dashboard access.</p>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="search-accounts" class="form-input" placeholder="🔍 Search by name or username…" oninput="filterTableRows('accounts-tbody', this.value, [0,1])" style="max-width:340px;">
+                <button class="eo-btn eo-btn-ghost" onclick="loadStudentAccounts()">🔄 Refresh</button>
+            </div>
+            <div class="table-wrap">
+                <table class="eo-table">
+                    <thead>
+                        <tr>
+                            <th>Full Name</th>
+                            <th>Username</th>
+                            <th>Admission No.</th>
+                            <th>Class / Batch</th>
+                            <th>Enrollment Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="accounts-tbody">
+                        <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem;">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════ TAB: PROCESSED REGISTRY ═══════ -->
+    <section id="tab-history" class="tab-content" style="display:none;">
+        <div class="section-card">
+            <div class="section-header">
+                <h3>🕰️ Processed Application Registry</h3>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="search-history" class="form-input" placeholder="🔍 Search by name or program…" oninput="filterTableRows('history-tbody', this.value, [0,1])" style="max-width:340px;">
+                <button class="eo-btn eo-btn-ghost" onclick="loadQueue(); loadDeletedStudentsArchive();">🔄 Refresh</button>
+            </div>
+            <div class="table-wrap">
+                <table class="eo-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Program</th>
+                            <th>Admission No.</th>
+                            <th>Class Info</th>
+                            <th>EO Decision</th>
+                            <th>Docs</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-tbody">
+                        <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem;">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section-card" style="margin-top:1.5rem;">
+            <div class="section-header">
+                <h3>🗑️ Deleted Student List</h3>
+                <p style="color:var(--text-muted);font-size:.85rem;margin:0;">Permanently archived record of past students deleted by the Enrollment Officer.</p>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="search-deleted" class="form-input" placeholder="🔍 Search deleted records…" oninput="filterTableRows('deleted-tbody', this.value, [0,1,2])" style="max-width:340px;">
+                <button class="eo-btn eo-btn-ghost" onclick="loadDeletedStudentsArchive()">🔄 Refresh</button>
+            </div>
+            <div class="table-wrap">
+                <table class="eo-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Username</th>
+                            <th>Admission No.</th>
+                            <th>Course</th>
+                            <th>Class &amp; Section</th>
+                            <th>EO Status</th>
+                            <th>Deleted By</th>
+                            <th>Deleted Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deleted-tbody">
+                        <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem;">Loading archive…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- ══════════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════════ -->
+
+<!-- 1. Process Application Modal (multi-step) -->
+<div id="process-modal" class="modal">
+    <div class="modal-content" style="max-width:760px;">
+        <div class="modal-header">
+            <h3 id="process-modal-title">Process Application</h3>
+            <span style="cursor:pointer;font-size:1.5rem;" onclick="closeModal('process-modal')">✕</span>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="modal-steps">
+            <div class="modal-step active" id="mstep-1">1 · Assign Details</div>
+            <div class="modal-step pending" id="mstep-2">2 · Verify Docs</div>
+            <div class="modal-step pending" id="mstep-3">3 · Decision</div>
+        </div>
+
+        <input type="hidden" id="proc-req-id">
+        <input type="hidden" id="proc-student-id">
+
+        <!-- Step 1: Assign Details -->
+        <div class="step-panel active" id="panel-1">
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label class="form-label">Admission Number *</label>
+                    <input type="text" id="proc-adm-num" class="form-input" placeholder="ADM-360-XXX">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Class Name *</label>
+                    <input type="text" id="proc-class" class="form-input" placeholder="Year 1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Section *</label>
+                    <input type="text" id="proc-section" class="form-input" placeholder="Section A">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Batch / Year</label>
+                    <select id="proc-batch" class="form-input">
+                        <option value="">— Select —</option>
+                        <option>2024</option><option>2025</option><option>2026</option><option>2027</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Intake / Semester</label>
+                <input type="text" id="proc-intake" class="form-input" placeholder="e.g. September 2026">
+            </div>
+            <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:1rem;">
+                <button class="eo-btn eo-btn-ghost" onclick="closeModal('process-modal')">Cancel</button>
+                <button class="eo-btn eo-btn-primary" onclick="saveDetailsAndNext()">Save & Next →</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Document Verification (inline) -->
+        <div class="step-panel" id="panel-2">
+            <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:.8rem;">Check each document submitted by the applicant:</p>
+            <div class="doc-checklist" id="modal-doc-checklist"></div>
+            <div class="form-group" style="margin-top:.8rem;">
+                <label class="form-label">Officer Remarks</label>
+                <textarea id="proc-remarks" class="form-input" rows="2" placeholder="Add notes about document review…"></textarea>
+            </div>
+            <div style="display:flex;gap:.6rem;justify-content:space-between;flex-wrap:wrap;margin-top:1rem;">
+                <button class="eo-btn eo-btn-ghost" onclick="goToStep(1)">← Back</button>
+                <div style="display:flex;gap:.5rem;">
+                    <button class="eo-btn eo-btn-success" onclick="modalVerifyAll()">✅ All Verified</button>
+                    <button class="eo-btn eo-btn-primary" onclick="goToStep(3)">Next → Decision</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Decision -->
+        <div class="step-panel" id="panel-3">
+            <div class="info-banner">
+                <span>⚠️</span>
+                <span>Review the checklist summary before making your decision. Approving will lock the application and forward it to the Administrative Officer.</span>
+            </div>
+            <div id="decision-summary" style="margin:.8rem 0 1.2rem;"></div>
+            <div style="display:flex;gap:.6rem;justify-content:space-between;flex-wrap:wrap;">
+                <button class="eo-btn eo-btn-ghost" onclick="goToStep(2)">← Back</button>
+                <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+                    <button class="eo-btn eo-btn-danger"  onclick="makeDecision('REJECTED')">❌ Reject Application</button>
+                    <button class="eo-btn eo-btn-success" onclick="makeDecision('APPROVED')">✅ Approve &amp; Forward</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Reset / Provide Credentials Modal -->
+<div id="credentials-modal" class="modal">
+    <div class="modal-content" style="max-width:500px;">
+        <div class="modal-header">
+            <h3>🔐 Manage Student Credentials</h3>
+            <span style="cursor:pointer;font-size:1.5rem;" onclick="closeModal('credentials-modal')">✕</span>
+        </div>
+        <input type="hidden" id="cred-modal-uid">
+        <div style="margin-bottom:1rem;">
+            <div class="form-grid-2" style="gap:.6rem;">
+                <div>
+                    <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Student</div>
+                    <strong id="cred-modal-name">—</strong>
+                </div>
+                <div>
+                    <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Current Username</div>
+                    <strong id="cred-modal-current-user">—</strong>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">New Username</label>
+            <input type="text" id="cred-new-username" class="form-input" placeholder="Leave blank to keep current">
+        </div>
+        <div class="form-group">
+            <label class="form-label">New Password *</label>
+            <div class="pw-wrap">
+                <input type="password" id="cred-new-password" class="form-input" placeholder="Enter new password (min 8 chars)" minlength="8">
+                <button type="button" class="pw-toggle" onclick="togglePw('cred-new-password', this)">👁️</button>
+            </div>
+        </div>
+        <div style="display:flex;gap:.4rem;margin-bottom:1rem;">
+            <button class="eo-btn eo-btn-ghost" onclick="autoGenCredentialsModal()">🔄 Auto-Generate</button>
+        </div>
+        <div id="cred-modal-new-display" class="cred-card" style="display:none;margin-bottom:1rem;">
+            <p style="color: #49334f;font-size:.75rem;text-transform:uppercase;margin-bottom:.6rem;">New Credentials</p>
+            <div class="cred-row">
+                <div class="cred-field">
+                    <label>Username</label>
+                    <div class="cred-value">
+                        <span id="cred-modal-show-user">—</span>
+                        <button class="copy-btn" onclick="copyText('cred-modal-show-user')">📋</button>
+                    </div>
+                </div>
+                <div class="cred-field">
+                    <label>Password</label>
+                    <div class="cred-value">
+                        <span id="cred-modal-show-pass">—</span>
+                        <button class="copy-btn" onclick="copyText('cred-modal-show-pass')">📋</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="display:flex;gap:.6rem;justify-content:flex-end;">
+            <button class="eo-btn eo-btn-ghost" onclick="closeModal('credentials-modal')">Cancel</button>
+            <button class="eo-btn eo-btn-primary" onclick="saveStudentCredentials()">💾 Save Credentials</button>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Assign Class Modal -->
+<div id="assign-class-modal" class="modal">
+    <div class="modal-content" style="max-width:500px;">
+        <div class="modal-header">
+            <h3>🏷️ Assign Class &amp; Batch Details</h3>
+            <span style="cursor:pointer;font-size:1.5rem;" onclick="closeModal('assign-class-modal')">✕</span>
+        </div>
+        <input type="hidden" id="ac-req-id">
+        <p id="ac-student-name" style="color:var(--text-muted);margin-bottom:1rem;">Student: —</p>
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label class="form-label">Admission Number *</label>
+                <input type="text" id="ac-adm" class="form-input" placeholder="ADM-360-XXX" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Class Name *</label>
+                <input type="text" id="ac-class" class="form-input" placeholder="Year 1" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Section *</label>
+                <input type="text" id="ac-section" class="form-input" placeholder="Section A" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Batch Year</label>
+                <select id="ac-batch" class="form-input">
+                    <option>2024</option><option>2025</option><option selected>2026</option><option>2027</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Intake / Semester</label>
+            <input type="text" id="ac-intake" class="form-input" placeholder="September 2026">
+        </div>
+        <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:1rem;">
+            <button class="eo-btn eo-btn-ghost" onclick="closeModal('assign-class-modal')">Cancel</button>
+            <button class="eo-btn eo-btn-primary" onclick="saveClassDetails()">💾 Save &amp; Update</button>
+        </div>
+    </div>
+</div>
+
+<!-- 4. Document Preview Modal -->
+<div id="doc-preview-modal" class="modal">
+    <div class="modal-content" style="max-width:750px;width:95%;">
+        <div class="modal-header">
+            <h3 id="doc-preview-title">📄 Document Preview</h3>
+            <span style="cursor:pointer;font-size:1.5rem;" onclick="closeModal('doc-preview-modal')">✕</span>
+        </div>
+        <div id="doc-preview-body" style="min-height:320px;max-height:65vh;overflow:auto;display:flex;align-items:center;justify-content:center;background:var(--input-bg);border-radius:10px;padding:1rem;">
+            <!-- Document preview content -->
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1rem;flex-wrap:wrap;gap:.5rem;">
+            <span id="doc-preview-filename" style="font-size:.82rem;font-family:monospace;color:var(--text-muted);">—</span>
+            <button class="eo-btn eo-btn-ghost" onclick="closeModal('doc-preview-modal')">Close Preview</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════ SCRIPTS ═══════════════════════ -->
+<script src="js/app.js?v=contrast-8"></script>
+<script>
+// ══════════════════════════════════════════════════
+// ENROLLMENT OFFICER — PAGE STATE
+// ══════════════════════════════════════════════════
+let allRequests   = [];
+let allStudents   = [];
+let allCourses    = [];
+let docStates     = {}; // { docKey: 'verified' | 'rejected' | 'pending' }
+let currentDocReqId = null;
+let currentStep   = 1;
+let modalDocStates = {};
+
+// Form upload & verification state
+let formUploadedDocs = {};
+let formDocStates    = {};
+let documentDataUrls = {};
+
+// Document types required
+const REQUIRED_DOCS = [
+    { key: 'birth_cert',   label: '📄 Birth Certificate / NIC / Passport' },
+    { key: 'ol_results',   label: '📋 O/L Results Certificate'             },
+    { key: 'al_results',   label: '📋 A/L Results Certificate'             },
+    { key: 'photo',        label: '🖼️ Passport-size Photograph (recent)'   },
+    { key: 'med_cert',     label: '🏥 Medical Fitness Certificate'          },
+];
+
+function safeParseJson(val) {
+    if (!val) return {};
+    if (typeof val === 'object') return val;
+    try {
+        return JSON.parse(val);
+    } catch(e) {
+        try {
+            const cleanStr = String(val).trim().replace(/^\{|\}$/g, '');
+            if (!cleanStr) return {};
+            const result = {};
+            cleanStr.split(',').forEach(pair => {
+                const parts = pair.split('=');
+                if (parts.length === 2) {
+                    result[parts[0].trim()] = parts[1].trim();
+                }
+            });
+            return result;
+        } catch(err) {
+            return {};
+        }
+    }
+}
+
+// ── Auth Hook ──────────────────────────────────────
+const _origCheckAuth = checkAuth;
+checkAuth = async function() {
+    _origCheckAuth();
+    if (currentUser && currentUser.role === 'ENROLLMENT') {
+        document.getElementById('welcome-message').innerText = `Hello, ${currentUser.fullName}`;
+        renderRegDocFormGrid();
+        await Promise.all([loadCourses(), loadQueue(), loadStats()]);
+        loadDocStudentList();
+        loadStudentAccounts();
+        loadDeletedStudentsArchive();
+    }
+};
+
+// ══════════════════════════════════════════════════
+// TAB NAVIGATION
+// ══════════════════════════════════════════════════
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    document.getElementById(`tab-${tabId}`).style.display = 'block';
+    const menuEl = document.getElementById(`menu-${tabId}`);
+    if (menuEl) menuEl.classList.add('active');
+
+    if (tabId === 'queue')     loadQueue();
+    if (tabId === 'history')   { loadQueue(); loadDeletedStudentsArchive(); }
+    if (tabId === 'documents') loadDocStudentList();
+    if (tabId === 'accounts')  loadStudentAccounts();
+}
+
+// ══════════════════════════════════════════════════
+// STATS
+// ══════════════════════════════════════════════════
+async function loadStats() {
+    try {
+        const reqs = await apiCall('/enrollment/applications');
+        const students = await apiCall('/enrollment/all-students');
+        const pending  = reqs.filter(r => r.eoStatus === 'PENDING').length;
+        const approved = reqs.filter(r => r.eoStatus === 'APPROVED').length;
+        const rejected = reqs.filter(r => r.eoStatus === 'REJECTED').length;
+        document.getElementById('stat-pending').textContent  = pending;
+        document.getElementById('stat-approved').textContent = approved;
+        document.getElementById('stat-rejected').textContent = rejected;
+        document.getElementById('stat-total').textContent    = students.length;
+        const badge = document.getElementById('pending-badge');
+        badge.textContent = pending;
+        badge.style.display = pending > 0 ? 'inline-flex' : 'none';
+    } catch(e) { /* silent */ }
+}
+
+// ══════════════════════════════════════════════════
+// COURSES
+// ══════════════════════════════════════════════════
+async function loadCourses() {
+    try {
+        allCourses = await apiCall('/students/courses');
+        const sel = document.getElementById('reg-course');
+        sel.innerHTML = '<option value="">— Select Course —</option>';
+        allCourses.forEach(c => {
+            sel.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+        });
+    } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════
+// QUEUE
+// ══════════════════════════════════════════════════
+async function loadQueue() {
+    try {
+        allRequests = await apiCall('/enrollment/applications');
+        renderQueue();
+        renderHistory();
+        loadStats();
+    } catch(e) {
+        showToast('Load Error', e.message, 'danger');
+    }
+}
+
+function renderQueue() {
+    const tbody = document.getElementById('queue-tbody');
+    const pending = allRequests.filter(r => r.eoStatus === 'PENDING');
+    if (!pending.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem;">🎉 No pending applications in queue.</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = pending.map(r => {
+        const admNo   = r.admissionNumber || '<span style="color:var(--text-muted);font-style:italic;">Unassigned</span>';
+        const classSec= r.className ? `${r.className} (${r.section})` : '<span style="color:var(--text-muted);font-style:italic;">Unassigned</span>';
+        const docStatus = getDocBadge(r);
+        return `<tr>
+            <td><strong>${r.studentName}</strong></td>
+            <td style="font-size:.82rem;">${r.courseName}</td>
+            <td>${admNo}</td>
+            <td>${classSec}</td>
+            <td>${docStatus}</td>
+            <td><span class="status-pill pill-pending">⏳ Pending</span></td>
+            <td>
+                <div class="action-row">
+                    <button class="eo-btn eo-btn-primary" onclick="openProcessModal(${r.id})">📋 Process</button>
+                    <button class="eo-btn eo-btn-ghost"   onclick="openAssignClassModal(${r.id})">🏷️ Class</button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function renderHistory() {
+    const tbody = document.getElementById('history-tbody');
+    const processed = allRequests.filter(r => r.eoStatus !== 'PENDING');
+    if (!processed.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem;">Archive is empty.</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = processed.map(r => {
+        const eoBadge   = r.eoStatus === 'APPROVED'
+            ? `<span class="status-pill pill-approved">✅ Approved</span>`
+            : `<span class="status-pill pill-rejected">❌ Rejected</span>`;
+        const docStatus = getDocBadge(r);
+        return `<tr>
+            <td><strong>${r.studentName}</strong></td>
+            <td style="font-size:.82rem;">${r.courseName}</td>
+            <td>${r.admissionNumber || '—'}</td>
+            <td>${r.className ? `${r.className} (${r.section})` : '—'}</td>
+            <td>${eoBadge}</td>
+            <td>${docStatus}</td>
+            <td>
+                <button class="eo-btn eo-btn-danger" style="padding:.3rem .65rem;font-size:.78rem;" onclick="deletePastStudent(${r.id}, '${r.studentName}')">🗑️ Delete</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+let allDeletedStudents = [];
+
+async function deletePastStudent(id, name) {
+    if (!confirm(`Are you sure you want to delete past student record for "${name}"?\nThis will archive the record in the deleted_students database table.`)) return;
+    try {
+        try {
+            await apiCall(`/enrollment/applications/${id}`, 'DELETE');
+        } catch(err1) {
+            await apiCall(`/enrollment/applications/${id}/delete`, 'POST');
+        }
+        showToast('Deleted', `Record for ${name} deleted and archived in DB.`, 'success');
+        await loadQueue();
+        loadDeletedStudentsArchive();
+        loadStudentAccounts();
+        loadStats();
+    } catch(e) {
+        let msg = e.message;
+        if (msg.includes('404') || msg.includes('Not Found')) {
+            msg = 'Spring Boot backend needs to be restarted/recompiled to load the updated delete endpoint. Please restart your Java application server.';
+        }
+        showToast('Delete Failed', msg, 'danger');
+    }
+}
+
+async function loadDeletedStudentsArchive() {
+    try {
+        allDeletedStudents = await apiCall('/enrollment/deleted-students');
+        renderDeletedStudents();
+    } catch(e) {}
+}
+
+function renderDeletedStudents() {
+    const tbody = document.getElementById('deleted-tbody');
+    if (!tbody) return;
+    if (!allDeletedStudents.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem;">No deleted student records archived in DB.</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = allDeletedStudents.map(s => {
+        const delDate = s.deletedAt ? new Date(s.deletedAt).toLocaleString() : '—';
+        return `<tr>
+            <td><strong>${s.studentName || '—'}</strong></td>
+            <td>${s.username || '—'}</td>
+            <td>${s.admissionNumber || '—'}</td>
+            <td style="font-size:.82rem;">${s.courseName || '—'}</td>
+            <td>${s.className ? `${s.className} (${s.section})` : '—'}</td>
+            <td><span class="status-pill pill-rejected">${s.eoStatus || 'DELETED'}</span></td>
+            <td>${s.deletedBy || 'Enrollment Officer'}</td>
+            <td style="font-size:.8rem;color:var(--text-muted);">${delDate}</td>
+        </tr>`;
+    }).join('');
+}
+
+function getDocBadge(r) {
+    if (!r.docStatus) return `<span class="status-pill pill-pending">📄 Pending</span>`;
+    if (r.docStatus === 'VERIFIED') return `<span class="status-pill pill-verified">✅ Verified</span>`;
+    if (r.docStatus === 'REJECTED') return `<span class="status-pill pill-rejected">❌ Issues</span>`;
+    return `<span class="status-pill pill-pending">📄 Pending</span>`;
+}
+
+// ══════════════════════════════════════════════════
+// PROCESS MODAL (Multi-step)
+// ══════════════════════════════════════════════════
+function openProcessModal(reqId) {
+    const req = allRequests.find(r => r.id === reqId);
+    if (!req) return;
+    document.getElementById('proc-req-id').value = reqId;
+    document.getElementById('proc-student-id').value = req.studentId;
+    document.getElementById('process-modal-title').textContent = `Process: ${req.studentName}`;
+    document.getElementById('proc-adm-num').value = req.admissionNumber || '';
+    document.getElementById('proc-class').value   = req.className || '';
+    document.getElementById('proc-section').value = req.section || '';
+    document.getElementById('proc-intake').value  = req.intake || '';
+    // Load existing modal doc states
+    const existingStates = safeParseJson(req.docStates);
+    modalDocStates = { ...existingStates };
+    goToStep(1);
+    document.getElementById('process-modal').classList.add('active');
+}
+
+function goToStep(n) {
+    currentStep = n;
+    [1,2,3].forEach(i => {
+        document.getElementById(`panel-${i}`).classList.toggle('active', i === n);
+        const stepEl = document.getElementById(`mstep-${i}`);
+        stepEl.classList.remove('active','done','pending');
+        if (i < n) stepEl.classList.add('done');
+        else if (i === n) stepEl.classList.add('active');
+        else stepEl.classList.add('pending');
+    });
+    if (n === 2) renderModalDocChecklist();
+    if (n === 3) renderDecisionSummary();
+}
+
+async function saveDetailsAndNext() {
+    const id  = parseInt(document.getElementById('proc-req-id').value);
+    const adm = document.getElementById('proc-adm-num').value.trim();
+    const cls = document.getElementById('proc-class').value.trim();
+    const sec = document.getElementById('proc-section').value.trim();
+    if (!adm || !cls || !sec) {
+        showToast('Validation', 'Admission Number, Class, and Section are required.', 'warning');
+        return;
+    }
+    try {
+        await apiCall(`/enrollment/applications/${id}/details`, 'POST', {
+            admissionNumber: adm, className: cls, section: sec,
+            batch: document.getElementById('proc-batch').value,
+            intake: document.getElementById('proc-intake').value.trim()
+        });
+        showToast('Saved', 'Assignment details saved.', 'success');
+        await loadQueue();
+        goToStep(2);
+    } catch(e) {
+        showToast('Save Failed', e.message, 'danger');
+    }
+}
+
+function renderModalDocChecklist() {
+    const container = document.getElementById('modal-doc-checklist');
+    const reqId = parseInt(document.getElementById('proc-req-id').value);
+    const req = allRequests.find(r => r.id === reqId);
+    const isApproved = req && req.eoStatus === 'APPROVED';
+    const uploaded = safeParseJson(req && req.uploadedDocs);
+
+    container.innerHTML = REQUIRED_DOCS.map(doc => {
+        const state = modalDocStates[doc.key] || 'pending';
+        const fileName = uploaded[doc.key] || null;
+        const fileTag = fileName
+            ? `<div style="display:inline-flex;align-items:center;gap:.4rem;">
+                   <span class="doc-file-tag" style="font-size:.76rem;">📎 ${fileName}</span>
+                   <button type="button" class="doc-action-btn eo-btn-ghost" style="padding:.25rem .6rem;font-size:.75rem;" onclick="viewDocument('${doc.key}', ${reqId})">👁️ View</button>
+               </div>`
+            : `<span style="font-size:.76rem;color:var(--text-muted);font-style:italic;">⚠️ No file uploaded</span>`;
+
+        const showReject = !isApproved && state !== 'verified';
+
+        return `<div class="doc-item ${state}" id="mdoc-${doc.key}">
+            <div class="doc-item-left">
+                <span class="doc-label">${doc.label}</span>
+                ${fileTag}
+            </div>
+            <div class="doc-item-right">
+                <span class="doc-status">${state.toUpperCase()}</span>
+                <div style="display:flex;gap:.4rem;">
+                    <button type="button" class="doc-action-btn doc-verify-btn" onclick="toggleModalDoc('${doc.key}','verified')">✅ Verify</button>
+                    ${showReject ? `<button type="button" class="doc-action-btn doc-reject-btn" onclick="toggleModalDoc('${doc.key}','rejected')">❌ Reject</button>` : ''}
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function toggleModalDoc(key, newState) {
+    const reqId = parseInt(document.getElementById('proc-req-id').value);
+    const req = allRequests.find(r => r.id === reqId);
+    if ((req && req.eoStatus === 'APPROVED') || (newState === 'rejected' && modalDocStates[key] === 'verified')) {
+        showToast('Action Blocked', 'Verified or approved documents cannot be rejected.', 'warning');
+        return;
+    }
+    modalDocStates[key] = modalDocStates[key] === newState ? 'pending' : newState;
+    renderModalDocChecklist();
+}
+
+function modalVerifyAll() {
+    REQUIRED_DOCS.forEach(d => modalDocStates[d.key] = 'verified');
+    renderModalDocChecklist();
+}
+
+function renderDecisionSummary() {
+    const id  = parseInt(document.getElementById('proc-req-id').value);
+    const req = allRequests.find(r => r.id === id) || {};
+    const adm = document.getElementById('proc-adm-num').value;
+    const cls = document.getElementById('proc-class').value;
+    const sec = document.getElementById('proc-section').value;
+
+    const verified = REQUIRED_DOCS.filter(d => modalDocStates[d.key] === 'verified').length;
+    const rejected = REQUIRED_DOCS.filter(d => modalDocStates[d.key] === 'rejected').length;
+    const pending  = REQUIRED_DOCS.length - verified - rejected;
+
+    document.getElementById('decision-summary').innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;font-size:.85rem;">
+            <div><span style="color:var(--text-muted);">Student:</span> <strong>${req.studentName || '—'}</strong></div>
+            <div><span style="color:var(--text-muted);">Program:</span> <strong>${req.courseName || '—'}</strong></div>
+            <div><span style="color:var(--text-muted);">Admission No:</span> <strong>${adm || '—'}</strong></div>
+            <div><span style="color:var(--text-muted);">Class:</span> <strong>${cls} (${sec})</strong></div>
+        </div>
+        <div style="margin-top:.8rem;padding:.7rem 1rem;border-radius:10px;background:var(--input-bg);font-size:.83rem;display:flex;gap:1.5rem;flex-wrap:wrap;">
+            <span>✅ <strong>${verified}</strong> Verified</span>
+            <span>❌ <strong>${rejected}</strong> Rejected</span>
+            <span>⏳ <strong>${pending}</strong> Pending</span>
+        </div>
+        ${rejected > 0 ? `<div class="info-banner" style="margin-top:.7rem;"><span>⚠️</span><span>${rejected} document(s) marked as rejected. You may still approve, but the remarks will be logged.</span></div>` : ''}
+    `;
+}
+
+async function makeDecision(decision) {
+    const id = parseInt(document.getElementById('proc-req-id').value);
+    const req = allRequests.find(r => r.id === id);
+    if (decision === 'APPROVED' && (!req.admissionNumber || !req.className || !req.section)) {
+        showToast('Action Locked', 'Please assign Admission No., Class, and Section before approving.', 'warning');
+        goToStep(1);
+        return;
+    }
+    if (!confirm(decision === 'APPROVED'
+        ? `Approve enrollment for ${req.studentName} and forward to Administrative Officer?`
+        : `Reject enrollment application for ${req.studentName}?`)) return;
+
+    const remarks = document.getElementById('proc-remarks').value.trim() || 'Processed by Enrollment Officer';
+    const docStatus = Object.values(modalDocStates).every(s => s === 'verified') ? 'VERIFIED'
+                    : Object.values(modalDocStates).some(s => s === 'rejected') ? 'REJECTED'
+                    : 'PENDING';
+
+    try {
+        await apiCall(`/enrollment/applications/${id}/status`, 'POST', {
+            status: decision, remarks, docStatus
+        });
+        showToast('Application Processed', `${req.studentName} → ${decision}`, 'success');
+        closeModal('process-modal');
+        await loadQueue();
+        loadStudentAccounts();
+    } catch(e) {
+        showToast('Failed', e.message, 'danger');
+    }
+}
+
+// ══════════════════════════════════════════════════
+// ASSIGN CLASS MODAL (Quick)
+// ══════════════════════════════════════════════════
+function openAssignClassModal(reqId) {
+    const req = allRequests.find(r => r.id === reqId);
+    if (!req) return;
+    document.getElementById('ac-req-id').value = reqId;
+    document.getElementById('ac-student-name').textContent = `Student: ${req.studentName}`;
+    document.getElementById('ac-adm').value    = req.admissionNumber || '';
+    document.getElementById('ac-class').value  = req.className || '';
+    document.getElementById('ac-section').value= req.section || '';
+    document.getElementById('ac-intake').value = req.intake || '';
+    document.getElementById('assign-class-modal').classList.add('active');
+}
+
+async function saveClassDetails() {
+    const id  = parseInt(document.getElementById('ac-req-id').value);
+    const adm = document.getElementById('ac-adm').value.trim();
+    const cls = document.getElementById('ac-class').value.trim();
+    const sec = document.getElementById('ac-section').value.trim();
+    if (!adm || !cls || !sec) {
+        showToast('Validation', 'All fields are required.', 'warning');
+        return;
+    }
+    try {
+        await apiCall(`/enrollment/applications/${id}/details`, 'POST', {
+            admissionNumber: adm, className: cls, section: sec,
+            batch: document.getElementById('ac-batch').value,
+            intake: document.getElementById('ac-intake').value.trim()
+        });
+        showToast('Saved', 'Class & batch details updated.', 'success');
+        closeModal('assign-class-modal');
+        await loadQueue();
+    } catch(e) {
+        showToast('Failed', e.message, 'danger');
+    }
+}
+
+// ══════════════════════════════════════════════════
+// DOCUMENT VERIFICATION TAB
+// ══════════════════════════════════════════════════
+async function loadDocStudentList() {
+    try {
+        allRequests = await apiCall('/enrollment/applications');
+        const sel = document.getElementById('doc-student-select');
+        sel.innerHTML = '<option value="">— Select Student Application —</option>';
+        allRequests.forEach(r => {
+            sel.innerHTML += `<option value="${r.id}">${r.studentName} — ${r.courseName} (${r.eoStatus})</option>`;
+        });
+    } catch(e) {}
+}
+
+function loadDocVerification() {
+    const reqId = parseInt(document.getElementById('doc-student-select').value);
+    if (!reqId) {
+        document.getElementById('doc-verification-panel').style.display = 'none';
+        document.getElementById('doc-empty-msg').style.display = 'block';
+        return;
+    }
+    currentDocReqId = reqId;
+    const req = allRequests.find(r => r.id === reqId);
+    document.getElementById('doc-student-name').textContent = req.studentName;
+    document.getElementById('doc-student-info').textContent = `${req.courseName} · ${req.admissionNumber || 'No Admission No.'}`;
+
+    // Load existing doc states from request
+    docStates = safeParseJson(req.docStates);
+    renderDocChecklist();
+    updateOverallDocStatus();
+    document.getElementById('doc-remarks').value = req.remarks || '';
+
+    document.getElementById('doc-verification-panel').style.display = 'block';
+    document.getElementById('doc-empty-msg').style.display = 'none';
+}
+
+function renderDocChecklist() {
+    const container = document.getElementById('doc-checklist');
+    const req = allRequests.find(r => r.id === currentDocReqId);
+    const isApproved = req && req.eoStatus === 'APPROVED';
+    const uploaded = safeParseJson(req && req.uploadedDocs);
+
+    container.innerHTML = REQUIRED_DOCS.map(doc => {
+        const state = docStates[doc.key] || 'pending';
+        const fileName = uploaded ? uploaded[doc.key] : null;
+        const fileTag = fileName
+            ? `<div style="display:inline-flex;align-items:center;gap:.4rem;">
+                   <span class="doc-file-tag" style="font-size:.76rem;">📎 ${fileName}</span>
+                   <button type="button" class="doc-action-btn eo-btn-ghost" style="padding:.25rem .6rem;font-size:.75rem;" onclick="viewDocument('${doc.key}', ${currentDocReqId})">👁️ View</button>
+               </div>`
+            : `<span style="font-size:.76rem;color:var(--text-muted);font-style:italic;">⚠️ No file uploaded</span>`;
+
+        const showReject = !isApproved && state !== 'verified';
+
+        return `<div class="doc-item ${state}" id="doc-${doc.key}">
+            <div class="doc-item-left">
+                <span class="doc-label">${doc.label}</span>
+                ${fileTag}
+            </div>
+            <div class="doc-item-right">
+                <span class="doc-status">${state.toUpperCase()}</span>
+                <div style="display:flex;gap:.4rem;">
+                    <button type="button" class="doc-action-btn doc-verify-btn" onclick="toggleDoc('${doc.key}','verified')">✅ Verify</button>
+                    ${showReject ? `<button type="button" class="doc-action-btn doc-reject-btn" onclick="toggleDoc('${doc.key}','rejected')">❌ Reject</button>` : ''}
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function toggleDoc(key, newState) {
+    const req = allRequests.find(r => r.id === currentDocReqId);
+    if ((req && req.eoStatus === 'APPROVED') || (newState === 'rejected' && docStates[key] === 'verified')) {
+        showToast('Action Blocked', 'Verified or approved documents cannot be rejected.', 'warning');
+        return;
+    }
+    docStates[key] = docStates[key] === newState ? 'pending' : newState;
+    renderDocChecklist();
+    updateOverallDocStatus();
+}
+
+function verifyAllDocs() {
+    REQUIRED_DOCS.forEach(d => docStates[d.key] = 'verified');
+    renderDocChecklist();
+    updateOverallDocStatus();
+}
+
+function rejectAllDocs() {
+    const req = allRequests.find(r => r.id === currentDocReqId);
+    if (req && req.eoStatus === 'APPROVED') {
+        showToast('Action Blocked', 'Approved applications cannot be rejected.', 'warning');
+        return;
+    }
+    REQUIRED_DOCS.forEach(d => {
+        if (docStates[d.key] !== 'verified') {
+            docStates[d.key] = 'rejected';
+        }
+    });
+    renderDocChecklist();
+    updateOverallDocStatus();
+}
+
+function updateOverallDocStatus() {
+    const states = REQUIRED_DOCS.map(d => docStates[d.key] || 'pending');
+    const allVerified = states.every(s => s === 'verified');
+    const anyRejected = states.some(s => s === 'rejected');
+    const req = allRequests.find(r => r.id === currentDocReqId);
+    const isApproved = req && req.eoStatus === 'APPROVED';
+
+    const el = document.getElementById('doc-overall-status');
+    const rejectAllBtn = document.getElementById('doc-reject-all-btn');
+    if (rejectAllBtn) {
+        rejectAllBtn.style.display = (allVerified || isApproved) ? 'none' : 'inline-flex';
+    }
+
+    if (allVerified || isApproved) {
+        el.className = 'status-pill pill-verified';
+        el.textContent = '✅ All Verified';
+    } else if (anyRejected) {
+        el.className = 'status-pill pill-rejected';
+        el.textContent = '❌ Issues Found';
+    } else {
+        el.className = 'status-pill pill-pending';
+        el.textContent = '⏳ Pending Verification';
+    }
+}
+
+async function saveDocVerification() {
+    if (!currentDocReqId) return;
+    const states = REQUIRED_DOCS.map(d => docStates[d.key] || 'pending');
+    const overallDocStatus = states.every(s => s === 'verified') ? 'VERIFIED'
+                           : states.some(s => s === 'rejected')  ? 'REJECTED'
+                           : 'PENDING';
+    const remarks = document.getElementById('doc-remarks').value.trim();
+    try {
+        await apiCall(`/enrollment/applications/${currentDocReqId}/documents`, 'POST', {
+            docStates, docStatus: overallDocStatus, remarks
+        });
+        showToast('Saved', 'Document verification status saved.', 'success');
+        await loadQueue();
+        loadDocStudentList();
+    } catch(e) {
+        showToast('Failed', e.message, 'danger');
+    }
+}
+
+async function approveFromDocTab() {
+    if (!currentDocReqId) return;
+    const req = allRequests.find(r => r.id === currentDocReqId);
+    if (!req) return;
+    if (!confirm(`Save document verification and APPROVE enrollment for ${req.studentName}?`)) return;
+
+    const states = REQUIRED_DOCS.map(d => docStates[d.key] || 'pending');
+    const overallDocStatus = states.every(s => s === 'verified') ? 'VERIFIED'
+                           : states.some(s => s === 'rejected')  ? 'REJECTED'
+                           : 'PENDING';
+    const remarks = document.getElementById('doc-remarks').value.trim() || 'Verified and approved by Enrollment Officer';
+
+    try {
+        await apiCall(`/enrollment/applications/${currentDocReqId}/documents`, 'POST', {
+            docStates, docStatus: overallDocStatus, remarks
+        });
+        await apiCall(`/enrollment/applications/${currentDocReqId}/status`, 'POST', {
+            status: 'APPROVED', remarks, docStatus: overallDocStatus
+        });
+        showToast('Approved', `${req.studentName} enrollment approved successfully!`, 'success');
+        await loadQueue();
+        loadDocStudentList();
+        loadStudentAccounts();
+        document.getElementById('doc-verification-panel').style.display = 'none';
+        document.getElementById('doc-empty-msg').style.display = 'block';
+    } catch(e) {
+        showToast('Failed', e.message, 'danger');
+    }
+}
+
+// ══════════════════════════════════════════════════
+// STUDENT ACCOUNTS
+// ══════════════════════════════════════════════════
+async function loadStudentAccounts() {
+    try {
+        allStudents = await apiCall('/enrollment/all-students');
+        renderStudentAccounts();
+    } catch(e) {}
+}
+
+function renderStudentAccounts() {
+    const tbody = document.getElementById('accounts-tbody');
+    if (!allStudents.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem;">No student accounts found.</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = allStudents.map(s => {
+        const statusBadge = s.enrollmentStatus === 'APPROVED_STAFF'
+            ? `<span class="status-pill pill-active">🎓 Enrolled</span>`
+            : s.enrollmentStatus === 'APPROVED_EO'
+            ? `<span class="status-pill pill-approved">✅ EO Approved</span>`
+            : s.enrollmentStatus === 'REJECTED_EO' || s.enrollmentStatus === 'REJECTED_STAFF'
+            ? `<span class="status-pill pill-rejected">❌ Rejected</span>`
+            : s.enrollmentStatus === 'PENDING_EO'
+            ? `<span class="status-pill pill-pending">⏳ Pending EO</span>`
+            : `<span class="status-pill" style="background:rgba(100,100,100,.12);color:var(--text-muted);">— New</span>`;
+        const classBatch = s.className
+            ? `<span class="batch-badge">${s.className}</span> <small style="color:var(--text-muted);">${s.section || ''}</small>`
+            : '<span style="color:var(--text-muted);font-style:italic;font-size:.8rem;">Unassigned</span>';
+        return `<tr>
+            <td><strong>${s.fullName || s.user?.fullName || '—'}</strong></td>
+            <td style="font-family:monospace;font-size:.85rem;">${s.username || s.user?.username || '—'}</td>
+            <td>${s.admissionNumber || '<span style="color:var(--text-muted);">—</span>'}</td>
+            <td>${classBatch}</td>
+            <td>${statusBadge}</td>
+            <td>
+                <div class="action-row">
+                    <button class="eo-btn eo-btn-primary" onclick="openCredentialsModal(${s.userId || s.user?.id}, '${(s.fullName || s.user?.fullName || '').replace(/'/g,"\\'")}', '${(s.username || s.user?.username || '').replace(/'/g,"\\'")}')">🔐 Credentials</button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ══════════════════════════════════════════════════
+// CREDENTIALS MODAL
+// ══════════════════════════════════════════════════
+function openCredentialsModal(userId, name, username) {
+    document.getElementById('cred-modal-uid').value = userId;
+    document.getElementById('cred-modal-name').textContent = name;
+    document.getElementById('cred-modal-current-user').textContent = username;
+    document.getElementById('cred-new-username').value = '';
+    document.getElementById('cred-new-password').value = '';
+    document.getElementById('cred-modal-new-display').style.display = 'none';
+    document.getElementById('credentials-modal').classList.add('active');
+}
+
+function autoGenCredentialsModal() {
+    const name = document.getElementById('cred-modal-name').textContent;
+    const u = generateUsername(name);
+    const p = generatePassword();
+    document.getElementById('cred-new-username').value = u;
+    document.getElementById('cred-new-password').value = p;
+    document.getElementById('cred-modal-show-user').textContent = u;
+    document.getElementById('cred-modal-show-pass').textContent = p;
+    document.getElementById('cred-modal-new-display').style.display = 'block';
+}
+
+async function saveStudentCredentials() {
+    const uid      = parseInt(document.getElementById('cred-modal-uid').value);
+    const newUser  = document.getElementById('cred-new-username').value.trim();
+    const newPass  = document.getElementById('cred-new-password').value.trim();
+    if (!newPass) {
+        showToast('Validation', 'New password is required.', 'warning');
+        return;
+    }
+    const pwCheck = validatePassword(newPass);
+    if (!pwCheck.valid) {
+        showToast('Validation Error', pwCheck.message, 'warning');
+        return;
+    }
+    try {
+        await apiCall(`/enrollment/students/${uid}/credentials`, 'POST', {
+            username: newUser || undefined,
+            password: newPass
+        });
+        showToast('Credentials Updated', 'Student login credentials saved successfully.', 'success');
+        // Show the new creds
+        document.getElementById('cred-modal-show-user').textContent = newUser || document.getElementById('cred-modal-current-user').textContent;
+        document.getElementById('cred-modal-show-pass').textContent = newPass;
+        document.getElementById('cred-modal-new-display').style.display = 'block';
+        closeModal('credentials-modal');
+        loadStudentAccounts();
+    } catch(e) {
+        showToast('Failed', e.message, 'danger');
+    }
+}
+
+// ══════════════════════════════════════════════════
+// REGISTER NEW STUDENT
+// ══════════════════════════════════════════════════
+async function handleRegisterStudent(event) {
+    event.preventDefault();
+    const btn = document.getElementById('reg-submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Registering…';
+
+    const fullName = document.getElementById('reg-fullname').value.trim();
+    const email    = document.getElementById('reg-email').value.trim();
+    const contact  = document.getElementById('reg-contact').value.trim();
+    const courseId = document.getElementById('reg-course').value;
+    const className= document.getElementById('reg-class').value.trim();
+    const section  = document.getElementById('reg-section').value.trim();
+    const admNum   = document.getElementById('reg-admission').value.trim();
+    const batch    = document.getElementById('reg-batch').value;
+    const intake   = document.getElementById('reg-intake').value.trim();
+    const username = document.getElementById('reg-username').value.trim();
+    const password = document.getElementById('reg-password').value.trim();
+
+    if (!username || !password || !courseId || !className || !section || !admNum) {
+        showToast('Validation', 'Please fill all required fields.', 'warning');
+        btn.disabled = false;
+        btn.innerHTML = '✅ Register Student & Create Account';
+        return;
+    }
+
+    const nameCheck = validateName(fullName);
+    if (!nameCheck.valid) {
+        showToast('Validation Error', nameCheck.message, 'warning');
+        btn.disabled = false;
+        btn.innerHTML = '✅ Register Student & Create Account';
+        return;
+    }
+
+    const phoneCheck = validatePhone(contact);
+    if (!phoneCheck.valid) {
+        showToast('Validation Error', phoneCheck.message, 'warning');
+        btn.disabled = false;
+        btn.innerHTML = '✅ Register Student & Create Account';
+        return;
+    }
+
+    const nicVal = document.getElementById('reg-nic').value.trim();
+    const nicCheck = validateNIC(nicVal, false);
+    if (!nicCheck.valid) {
+        showToast('Validation Error', nicCheck.message, 'warning');
+        btn.disabled = false;
+        btn.innerHTML = '✅ Register Student & Create Account';
+        return;
+    }
+
+    const pwCheck = validatePassword(password);
+    if (!pwCheck.valid) {
+        showToast('Validation Error', pwCheck.message, 'warning');
+        btn.disabled = false;
+        btn.innerHTML = '✅ Register Student & Create Account';
+        return;
+    }
+
+    try {
+        const docStatus = Object.values(formDocStates).length > 0 && Object.values(formDocStates).every(s => s === 'verified') ? 'VERIFIED'
+                        : Object.values(formDocStates).some(s => s === 'rejected') ? 'REJECTED'
+                        : 'PENDING';
+
+        const result = await apiCall('/enrollment/register-student', 'POST', {
+            fullName, email, contact, username, password,
+            courseId: parseInt(courseId), className, section,
+            admissionNumber: admNum, batch, intake,
+            dob: document.getElementById('reg-dob').value,
+            gender: document.getElementById('reg-gender').value,
+            nic: document.getElementById('reg-nic').value.trim(),
+            uploadedDocs: formUploadedDocs,
+            docStates: formDocStates,
+            docStatus: docStatus
+        });
+
+        // Show success
+        const courseName = allCourses.find(c => c.id == courseId)?.name || '—';
+        document.getElementById('cred-name').textContent    = fullName;
+        document.getElementById('cred-adm').textContent     = admNum;
+        document.getElementById('cred-class').textContent   = `${className} (${section})`;
+        document.getElementById('cred-course').textContent  = courseName;
+        document.getElementById('cred-username').textContent = username;
+        document.getElementById('cred-password').textContent = password;
+
+        document.getElementById('register-student-form').style.display = 'none';
+        document.getElementById('reg-success-card').style.display = 'block';
+        showToast('Registered!', `${fullName} has been enrolled and their account created.`, 'success');
+        await loadQueue();
+        await loadStudentAccounts();
+        await loadStats();
+    } catch(e) {
+        showToast('Registration Failed', e.message, 'danger');
+    }
+    btn.disabled = false;
+    btn.innerHTML = '✅ Register Student & Create Account';
+}
+
+function resetSuccessCard() {
+    document.getElementById('reg-success-card').style.display = 'none';
+    document.getElementById('register-student-form').style.display = 'block';
+    clearRegisterForm();
+}
+
+function clearRegisterForm() {
+    document.getElementById('register-student-form').reset();
+    document.getElementById('reg-username').value = '';
+    document.getElementById('reg-password').value = '';
+    formUploadedDocs = {};
+    formDocStates = {};
+    documentDataUrls = {};
+    renderRegDocFormGrid();
+    document.getElementById('reg-success-card').style.display = 'none';
+    document.getElementById('register-student-form').style.display = 'block';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    clearRegisterForm();
+    setTimeout(clearRegisterForm, 100);
+});
+
+// ══════════════════════════════════════════════════
+// ADMISSION FORM DOCUMENT UPLOAD & INLINE VERIFICATION
+// ══════════════════════════════════════════════════
+function renderRegDocFormGrid() {
+    const grid = document.getElementById('reg-doc-grid');
+    if (!grid) return;
+    grid.innerHTML = REQUIRED_DOCS.map(doc => {
+        const fileName = formUploadedDocs[doc.key] || null;
+        
+        const fileTag = fileName
+            ? `<div style="display:inline-flex;align-items:center;gap:.4rem;">
+                   <span class="doc-file-tag" title="${fileName}">📎 ${fileName}</span>
+                   <button type="button" class="doc-action-btn eo-btn-ghost" style="padding:.25rem .6rem;font-size:.75rem;" onclick="viewDocument('${doc.key}')">👁️ View</button>
+               </div>`
+            : `<span class="doc-file-tag empty" style="font-size:.76rem;color:var(--text-muted);font-style:italic;">⚠️ No file uploaded</span>`;
+
+        return `
+        <div class="doc-upload-card" id="reg-card-${doc.key}">
+            <div class="doc-card-header" style="margin-bottom: 0.2rem;">
+                <span class="doc-card-title">${doc.label}</span>
+            </div>
+            
+            <div style="display:flex;flex-direction:column;gap:.5rem;margin:.25rem 0;">
+                <label style="font-size:.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;">Upload Document File</label>
+                <input type="file" id="reg-file-${doc.key}" class="form-input" style="font-size:.82rem;padding:.55rem .75rem;border-radius:8px;" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" onchange="handleRegDocUpload('${doc.key}')">
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-top:.4rem;padding-top:.75rem;border-top:1px dashed var(--border-color);">
+                <div>${fileTag}</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function handleRegDocUpload(key) {
+    const input = document.getElementById(`reg-file-${key}`);
+    if (input && input.files && input.files[0]) {
+        const file = input.files[0];
+        formUploadedDocs[key] = file.name;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            documentDataUrls[key] = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        
+        formDocStates[key] = 'pending';
+        renderRegDocFormGrid();
+        showToast('Document Attached', `Uploaded ${file.name} (Status: Pending Review).`, 'info');
+    }
+}
+
+function toggleFormDoc(key, newState) {
+    if (!formUploadedDocs[key] && newState === 'verified') {
+        const docLabel = REQUIRED_DOCS.find(d => d.key === key)?.label || key;
+        formUploadedDocs[key] = `${key}_document.pdf`;
+    }
+    formDocStates[key] = formDocStates[key] === newState ? 'pending' : newState;
+    renderRegDocFormGrid();
+}
+
+function formVerifyAllDocs() {
+    REQUIRED_DOCS.forEach(d => {
+        if (!formUploadedDocs[d.key]) {
+            formUploadedDocs[d.key] = `${d.key}_submitted.pdf`;
+        }
+        formDocStates[d.key] = 'verified';
+    });
+    renderRegDocFormGrid();
+    showToast('All Verified', 'All admission documents marked as verified.', 'success');
+}
+
+function viewDocument(key, reqId) {
+    let fileName = null;
+    let dataUrl  = documentDataUrls[key] || null;
+    let docLabel = REQUIRED_DOCS.find(d => d.key === key)?.label || key;
+
+    if (reqId) {
+        const req = allRequests.find(r => r.id === reqId);
+        if (req && req.uploadedDocs) {
+            const uploaded = typeof req.uploadedDocs === 'string' ? JSON.parse(req.uploadedDocs || '{}') : req.uploadedDocs;
+            fileName = uploaded[key];
+        }
+    } else {
+        fileName = formUploadedDocs[key];
+    }
+
+    if (!fileName) fileName = `${key}_document.pdf`;
+
+    document.getElementById('doc-preview-title').textContent = `📄 Preview: ${docLabel}`;
+    document.getElementById('doc-preview-filename').textContent = `Filename: ${fileName}`;
+
+    const body = document.getElementById('doc-preview-body');
+    if (dataUrl && dataUrl.startsWith('data:image')) {
+        body.innerHTML = `<img src="${dataUrl}" style="max-width:100%;max-height:60vh;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.2);" alt="Document Preview">`;
+    } else if (dataUrl && dataUrl.startsWith('data:application/pdf')) {
+        body.innerHTML = `<iframe src="${dataUrl}" style="width:100%;height:55vh;border:none;border-radius:8px;"></iframe>`;
+    } else {
+        body.innerHTML = `
+            <div style="text-align:center;padding:2rem;">
+                <div style="font-size:3.5rem;margin-bottom:.8rem;">📄</div>
+                <h4 style="margin:0 0 .4rem;color:var(--text-primary);">${docLabel}</h4>
+                <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:1rem;">Document File: <strong>${fileName}</strong></p>
+                <div style="display:inline-block;padding:.5rem 1rem;border-radius:8px;background:rgba(107,50,148,.12);color:var(--eo-success);font-weight:600;font-size:.85rem;">
+                    ✅ Document Attached &amp; Validated
+                </div>
+            </div>`;
+    }
+
+    document.getElementById('doc-preview-modal').classList.add('active');
+}
+
+// ══════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════
+function autoGenAdmission() {
+    const year = new Date().getFullYear().toString().slice(-2);
+    const num  = String(Math.floor(Math.random() * 900) + 100);
+    const genAdm = `ADM-360-${year}${num}`;
+    document.getElementById('reg-admission').value = genAdm;
+    autoGenEmailFromAdmission(false);
+}
+
+function autoGenEmail() {
+    let adm = document.getElementById('reg-admission').value.trim();
+    if (!adm) {
+        autoGenAdmission();
+        adm = document.getElementById('reg-admission').value.trim();
+    }
+    if (adm) {
+        document.getElementById('reg-email').value = `${adm.toLowerCase()}@school360.com`;
+    }
+}
+
+function autoGenEmailFromAdmission(onlyIfEmptyOrAuto = false) {
+    const admInput = document.getElementById('reg-admission');
+    const emailInput = document.getElementById('reg-email');
+    if (!admInput || !emailInput) return;
+    const adm = admInput.value.trim();
+    if (adm) {
+        const generatedEmail = `${adm.toLowerCase()}@school360.com`;
+        if (!onlyIfEmptyOrAuto || !emailInput.value || emailInput.value.includes('@school360.com')) {
+            emailInput.value = generatedEmail;
+        }
+    }
+}
+
+function autoGenUsername() {
+    const name = document.getElementById('reg-fullname').value.trim();
+    document.getElementById('reg-username').value = generateUsername(name);
+}
+
+function autoGenCredentials() {
+    autoGenUsername();
+    document.getElementById('reg-password').value = generatePassword();
+    document.getElementById('reg-password').type = 'text';
+    setTimeout(() => { document.getElementById('reg-password').type = 'password'; }, 3000);
+}
+
+function generateUsername(name) {
+    const base = (name || 'student').toLowerCase().replace(/\s+/g, '.').replace(/[^a-z0-9.]/g, '');
+    const yr   = new Date().getFullYear().toString().slice(-2);
+    return `${base.substring(0, 10)}${yr}`;
+}
+
+function generatePassword() {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#!';
+    let p = '';
+    for (let i = 0; i < 10; i++) p += chars[Math.floor(Math.random() * chars.length)];
+    return p;
+}
+
+function togglePw(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.textContent = '👁️';
+}
+
+function copyText(elementId) {
+    const text = document.getElementById(elementId).textContent;
+    navigator.clipboard.writeText(text).then(() => showToast('Copied!', `"${text}" copied to clipboard.`, 'success'));
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
+
+function filterTableRows(tbodyId, query, cols) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+    const q = (query || '').toLowerCase().trim();
+    Array.from(tbody.getElementsByTagName('tr')).forEach(row => {
+        if (row.cells && row.cells.length === 1) return; // skip empty info rows
+        const match = !q || (cols && cols.length ? cols : Array.from({length: row.cells.length}, (_, i) => i)).some(ci => {
+            const td = row.getElementsByTagName('td')[ci];
+            return td && (td.textContent || td.innerText || '').toLowerCase().includes(q);
+        });
+        row.style.display = match ? '' : 'none';
+    });
+}
+</script>
+</body>
+</html>

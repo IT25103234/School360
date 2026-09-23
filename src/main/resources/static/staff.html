@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School360 - Staff Dashboard & Examination Management Hub</title>
+    <link rel="stylesheet" href="css/styles.css?v=contrast-8">
+    <script>
+        (function() {
+            var t = localStorage.getItem('theme') || 'dark';
+            if (t === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+</head>
+<body>
+    <!-- Sidebar Navigation -->    
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <span>🏫 School360</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item active" id="menu-approvals"><a href="#" onclick="switchTab('approvals')">🔑 Course Approvals</a></li>
+            <li class="sidebar-item" id="menu-exam-timetables"><a href="#" onclick="switchTab('exam-timetables')">📅 Release Exam Timetables</a></li>
+            <li class="sidebar-item" id="menu-exam-marks"><a href="#" onclick="switchTab('exam-marks')">📝 Edit Exam Marks Lists</a></li>
+            <li class="sidebar-item" id="menu-exam-results"><a href="#" onclick="switchTab('exam-results')">📢 Release Exam Results</a></li>
+            <li class="sidebar-item" id="menu-change-requests"><a href="#" onclick="switchTab('change-requests')">📩 Reschedule Requests <span id="badge-pending-requests" class="badge badge-warning" style="display:none;font-size:0.68rem;padding:2px 5px;margin-left:4px;">0</span></a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <button class="btn btn-qr btn-block" onclick="logout()">🚪 Logout</button>
+        </div>
+    </nav>
+
+    <!-- Main Workspace -->
+    <main class="main-content">
+        <header class="header-bar">
+            <div class="header-title">
+                <h2 id="welcome-message">Hello, Administrative Officer</h2>
+                <p>Welcome to front desk operations, course clearances, and the Examination Details Management Workbench.</p>
+            </div>
+            <div class="header-actions">
+                <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme(); return false;" title="Toggle Theme">🌙</button>
+            </div>
+        </header>
+
+        <!-- Tab 1: Course Approvals -->
+        <section id="tab-approvals" class="tab-content active">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Admission Clearances</h3>
+                    <p style="color:var(--text-muted);font-size:0.85rem;">Approve EO-accepted student enrollment requests to unlock class rosters & teacher views.</p>
+                </div>
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Assigned Course</th>
+                                <th>Admission Number</th>
+                                <th>Class & Sec</th>
+                                <th>Officer Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staff-clearances-list">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 2: Release Exam Timetables -->
+        <section id="tab-exam-timetables" class="tab-content" style="display:none;">
+            <div class="dashboard-grid">
+                <div>
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3>Official Examination Timetables</h3>
+                            <p style="color:var(--text-muted);font-size:0.85rem;">Build, schedule, edit, and publish exam schedules for student & lecturer portals.</p>
+                        </div>
+                        <div class="table-container">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Exam / Subject</th>
+                                        <th>Course</th>
+                                        <th>Date & Time</th>
+                                        <th>Venue</th>
+                                        <th>Release Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="staff-timetables-list">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3 id="tt-form-title">Create Exam Timetable</h3>
+                        </div>
+                        <form onsubmit="handleSaveTimetable(event)">
+                            <input type="hidden" id="tt-id">
+                            <div class="form-group">
+                                <label class="form-label" for="tt-title">Exam Title</label>
+                                <input type="text" id="tt-title" class="form-input" placeholder="e.g. Mid-Term Examination 2026" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="tt-course">Target Academic Course</label>
+                                <select id="tt-course" class="form-input" required>
+                                    <!-- Populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="tt-subject">Subject / Module Name</label>
+                                <input type="text" id="tt-subject" class="form-input" placeholder="e.g. Advanced Programming in Java" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="tt-date">Exam Date</label>
+                                <input type="date" id="tt-date" class="form-input" required>
+                            </div>
+                            <div class="form-group" style="display:flex;gap:0.5rem;">
+                                <div style="flex:1;">
+                                    <label class="form-label" for="tt-start">Start Time</label>
+                                    <input type="text" id="tt-start" class="form-input" placeholder="09:00 AM" required>
+                                </div>
+                                <div style="flex:1;">
+                                    <label class="form-label" for="tt-end">End Time</label>
+                                    <input type="text" id="tt-end" class="form-input" placeholder="11:00 AM" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="tt-venue">Exam Venue / Hall</label>
+                                <input type="text" id="tt-venue" class="form-input" placeholder="e.g. Main Exam Hall A" required>
+                            </div>
+                            <div class="form-group" style="margin-bottom:1.5rem;">
+                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.88rem;">
+                                    <input type="checkbox" id="tt-published">
+                                    <span>Release &amp; Publish Timetable immediately</span>
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block" id="btn-save-tt">Save Exam Schedule</button>
+                            <button type="button" class="btn btn-qr btn-block" id="btn-cancel-tt" style="display:none;margin-top:0.5rem;" onclick="resetTimetableForm()">Cancel Edit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 3: Edit Exam Marks Lists -->
+        <section id="tab-exam-marks" class="tab-content" style="display:none;">
+            <div class="dashboard-grid">
+                <div>
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3>Student Examination Marks Lists</h3>
+                            <p style="color:var(--text-muted);font-size:0.85rem;">View, edit, and update student marks, total scores, grades, and comments.</p>
+                        </div>
+                        <div style="margin-bottom:1rem;display:flex;gap:0.8rem;align-items:center;">
+                            <input type="text" id="marks-search-input" class="form-input" placeholder="🔍 Search student name, admission no, or exam title..." onkeyup="renderMarksTable()">
+                        </div>
+                        <div class="table-container">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Exam &amp; Subject</th>
+                                        <th>Score / Total</th>
+                                        <th>Grade</th>
+                                        <th>Remarks</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="staff-marks-list">
+                                    <!-- Loaded dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3 id="mark-form-title">Edit / Add Student Exam Mark</h3>
+                        </div>
+                        <form onsubmit="handleSaveMark(event)">
+                            <input type="hidden" id="mark-id">
+                            <div class="form-group">
+                                <label class="form-label" for="mark-student">Select Student</label>
+                                <select id="mark-student" class="form-input" required onchange="autoFillStudentDetails(this.value)">
+                                    <!-- Populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="mark-exam-title">Exam Title</label>
+                                <input type="text" id="mark-exam-title" class="form-input" placeholder="e.g. Mid-Term Assessment 2026" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="mark-course">Course</label>
+                                <select id="mark-course" class="form-input" required>
+                                    <!-- Populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="mark-subject">Subject / Module</label>
+                                <input type="text" id="mark-subject" class="form-input" placeholder="e.g. Advanced Programming in Java" required>
+                            </div>
+                            <div class="form-group" style="display:flex;gap:0.5rem;">
+                                <div style="flex:1;">
+                                    <label class="form-label" for="mark-obtained">Marks Obtained</label>
+                                    <input type="number" step="0.5" id="mark-obtained" class="form-input" placeholder="85.5" required oninput="recalcGradePreview()">
+                                </div>
+                                <div style="flex:1;">
+                                    <label class="form-label" for="mark-total">Total Marks</label>
+                                    <input type="number" step="0.5" id="mark-total" class="form-input" value="100.0" required oninput="recalcGradePreview()">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="mark-grade">Assigned Grade <small id="grade-preview-text" style="color:var(--primary);margin-left:6px;"></small></label>
+                                <input type="text" id="mark-grade" class="form-input" placeholder="Auto-calculated (e.g. A+)" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="mark-remarks">Examiner Remarks</label>
+                                <input type="text" id="mark-remarks" class="form-input" placeholder="e.g. Excellent analytical performance">
+                            </div>
+                            <div class="form-group" style="margin-bottom:1.5rem;">
+                                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.88rem;">
+                                    <input type="checkbox" id="mark-published">
+                                    <span>Release Result immediately to Student Portal</span>
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block" id="btn-save-mark">Save Mark Entry</button>
+                            <button type="button" class="btn btn-qr btn-block" id="btn-cancel-mark" style="display:none;margin-top:0.5rem;" onclick="resetMarkForm()">Cancel Edit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 4: Release Exam Results -->
+        <section id="tab-exam-results" class="tab-content" style="display:none;">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Examination Result Release Terminal</h3>
+                    <p style="color:var(--text-muted);font-size:0.85rem;">Batch publish exam results across courses or control individual student result availability.</p>
+                </div>
+                
+                <!-- Batch Release Banner -->
+                <div style="background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:12px;padding:1.2rem;margin-bottom:1.8rem;display:flex;gap:1.2rem;align-items:center;flex-wrap:wrap;">
+                    <div style="flex:1;min-width:260px;">
+                        <label class="form-label" style="font-weight:700;">Batch Release Results by Exam Title</label>
+                        <select id="batch-release-exam-select" class="form-input">
+                            <option value="ALL">-- ALL EXAM TITLES --</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;gap:0.6rem;align-items:flex-end;">
+                        <button class="btn btn-primary" style="background:var(--success);" onclick="triggerBatchRelease(true)">🚀 Batch Release Results</button>
+                        <button class="btn btn-qr" style="color:var(--warning);" onclick="triggerBatchRelease(false)">🔒 Unpublish Exam Results</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Admission Number</th>
+                                <th>Exam Title</th>
+                                <th>Subject</th>
+                                <th>Score / Grade</th>
+                                <th>Current Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staff-results-release-list">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 5: Receive & Process Teacher Timetable Change Requests -->
+        <section id="tab-change-requests" class="tab-content" style="display:none;">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Teacher Examination &amp; Schedule Reschedule Requests</h3>
+                    <p style="color:var(--text-muted);font-size:0.85rem;">Review timetable change requests submitted by lecturers. Approving automatically updates the timetable.</p>
+                </div>
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Teacher Name</th>
+                                <th>Exam / Subject</th>
+                                <th>Current Schedule</th>
+                                <th>Proposed Reschedule</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staff-change-requests-list">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/app.js?v=contrast-8"></script>
+    <script>
+        let clearancesList = [];
+        let allTimetables = [];
+        let allMarks = [];
+        let allCourses = [];
+        let allStudents = [];
+        let allChangeRequests = [];
+
+        const oldCheckAuth = checkAuth;
+        checkAuth = async function() {
+            oldCheckAuth();
+            if (currentUser && currentUser.role === 'STAFF') {
+                document.getElementById('welcome-message').innerText = `Hello, ${currentUser.fullName}`;
+                await loadAllStaffData();
+            }
+        };
+
+        async function loadAllStaffData() {
+            await loadClearances();
+            await loadCourses();
+            await loadStudents();
+            await loadTimetables();
+            await loadMarks();
+            await loadChangeRequests();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).style.display = 'block';
+            document.getElementById(`menu-${tabId}`).classList.add('active');
+
+            if (tabId === 'approvals') loadClearances();
+            if (tabId === 'exam-timetables') loadTimetables();
+            if (tabId === 'exam-marks') loadMarks();
+            if (tabId === 'exam-results') loadMarks();
+            if (tabId === 'change-requests') loadChangeRequests();
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // 1. COURSE APPROVALS
+        // ─────────────────────────────────────────────────────────────
+        async function loadClearances() {
+            try {
+                clearancesList = await apiCall('/staff/approvals');
+                const tbody = document.getElementById('staff-clearances-list');
+                tbody.innerHTML = '';
+
+                const pending = clearancesList.filter(c => c.staffStatus === 'PENDING');
+
+                if (pending.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No student enrollments pending administrative clearance.</td></tr>';
+                    return;
+                }
+
+                pending.forEach(c => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${c.studentName}</strong></td>
+                            <td>${c.courseName}</td>
+                            <td>${c.admissionNumber}</td>
+                            <td>${c.className} (${c.section})</td>
+                            <td><span class="badge badge-success">Accepted (EO)</span></td>
+                            <td>
+                                <button class="btn btn-primary" style="padding:0.4rem 0.8rem;font-size:0.8rem;background:var(--success);" onclick="approveStudent(${c.id})">Clear &amp; Approve</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                showToast("Clearance Load Error", err.message, "danger");
+            }
+        }
+
+        async function approveStudent(reqId) {
+            if (!confirm("Clear student course enrollment? This unlocks classes, attendance sheets, and notices for student & lecturers.")) return;
+            try {
+                await apiCall(`/staff/approvals/${reqId}/approve`, 'POST', { status: 'APPROVED' });
+                showToast("Enrollment Approved", "Student cleared to join active lectures.", "success");
+                await loadClearances();
+            } catch (err) {
+                showToast("Approval Failed", err.message, "danger");
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // DATA LOADERS FOR EXAMS
+        // ─────────────────────────────────────────────────────────────
+        async function loadCourses() {
+            try {
+                allCourses = await apiCall('/students/courses');
+                const ttCourseSelect = document.getElementById('tt-course');
+                const markCourseSelect = document.getElementById('mark-course');
+                
+                ttCourseSelect.innerHTML = '<option value="">-- Select Course --</option>';
+                markCourseSelect.innerHTML = '<option value="">-- Select Course --</option>';
+
+                allCourses.forEach(c => {
+                    ttCourseSelect.innerHTML += `<option value="${c.id}">${c.name} (${c.code})</option>`;
+                    markCourseSelect.innerHTML += `<option value="${c.id}">${c.name} (${c.code})</option>`;
+                });
+            } catch (err) {
+                console.error("Error loading courses:", err);
+            }
+        }
+
+        async function loadStudents() {
+            try {
+                allStudents = await apiCall('/enrollment/all-students');
+                const markStudentSelect = document.getElementById('mark-student');
+                markStudentSelect.innerHTML = '<option value="">-- Choose Student --</option>';
+
+                allStudents.forEach(s => {
+                    markStudentSelect.innerHTML += `<option value="${s.id}">${s.fullName} (${s.username} - ADM: ${s.admissionNumber || 'Pending'})</option>`;
+                });
+            } catch (err) {
+                console.error("Error loading students:", err);
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // 2. EXAM TIMETABLES
+        // ─────────────────────────────────────────────────────────────
+        async function loadTimetables() {
+            try {
+                allTimetables = await apiCall('/staff/exam-timetables');
+                const tbody = document.getElementById('staff-timetables-list');
+                tbody.innerHTML = '';
+
+                if (allTimetables.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No examination timetables created yet.</td></tr>';
+                    return;
+                }
+
+                allTimetables.forEach(t => {
+                    let relBadge = t.published ? `<span class="badge badge-success">RELEASED</span>` : `<span class="badge badge-warning">DRAFT</span>`;
+                    let statusBadge = t.status === 'UPDATED' ? `<span class="badge badge-info" style="margin-left:4px;">UPDATED</span>` : '';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${t.examTitle}</strong><br><small style="color:var(--text-muted);">${t.subject}</small></td>
+                            <td>${t.courseName || 'General'}</td>
+                            <td>${t.examDate} (${t.startTime} - ${t.endTime})</td>
+                            <td>${t.venue}</td>
+                            <td>${relBadge} ${statusBadge}</td>
+                            <td>
+                                <button class="btn btn-qr" style="padding:0.25rem 0.5rem;font-size:0.75rem;" onclick="toggleTimetableRelease(${t.id}, ${!t.published})">
+                                    ${t.published ? '🔒 Unpublish' : '📢 Release'}
+                                </button>
+                                <button class="btn btn-qr" style="padding:0.25rem 0.5rem;font-size:0.75rem;" onclick="editTimetable(${t.id})">Edit</button>
+                                <button class="btn btn-qr" style="padding:0.25rem 0.5rem;font-size:0.75rem;color:var(--danger);" onclick="deleteTimetable(${t.id})">✕</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error("Error loading timetables:", err);
+            }
+        }
+
+        async function handleSaveTimetable(event) {
+            event.preventDefault();
+            const id = document.getElementById('tt-id').value;
+            const examTitle = document.getElementById('tt-title').value.trim();
+            const courseId = parseInt(document.getElementById('tt-course').value);
+            const subject = document.getElementById('tt-subject').value.trim();
+            const examDate = document.getElementById('tt-date').value;
+            const startTime = document.getElementById('tt-start').value.trim();
+            const endTime = document.getElementById('tt-end').value.trim();
+            const venue = document.getElementById('tt-venue').value.trim();
+            const published = document.getElementById('tt-published').checked;
+
+            const selectedCourse = allCourses.find(c => c.id === courseId);
+            const courseName = selectedCourse ? selectedCourse.name : '';
+
+            try {
+                if (id) {
+                    await apiCall(`/staff/exam-timetables/${id}`, 'PUT', {
+                        examTitle, courseId, courseName, subject, examDate, startTime, endTime, venue, published
+                    });
+                    showToast("Timetable Updated", "Exam schedule updated successfully.", "success");
+                } else {
+                    await apiCall('/staff/exam-timetables', 'POST', {
+                        examTitle, courseId, courseName, subject, examDate, startTime, endTime, venue, published, status: "SCHEDULED"
+                    });
+                    showToast("Timetable Created", "New exam schedule published.", "success");
+                }
+                resetTimetableForm();
+                await loadTimetables();
+            } catch (err) {
+                showToast("Save Failed", err.message, "danger");
+            }
+        }
+
+        function editTimetable(id) {
+            const t = allTimetables.find(x => x.id === id);
+            if (!t) return;
+            document.getElementById('tt-id').value = t.id;
+            document.getElementById('tt-title').value = t.examTitle;
+            document.getElementById('tt-course').value = t.courseId || '';
+            document.getElementById('tt-subject').value = t.subject;
+            document.getElementById('tt-date').value = t.examDate;
+            document.getElementById('tt-start').value = t.startTime;
+            document.getElementById('tt-end').value = t.endTime;
+            document.getElementById('tt-venue').value = t.venue;
+            document.getElementById('tt-published').checked = t.published;
+
+            document.getElementById('tt-form-title').innerText = "Edit Exam Timetable";
+            document.getElementById('btn-save-tt').innerText = "Update Schedule";
+            document.getElementById('btn-cancel-tt').style.display = 'block';
+        }
+
+        function resetTimetableForm() {
+            document.getElementById('tt-id').value = '';
+            document.getElementById('tt-title').value = '';
+            document.getElementById('tt-course').value = '';
+            document.getElementById('tt-subject').value = '';
+            document.getElementById('tt-date').value = '';
+            document.getElementById('tt-start').value = '';
+            document.getElementById('tt-end').value = '';
+            document.getElementById('tt-venue').value = '';
+            document.getElementById('tt-published').checked = false;
+
+            document.getElementById('tt-form-title').innerText = "Create Exam Timetable";
+            document.getElementById('btn-save-tt').innerText = "Save Exam Schedule";
+            document.getElementById('btn-cancel-tt').style.display = 'none';
+        }
+
+        async function toggleTimetableRelease(id, published) {
+            try {
+                await apiCall(`/staff/exam-timetables/${id}/release`, 'POST', { published });
+                showToast("Status Updated", published ? "Exam timetable published to student portal." : "Timetable set to draft mode.", "info");
+                await loadTimetables();
+            } catch (err) {
+                showToast("Update Failed", err.message, "danger");
+            }
+        }
+
+        async function deleteTimetable(id) {
+            if (!confirm("Delete this examination timetable schedule?")) return;
+            try {
+                await apiCall(`/staff/exam-timetables/${id}`, 'DELETE');
+                showToast("Timetable Deleted", "Exam schedule record deleted.", "success");
+                await loadTimetables();
+            } catch (err) {
+                showToast("Delete Failed", err.message, "danger");
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // 3. EDIT EXAM MARKS LISTS & RESULTS RELEASE
+        // ─────────────────────────────────────────────────────────────
+        async function loadMarks() {
+            try {
+                allMarks = await apiCall('/staff/exam-marks');
+                renderMarksTable();
+                renderResultsReleaseTable();
+
+                // Populate batch release dropdown
+                const batchSelect = document.getElementById('batch-release-exam-select');
+                if (batchSelect) {
+                    batchSelect.innerHTML = '<option value="ALL">-- ALL EXAM TITLES --</option>';
+                    const titles = [...new Set(allMarks.map(m => m.examTitle))];
+                    titles.forEach(t => {
+                        batchSelect.innerHTML += `<option value="${t}">${t}</option>`;
+                    });
+                }
+            } catch (err) {
+                console.error("Error loading marks:", err);
+            }
+        }
+
+        function renderMarksTable() {
+            const tbody = document.getElementById('staff-marks-list');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const query = (document.getElementById('marks-search-input').value || '').toLowerCase().trim();
+            const filtered = allMarks.filter(m => 
+                (m.studentName && m.studentName.toLowerCase().includes(query)) ||
+                (m.admissionNumber && m.admissionNumber.toLowerCase().includes(query)) ||
+                (m.examTitle && m.examTitle.toLowerCase().includes(query)) ||
+                (m.subject && m.subject.toLowerCase().includes(query))
+            );
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);">No student examination marks found.</td></tr>';
+                return;
+            }
+
+            filtered.forEach(m => {
+                let badgeClass = 'badge-success';
+                if (m.grade === 'F') badgeClass = 'badge-danger';
+                if (m.grade === 'C' || m.grade === 'D') badgeClass = 'badge-warning';
+
+                let relBadge = m.published ? `<span class="badge badge-success">RELEASED</span>` : `<span class="badge badge-warning">UNRELEASED</span>`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${m.studentName}</strong><br><small style="color:var(--text-muted);">${m.admissionNumber || 'Pending'}</small></td>
+                        <td>${m.examTitle}<br><small style="color:var(--text-muted);">${m.subject}</small></td>
+                        <td><strong>${m.marksObtained}</strong> / ${m.totalMarks}</td>
+                        <td><span class="badge ${badgeClass}">${m.grade}</span></td>
+                        <td>${m.remarks || '—'}</td>
+                        <td>${relBadge}</td>
+                        <td>
+                            <button class="btn btn-qr" style="padding:0.25rem 0.5rem;font-size:0.75rem;" onclick="editMark(${m.id})">Edit</button>
+                            <button class="btn btn-qr" style="padding:0.25rem 0.5rem;font-size:0.75rem;" onclick="toggleMarkRelease(${m.id}, ${!m.published})">
+                                ${m.published ? '🔒 Hide' : '📢 Release'}
+                            </button>
+                            <button class="btn btn-qr" style="padding:0.25rem 0.5rem;font-size:0.75rem;color:var(--danger);" onclick="deleteMark(${m.id})">✕</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function autoFillStudentDetails(studentIdStr) {
+            const studentId = parseInt(studentIdStr);
+            const st = allStudents.find(s => s.id === studentId);
+            if (st && st.courseId) {
+                document.getElementById('mark-course').value = st.courseId;
+            }
+        }
+
+        function recalcGradePreview() {
+            const marks = parseFloat(document.getElementById('mark-obtained').value) || 0;
+            const total = parseFloat(document.getElementById('mark-total').value) || 100;
+            if (total <= 0) return;
+            const pct = (marks / total) * 100.0;
+            let g = 'F';
+            if (pct >= 90) g = 'A+';
+            else if (pct >= 80) g = 'A';
+            else if (pct >= 70) g = 'B';
+            else if (pct >= 60) g = 'C';
+            else if (pct >= 50) g = 'D';
+
+            document.getElementById('mark-grade').value = g;
+            document.getElementById('grade-preview-text').innerText = `(${pct.toFixed(1)}% -> ${g})`;
+        }
+
+        async function handleSaveMark(event) {
+            event.preventDefault();
+            const id = document.getElementById('mark-id').value;
+            const studentId = parseInt(document.getElementById('mark-student').value);
+            const examTitle = document.getElementById('mark-exam-title').value.trim();
+            const courseId = parseInt(document.getElementById('mark-course').value);
+            const subject = document.getElementById('mark-subject').value.trim();
+            const marksObtained = parseFloat(document.getElementById('mark-obtained').value);
+            const totalMarks = parseFloat(document.getElementById('mark-total').value);
+            const grade = document.getElementById('mark-grade').value.trim();
+            const remarks = document.getElementById('mark-remarks').value.trim();
+            const published = document.getElementById('mark-published').checked;
+
+            const st = allStudents.find(s => s.id === studentId);
+            const studentName = st ? st.fullName : 'Student';
+            const admissionNumber = st ? st.admissionNumber : '';
+            const cObj = allCourses.find(c => c.id === courseId);
+            const courseName = cObj ? cObj.name : '';
+
+            try {
+                if (id) {
+                    await apiCall(`/staff/exam-marks/${id}`, 'PUT', {
+                        examTitle, studentId, studentName, admissionNumber, courseId, courseName, subject, marksObtained, totalMarks, grade, remarks, published
+                    });
+                    showToast("Marks Updated", "Student exam mark list updated.", "success");
+                } else {
+                    await apiCall('/staff/exam-marks', 'POST', {
+                        examTitle, studentId, studentName, admissionNumber, courseId, courseName, subject, marksObtained, totalMarks, grade, remarks, published
+                    });
+                    showToast("Marks Recorded", "Student exam mark entry added.", "success");
+                }
+                resetMarkForm();
+                await loadMarks();
+            } catch (err) {
+                showToast("Save Failed", err.message, "danger");
+            }
+        }
+
+        function editMark(id) {
+            const m = allMarks.find(x => x.id === id);
+            if (!m) return;
+            document.getElementById('mark-id').value = m.id;
+            document.getElementById('mark-student').value = m.studentId;
+            document.getElementById('mark-exam-title').value = m.examTitle;
+            document.getElementById('mark-course').value = m.courseId || '';
+            document.getElementById('mark-subject').value = m.subject;
+            document.getElementById('mark-obtained').value = m.marksObtained;
+            document.getElementById('mark-total').value = m.totalMarks;
+            document.getElementById('mark-grade').value = m.grade;
+            document.getElementById('mark-remarks').value = m.remarks || '';
+            document.getElementById('mark-published').checked = m.published;
+
+            document.getElementById('mark-form-title').innerText = "Edit Student Mark Record";
+            document.getElementById('btn-save-mark').innerText = "Update Mark Record";
+            document.getElementById('btn-cancel-mark').style.display = 'block';
+            recalcGradePreview();
+        }
+
+        function resetMarkForm() {
+            document.getElementById('mark-id').value = '';
+            document.getElementById('mark-student').value = '';
+            document.getElementById('mark-exam-title').value = '';
+            document.getElementById('mark-course').value = '';
+            document.getElementById('mark-subject').value = '';
+            document.getElementById('mark-obtained').value = '';
+            document.getElementById('mark-total').value = '100.0';
+            document.getElementById('mark-grade').value = '';
+            document.getElementById('mark-remarks').value = '';
+            document.getElementById('mark-published').checked = false;
+            document.getElementById('grade-preview-text').innerText = '';
+
+            document.getElementById('mark-form-title').innerText = "Edit / Add Student Exam Mark";
+            document.getElementById('btn-save-mark').innerText = "Save Mark Entry";
+            document.getElementById('btn-cancel-mark').style.display = 'none';
+        }
+
+        async function toggleMarkRelease(id, published) {
+            try {
+                await apiCall(`/staff/exam-marks/${id}/release`, 'POST', { published });
+                showToast("Status Updated", published ? "Result released to student portal." : "Result hidden from student portal.", "info");
+                await loadMarks();
+            } catch (err) {
+                showToast("Update Failed", err.message, "danger");
+            }
+        }
+
+        async function deleteMark(id) {
+            if (!confirm("Delete this student exam mark record?")) return;
+            try {
+                await apiCall(`/staff/exam-marks/${id}`, 'DELETE');
+                showToast("Mark Deleted", "Mark record removed.", "success");
+                await loadMarks();
+            } catch (err) {
+                showToast("Delete Failed", err.message, "danger");
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // 4. RELEASE EXAM RESULTS TERMINAL
+        // ─────────────────────────────────────────────────────────────
+        function renderResultsReleaseTable() {
+            const tbody = document.getElementById('staff-results-release-list');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (allMarks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);">No student results present.</td></tr>';
+                return;
+            }
+
+            allMarks.forEach(m => {
+                let badge = m.published ? `<span class="badge badge-success">RELEASED</span>` : `<span class="badge badge-warning">HELD</span>`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${m.studentName}</strong></td>
+                        <td>${m.admissionNumber || '—'}</td>
+                        <td>${m.examTitle}</td>
+                        <td>${m.subject}</td>
+                        <td><strong>${m.marksObtained}/${m.totalMarks}</strong> (${m.grade})</td>
+                        <td>${badge}</td>
+                        <td>
+                            <button class="btn btn-primary" style="padding:0.25rem 0.65rem;font-size:0.75rem;background:${m.published ? 'var(--warning)' : 'var(--success)'};" onclick="toggleMarkRelease(${m.id}, ${!m.published})">
+                                ${m.published ? '🔒 Unpublish' : '🚀 Release Result'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function triggerBatchRelease(release) {
+            const examTitle = document.getElementById('batch-release-exam-select').value;
+            const actionText = release ? 'Release' : 'Unpublish';
+            if (!confirm(`${actionText} examination results for '${examTitle}'?`)) return;
+
+            try {
+                await apiCall('/staff/exam-marks/batch-release', 'POST', { examTitle, release });
+                showToast("Batch Update Complete", `Examination results ${release ? 'released' : 'unpublished'} successfully.`, "success");
+                await loadMarks();
+            } catch (err) {
+                showToast("Batch Release Failed", err.message, "danger");
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // 5. RECEIVE & PROCESS TEACHER TIMETABLE CHANGE REQUESTS
+        // ─────────────────────────────────────────────────────────────
+        async function loadChangeRequests() {
+            try {
+                allChangeRequests = await apiCall('/staff/timetable-change-requests');
+                const tbody = document.getElementById('staff-change-requests-list');
+                tbody.innerHTML = '';
+
+                const pendingCount = allChangeRequests.filter(r => r.status === 'PENDING').length;
+                const badge = document.getElementById('badge-pending-requests');
+                if (pendingCount > 0) {
+                    badge.innerText = pendingCount;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                if (allChangeRequests.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);">No timetable reschedule requests submitted by teachers.</td></tr>';
+                    return;
+                }
+
+                allChangeRequests.forEach(r => {
+                    let stBadge = `<span class="badge badge-warning">PENDING</span>`;
+                    if (r.status === 'APPROVED') stBadge = `<span class="badge badge-success">APPROVED</span>`;
+                    if (r.status === 'REJECTED') stBadge = `<span class="badge badge-danger">REJECTED</span>`;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${r.teacherName || 'Lecturer'}</strong></td>
+                            <td>${r.examTitle || 'Exam'}<br><small style="color:var(--text-muted);">${r.subject || ''}</small></td>
+                            <td>${r.currentDate || '—'}</td>
+                            <td><strong>${r.proposedDate}</strong><br><small style="color:var(--text-muted);">${r.proposedStartTime} - ${r.proposedEndTime} @ ${r.proposedVenue}</small></td>
+                            <td>${r.reason}</td>
+                            <td>
+                                ${stBadge}
+                                ${r.staffRemarks ? `<p style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Remark: ${r.staffRemarks}</p>` : ''}
+                            </td>
+                            <td>
+                                ${r.status === 'PENDING' ? `
+                                    <button class="btn btn-primary" style="padding:0.25rem 0.5rem;font-size:0.75rem;background:var(--success);" onclick="processChangeRequest(${r.id}, 'APPROVED')">Approve</button>
+                                    <button class="btn btn-qr" style="padding:0.25rem 0.5rem;font-size:0.75rem;color:var(--danger);" onclick="processChangeRequest(${r.id}, 'REJECTED')">Reject</button>
+                                ` : '—'}
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error("Error loading change requests:", err);
+            }
+        }
+
+        async function processChangeRequest(id, status) {
+            let staffRemarks = '';
+            if (status === 'REJECTED') {
+                staffRemarks = prompt("Enter rejection reason for teacher:", "Venue conflict or schedule locked");
+                if (staffRemarks === null) return;
+            } else {
+                if (!confirm("Approve timetable reschedule request? This will automatically update the official exam timetable schedule!")) return;
+                staffRemarks = "Approved by Administrative Staff";
+            }
+
+            try {
+                await apiCall(`/staff/timetable-change-requests/${id}/process`, 'POST', { status, staffRemarks });
+                showToast("Request Processed", `Timetable change request marked as ${status}.`, "success");
+                await loadChangeRequests();
+                await loadTimetables();
+            } catch (err) {
+                showToast("Process Failed", err.message, "danger");
+            }
+        }
+    </script>
+</body>
+</html>

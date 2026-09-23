@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School360 - The Unified Academic SaaS Protocol</title>
+    <!-- Import Plus Jakarta Sans for award-winning modern typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css?v=contrast-8">
+    <style>
+        /* Custom font override to use Plus Jakarta Sans */
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+    <script>
+        (function() {
+            var t = localStorage.getItem('theme') || 'dark';
+            if (t === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+</head>
+<body class="landing-page">
+<!-- Glowing Backdrop Ambient Spheres -->
+<div class="glowing-bg">
+    <div class="sphere sphere-1"></div>
+    <div class="sphere sphere-2"></div>
+    <div class="sphere sphere-3"></div>
+</div>
+
+<!-- Sticky Glassmorphic Navbar -->
+<nav class="saas-nav">
+    <div class="saas-nav-container">
+        <a href="#" class="saas-brand">
+            <span style="font-size: 1.3rem;">🏫</span> School360
+        </a>
+        <ul class="saas-nav-links">
+            <li><a href="#features" class="saas-nav-link">Features</a></li>
+            <li><a href="#showcase" class="saas-nav-link">Dashboard</a></li>
+            <li><a href="contact.html" class="saas-nav-link">Contact Us</a></li>
+        </ul>
+        <div style="display: flex; align-items: center; gap: 1.25rem;">
+            <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme(); return false;" title="Toggle Theme" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); font-size: 1.1rem; cursor: pointer; color: var(--lp-text); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; transition: all 0.3s;">🌙</button>
+            <a href="#" onclick="openQRScanner(); return false;" class="saas-nav-link" style="font-size: 0.9rem;">Scan ID</a>
+            <a href="#login-section" onclick="openLoginModal(); return false;" class="btn-saas-nav">Portal Access</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="saas-hero" id="login-section" style="padding-top: 10rem;">
+    <!-- Left Hero Details -->
+    <div class="saas-hero-content reveal active">
+        <div class="saas-badge">WELCOME TO OUR SCHOOL</div>
+        <h1 class="saas-hero-title" style="font-size: 3.8rem; font-weight: 800; line-height: 1.1; letter-spacing: -2px;">
+            Learn Today <span style="background: linear-gradient(135deg, #6b3294 0%, #6b3294 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Lead Tomorrow.</span>
+        </h1>
+        <p class="saas-hero-desc" style="font-size: 1.2rem; line-height: 1.6; color: var(--lp-text-muted); max-width: 520px;">
+            A place where curiosity grows, talents are nurtured, and every student is encouraged to learn, explore, and achieve their full potential. Discover a supportive community dedicated to excellence in education.
+        </p>
+        <div class="saas-hero-actions">
+            <a href="#" onclick="openLoginModal(); return false;" class="btn btn-primary btn-premium" style="border-radius: 9999px; padding: 0.9rem 2.25rem; font-weight: 700; font-size: 1rem; box-shadow: 0 10px 25px rgba(107,50,148, 0.45);">
+                Login
+            </a>
+        </div>
+    </div>
+
+    <!-- Right Hero Mockup Frame with Floating Cards -->
+    <div class="hero-dashboard-visual reveal active">
+        <!-- Floating Card 1 -->
+        <div class="floating-metric-card pos-1">
+            <div class="metric-avatar-group">
+                <div class="metric-avatar">S</div>
+                <div class="metric-avatar">T</div>
+            </div>
+            <div>
+                <h5 style="font-size: 0.85rem; font-weight: 700; color: var(--lp-text);">Student Learning</h5>
+                <p style="font-size: 0.72rem; color: #49334f; font-weight: 600;">Growing Through Every Experience</p>
+            </div>
+        </div>
+
+        <!-- Floating Card 2 -->
+        <div class="floating-metric-card pos-2">
+            <div style="font-size: 1.2rem;">📅</div>
+            <div>
+                <h5 style="font-size: 0.85rem; font-weight: 700; color: var(--lp-text);">Lectures</h5>
+            </div>
+        </div>
+
+        <!-- Visual Dashboard Preview Graphic -->
+        <div class="illustration-box" style="padding: 1rem; border-radius: 24px; border-color: rgba(255,246,240,0.08); background: rgba(25,0,25, 0.4);">
+            <svg viewBox="0 0 450 300" width="100%" class="svg-screen-glow">
+                <rect x="0" y="0" width="450" height="300" rx="16" fill="#2b124c" stroke="rgba(255,246,240,0.06)" stroke-width="2"/>
+                <rect x="0" y="0" width="450" height="35" rx="16" fill="#190019"/>
+                <circle cx="20" cy="18" r="4" fill="#6b3294"/>
+                <circle cx="32" cy="18" r="4" fill="#6b3294"/>
+                <circle cx="44" cy="18" r="4" fill="#6b3294"/>
+                <rect x="65" y="10" width="320" height="15" rx="7.5" fill="rgba(255,246,240,0.04)" stroke="rgba(255,246,240,0.05)"/>
+                <text x="225" y="21" font-size="7" fill="#dfb6b2" text-anchor="middle" font-family="sans-serif">school360.com/overview</text>
+
+                <!-- Sidebar -->
+                <rect x="10" y="45" width="90" height="245" rx="6" fill="rgba(255,246,240,0.02)"/>
+                <circle cx="28" cy="65" r="8" fill="rgba(107,50,148, 0.15)"/>
+                <rect x="42" y="61" width="45" height="8" rx="4" fill="rgba(255,246,240,0.1)"/>
+                <rect x="20" y="85" width="67" height="6" rx="3" fill="rgba(255,246,240,0.05)"/>
+                <rect x="20" y="100" width="67" height="6" rx="3" fill="rgba(255,246,240,0.05)"/>
+
+                <!-- Content -->
+                <text x="115" y="65" font-size="12" font-weight="bold" fill="#fff6f0" font-family="sans-serif">Quick Metrics</text>
+                <rect x="115" y="80" width="95" height="60" rx="8" fill="rgba(255,246,240,0.03)" stroke="rgba(255,246,240,0.04)"/>
+                <text x="125" y="98" font-size="7" fill="#dfb6b2" font-family="sans-serif">TOTAL USERS</text>
+                <text x="125" y="125" font-size="18" font-weight="bold" fill="#6b3294" font-family="sans-serif">2,481</text>
+
+                <rect x="220" y="80" width="95" height="60" rx="8" fill="rgba(255,246,240,0.03)" stroke="rgba(255,246,240,0.04)"/>
+                <text x="230" y="98" font-size="7" fill="#dfb6b2" font-family="sans-serif">COURSES</text>
+                <text x="230" y="125" font-size="18" font-weight="bold" fill="#6b3294" font-family="sans-serif">32</text>
+
+                <rect x="325" y="80" width="115" height="60" rx="8" fill="rgba(255,246,240, 0.03)" stroke="rgba(255,246,240, 0.04)"/>
+                <text x="335" y="98" font-size="7" fill="#dfb6b2" font-family="sans-serif">SUPPORT LOAD</text>
+                <text x="335" y="125" font-size="18" font-weight="bold" fill="#6b3294" font-family="sans-serif">4 ACTIVE</text>
+
+                <!-- Chart Graphic -->
+                <rect x="115" y="150" width="325" height="135" rx="10" fill="rgba(255,246,240, 0.01)" stroke="rgba(255,246,240, 0.03)"/>
+                <text x="130" y="170" font-size="10" font-weight="bold" fill="#fff6f0" font-family="sans-serif">Active Session Enrollment Traffic</text>
+                <!-- Simulated chart line -->
+                <path d="M 130,250 Q 180,210 220,230 T 320,180 T 420,200" fill="none" stroke="url(#cyan-indigo-gradient)" stroke-width="3" stroke-linecap="round"/>
+                <defs>
+                    <linearGradient id="cyan-indigo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#6b3294"/>
+                        <stop offset="100%" stop-color="#6b3294"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="320" cy="180" r="5" fill="#6b3294"/>
+                <rect x="330" y="155" width="60" height="20" rx="4" fill="#522b5b" stroke="rgba(255,246,240,0.2)" stroke-width="0.5"/>
+                <text x="360" y="167" font-size="6" fill="#fff6f0" font-weight="bold" text-anchor="middle" font-family="sans-serif">Peak Hours</text>
+            </svg>
+        </div>
+    </div>
+</section>
+
+<!-- Client Trust Logos -->
+<section class="client-logos-section">
+    <div class="logo-marquee">
+        <div class="logo-marquee-track">
+            <!-- Group 1 -->
+            <div class="logo-item">IT</div>
+            <div class="logo-item">Engineering</div>
+            <div class="logo-item">Data Science</div>
+            <div class="logo-item">Artificial Intelligence</div>
+            <div class="logo-item">Cyber Security</div>
+            <div class="logo-item">Bio Technology</div>
+
+            <!-- Group 2 -->
+            <div class="logo-item">IT</div>
+            <div class="logo-item">Engineering</div>
+            <div class="logo-item">Data Science</div>
+            <div class="logo-item">Artificial Intelligence</div>
+            <div class="logo-item">Cyber Security</div>
+            <div class="logo-item">Bio Technology</div>
+
+            <!-- Group 3 -->
+            <div class="logo-item">IT</div>
+            <div class="logo-item">Engineering</div>
+            <div class="logo-item">Data Science</div>
+            <div class="logo-item">Artificial Intelligence</div>
+            <div class="logo-item">Cyber Security</div>
+            <div class="logo-item">Bio Technology</div>
+
+            <!-- Group 4 -->
+            <div class="logo-item">IT</div>
+            <div class="logo-item">Engineering</div>
+            <div class="logo-item">Data Science</div>
+            <div class="logo-item">Artificial Intelligence</div>
+            <div class="logo-item">Cyber Security</div>
+            <div class="logo-item">Bio Technology</div>
+        </div>
+    </div>
+</section>
+
+<!-- Six Premium Feature Cards -->
+<section class="saas-section" id="features" style="padding-top: 8rem;">
+    <div class="section-title-wrap reveal">
+        <h2 class="section-title">Engineered for Academic Success</h2>
+        <p class="section-subtitle">A modern suite of administrative modules designed to simplify student, course, and schedule management.</p>
+    </div>
+
+    <div class="saas-features-grid">
+        <!-- Feature 1 -->
+        <div class="saas-feature-card reveal">
+            <div class="feature-icon-box">🎓</div>
+            <h4>Student Admissions & Enrollment</h4>
+            <p>Streamline student applications from initial submission to final course registration. Manage admission approvals, class sections, and enrollment codes effortlessly.</p>
+        </div>
+        <!-- Feature 2 -->
+        <div class="saas-feature-card reveal">
+            <div class="feature-icon-box">🪪</div>
+            <h4>Digital Student ID Cards</h4>
+            <p>Automatically generate encrypted student ID badges with barcode QR signatures for instant scanner login, library book borrowing, and campus access.</p>
+        </div>
+        <!-- Feature 3 -->
+        <div class="saas-feature-card reveal">
+            <div class="feature-icon-box">📅</div>
+            <h4>Academic Timetables & Classes</h4>
+            <p>Organize lecture schedules, exam dates, and hall allocations. Faculty can broadcast instant class updates and room changes directly to students.</p>
+        </div>
+        <!-- Feature 4 -->
+        <div class="saas-feature-card reveal">
+            <div class="feature-icon-box">💬</div>
+            <h4>Student Support & Helpdesk</h4>
+            <p>Resolve academic inquiries and campus technical issues seamlessly. Submit support tickets, attach screenshot notes, and track resolution status in real-time.</p>
+        </div>
+        <!-- Feature 5 -->
+        <div class="saas-feature-card reveal">
+            <div class="feature-icon-box">🛡️</div>
+            <h4>School Records & Activity Logs</h4>
+            <p>Maintain accurate student attendance records, academic performance logs, and administrative system updates backed by automated security tracking.</p>
+        </div>
+        <!-- Feature 6 -->
+        <div class="saas-feature-card reveal">
+            <div class="feature-icon-box">📊</div>
+            <h4>Dedicated Campus Portals</h4>
+            <p>Tailored digital dashboard portals designed specifically for Students, Teachers, Admissions Officers, Librarians, Support Staff, and Administrators.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Interactive Product Dashboard Showcase -->
+<section class="saas-section" id="showcase">
+    <div class="section-title-wrap reveal">
+        <h2 class="section-title">Explore the Interface</h2>
+        <p class="section-subtitle">Click between portal workspace modules below to inspect how the interface adapts to different user roles.</p>
+    </div>
+
+    <!-- Showcase Tab Controls -->
+    <div class="showcase-screen-wrap reveal">
+        <div class="showcase-screen-nav">
+            <button class="showcase-screen-btn active" onclick="switchShowcaseScreen('student')">🎓 Student View</button>
+            <button class="showcase-screen-btn" onclick="switchShowcaseScreen('teacher')">📚 Faculty View</button>
+            <button class="showcase-screen-btn" onclick="switchShowcaseScreen('officer')">💼 Admissions View</button>
+            <button class="showcase-screen-btn" onclick="switchShowcaseScreen('support')">🛠️ Support View</button>
+        </div>
+
+        <!-- Showcase Mockup Canvas -->
+        <div id="showcase-canvas" class="showcase-screen-content">
+            <!-- Rendered dynamically via javascript -->
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us / Animated Stats -->
+<section class="saas-section" id="why-choose-us" style="background: #ffffff;">
+    <div class="section-title-wrap reveal">
+        <h2 class="section-title">Built for School Success</h2>
+        <p class="section-subtitle">High-end architecture that ensures your institution stays online, secure, and responsive.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto; text-align: center;">
+        <!-- Stat 1 -->
+        <div class="saas-feature-card reveal" style="padding: 2rem; align-items: center;">
+            <h3 style="font-size: 3rem; font-weight: 800; background: linear-gradient(to right, #fff6f0, #6b3294); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">25+</h3>
+            <h5 style="color: #2b124c; font-size: 1rem; font-weight: 700; margin-top: 0.5rem;">School Activities</h5>
+            <p style="font-size: 0.88rem; color: #49334f; margin-top: 0.25rem;">Sports, clubs, competitions and student activities throughout the year.</p>
+        </div>
+        <!-- Stat 2 -->
+        <div class="saas-feature-card reveal" style="padding: 2rem; align-items: center;">
+            <h3 style="font-size: 3rem; font-weight: 800; background: linear-gradient(to right, #fff6f0, #6b3294); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">10+</h3>
+            <h5 style="color: #2b124c; font-size: 1rem; font-weight: 700; margin-top: 0.5rem;">Learning Spaces</h5>
+            <p style="font-size: 0.88rem; color: #49334f; margin-top: 0.25rem;">Classrooms, laboratories, library and dedicated learning areas.</p>
+        </div>
+        <!-- Stat 3 -->
+        <div class="saas-feature-card reveal" style="padding: 2rem; align-items: center;">
+            <h3 style="font-size: 3rem; font-weight: 800; background: linear-gradient(to right, #fff6f0, #6b3294); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">15+</h3>
+            <h5 style="color: #2b124c; font-size: 1rem; font-weight: 700; margin-top: 0.5rem;">Student Clubs</h5>
+            <p style="font-size: 0.88rem; color: #49334f; margin-top: 0.25rem;">Encouraging students to discover their talents, interests, and leadership skills.</p>
+        </div>
+        <!-- Stat 4 -->
+        <div class="saas-feature-card reveal" style="padding: 2rem; align-items: center;">
+            <h3 style="font-size: 3rem; font-weight: 800; background: linear-gradient(to right, #fff6f0, #dfb6b2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">50+</h3>
+            <h5 style="color: #2b124c; font-size: 1rem; font-weight: 700; margin-top: 0.5rem;">Annual Events</h5>
+            <p style="font-size: 0.88rem; color: #49334f; margin-top: 0.25rem;">Celebrations, workshops, educational trips and school programs.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Unique Innovations & Advanced Capabilities Section -->
+<section class="saas-section" id="innovations">
+    <div class="section-title-wrap reveal">
+        <div style="display:inline-flex; align-items:center; gap:0.5rem; background:rgba(107,50,148,0.12); border:1px solid rgba(107,50,148,0.3); padding:0.4rem 0.95rem; border-radius:20px; color: #49334f; font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:1rem;">
+            ✨ Next-Gen Protocol Capabilities
+        </div>
+        <h2 class="section-title">Built for Modern Academic Innovation</h2>
+        <p class="section-subtitle">Explore the high-performance modules and automated features powering the School360 ecosystem.</p>
+    </div>
+
+    <div class="saas-features-grid reveal" style="grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 2rem;">
+        <!-- Feature 1: AI Assistant -->
+        <div class="saas-feature-card reveal" style="position:relative; overflow:hidden; border: 1px solid rgba(223,182,178,0.25); background: #190019; padding: 2.2rem;">
+            <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%); border-radius:50%; pointer-events:none;"></div>
+            <div class="feature-icon-box" style="background: linear-gradient(135deg, #6b3294, #6b3294); color: white; width:54px; height:54px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin-bottom:1.5rem; box-shadow:0 8px 20px rgba(107,50,148,0.35);">🤖</div>
+
+            <!-- Spaced Button-Type Badges -->
+            <div style="display:flex; gap:0.65rem; margin-top:0.3rem; margin-bottom:1.4rem; flex-wrap:wrap;">
+                <span style="background:rgba(223,182,178,0.18); color: #ffffff; font-size:0.76rem; font-weight:700; padding:0.42rem 0.85rem; border-radius:20px; border:1px solid rgba(223,182,178,0.3); display:inline-flex; align-items:center;">AI Engine 3.0</span>
+                <span style="background:rgba(107,50,148,0.18); color: #ffffff; font-size:0.76rem; font-weight:700; padding:0.42rem 0.85rem; border-radius:20px; border:1px solid rgba(107,50,148,0.3); display:inline-flex; align-items:center;">Self-Learning</span>
+            </div>
+
+            <h4 style="font-size:1.18rem; font-weight:700; color: #ffffff; margin-bottom:0.6rem;">Trainable AI Campus Assistant</h4>
+            <p style="font-size:0.88rem; color: #ffffff; line-height:1.65; margin:0;">Integrated on all pages with live database context. Answers questions about schedules, student counts, and course lists, or lets admins train custom dataset Q&As on the fly.</p>
+        </div>
+
+        <!-- Feature 2: Digital QR Pass -->
+        <div class="saas-feature-card reveal" style="position:relative; overflow:hidden; border: 1px solid rgba(223,182,178,0.25); background: #190019; padding: 2.2rem;">
+            <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%); border-radius:50%; pointer-events:none;"></div>
+            <div class="feature-icon-box" style="background: linear-gradient(135deg, #6b3294, #6b3294); color: white; width:54px; height:54px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin-bottom:1.5rem; box-shadow:0 8px 20px rgba(107,50,148,0.35);">🪪</div>
+
+            <!-- Spaced Button-Type Badges -->
+            <div style="display:flex; gap:0.65rem; margin-top:0.3rem; margin-bottom:1.4rem; flex-wrap:wrap;">
+                <span style="background:rgba(223,182,178,0.18); color: #ffffff; font-size:0.76rem; font-weight:700; padding:0.42rem 0.85rem; border-radius:20px; border:1px solid rgba(223,182,178,0.3); display:inline-flex; align-items:center;">Passwordless</span>
+                <span style="background:rgba(107,50,148,0.18); color: #ffffff; font-size:0.76rem; font-weight:700; padding:0.42rem 0.85rem; border-radius:20px; border:1px solid rgba(107,50,148,0.3); display:inline-flex; align-items:center;">QR Token</span>
+            </div>
+
+            <h4 style="font-size:1.18rem; font-weight:700; color: #ffffff; margin-bottom:0.6rem;">Cryptographic Digital Student IDs</h4>
+            <p style="font-size:0.88rem; color: #ffffff; line-height:1.65; margin:0;">Automated generation of encrypted barcode passes. Allows zero-password web scanner logins, instant library checkouts, and physical identity verification.</p>
+        </div>
+
+        <!-- Feature 3: Smart Timetable -->
+        <div class="saas-feature-card reveal" style="position:relative; overflow:hidden; border: 1px solid rgba(223,182,178,0.25); background: #190019; padding: 2.2rem;">
+            <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%); border-radius:50%; pointer-events:none;"></div>
+            <div class="feature-icon-box" style="background: linear-gradient(135deg, #6b3294, #6b3294); color: white; width:54px; height:54px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin-bottom:1.5rem; box-shadow:0 8px 20px rgba(107,50,148,0.35);">🗓️</div>
+
+            <!-- Spaced Button-Type Badges -->
+            <div style="display:flex; gap:0.65rem; margin-top:0.3rem; margin-bottom:1.4rem; flex-wrap:wrap;">
+                <span style="background:rgba(223,182,178,0.18); color: #ffffff; font-size:0.76rem; font-weight:700; padding:0.42rem 0.85rem; border-radius:20px; border:1px solid rgba(223,182,178,0.3); display:inline-flex; align-items:center;">Conflict Free</span>
+                <span style="background:rgba(107,50,148,0.18); color: #ffffff; font-size:0.76rem; font-weight:700; padding:0.42rem 0.85rem; border-radius:20px; border:1px solid rgba(107,50,148,0.3); display:inline-flex; align-items:center;">Live Push Alerts</span>
+            </div>
+
+            <h4 style="font-size:1.18rem; font-weight:700; color: #ffffff; margin-bottom:0.6rem;">Dynamic Timetable & Hall Allocator</h4>
+            <p style="font-size:0.88rem; color: #ffffff; line-height:1.65; margin:0;">Automated lecture slot scheduling with hall clash prevention. Teachers can trigger location shift or delay warnings that notify students in real-time.</p>
+        </div>
+
+        <!-- Feature 4: SLA Helpdesk -->
+        <div class="saas-feature-card reveal" style="position:relative; overflow:hidden; border: 1px solid rgba(223,182,178,0.25); background: #190019; padding: 2.2rem;">
+            <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%); border-radius:50%; pointer-events:none;"></div>
+            <div class="feature-icon-box" style="background: linear-gradient(135deg, #6b3294, #6b3294); color: white; width:54px; height:54px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin-bottom:1.5rem; box-shadow:0 8px 20px rgba(107,50,148,0.35);">🎧</div>
+
+            <!-- Spaced Button-Type Badges -->
+            <div style="display:flex; gap:0.65rem; margin-top:0.3rem; margin-bottom:1.4rem; flex-wrap:wrap;">
+                <span style="background:rgba(223,182,178,0.18); color: #ffffff; font-size:0.76rem; font-weight:700; padding:0.42rem 0.85rem; border-radius:20px; border:1px solid rgba(223,182,178,0.3); display:inline-flex; align-items:center;">Image Uploads</span>
+                <span style="background:rgba(107,50,148,0.18); color: #ffffff; font-size:0.76rem; font-weight:700; padding:0.42rem 0.85rem; border-radius:20px; border:1px solid rgba(107,50,148,0.3); display:inline-flex; align-items:center;">Admin Escalation</span>
+            </div>
+
+            <h4 style="font-size:1.18rem; font-weight:700; color: #ffffff; margin-bottom:0.6rem;">SLA Helpdesk & Visual Support</h4>
+            <p style="font-size:0.88rem; color: #ffffff; line-height:1.65; margin:0;">Comprehensive ticketing portal supporting screenshot image attachments, 24-hour SLA response monitoring, and 1-click administrative escalation pipelines.</p>
+        </div>
+
+        <!-- Feature 5: Central Library Catalog -->
+        <div class="saas-feature-card reveal" style="position:relative; overflow:hidden; border: 1px solid rgba(223,182,178,0.25); background: #190019; padding: 2.2rem;">
+            <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%); border-radius:50%; pointer-events:none;"></div>
+            <div class="feature-icon-box" style="background: linear-gradient(135deg, #6b3294, #6b3294); color: white; width:54px; height:54px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin-bottom:1.5rem; box-shadow:0 8px 20px rgba(107,50,148,0.35);">📖</div>
+
+            <!-- Spaced Button-Type Badges -->
+            <div style="display:flex; gap:0.65rem; margin-top:0.3rem; margin-bottom:1.4rem; flex-wrap:wrap;">
+                <span style="background:rgba(223,182,178,0.18); color: #ffffff; font-size:0.76rem; font-weight:700; padding:0.42rem 0.85rem; border-radius:20px; border:1px solid rgba(223,182,178,0.3); display:inline-flex; align-items:center;">Catalog Search</span>
+                <span style="background:rgba(107,50,148,0.18); color: #ffffff; font-size:0.76rem; font-weight:700; padding:0.42rem 0.85rem; border-radius:20px; border:1px solid rgba(107,50,148,0.3); display:inline-flex; align-items:center;">QR Book Checkouts</span>
+            </div>
+
+            <h4 style="font-size:1.18rem; font-weight:700; color: #ffffff; margin-bottom:0.6rem;">Central Digital Library Catalog</h4>
+            <p style="font-size:0.88rem; color: #ffffff; line-height:1.65; margin:0;">Real-time book circulation tracking, automated 14-day borrowing rules, and QR student ID checkouts managed by Central Librarian Aathmika.</p>
+        </div>
+
+        <!-- Feature 6: Facilities & Maintenance Tracker -->
+        <div class="saas-feature-card reveal" style="position:relative; overflow:hidden; border: 1px solid rgba(223,182,178,0.25); background: #190019; padding: 2.2rem;">
+            <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%); border-radius:50%; pointer-events:none;"></div>
+            <div class="feature-icon-box" style="background: linear-gradient(135deg, #6b3294, #6b3294); color: white; width:54px; height:54px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin-bottom:1.5rem; box-shadow:0 8px 20px rgba(107,50,148,0.35);">🧹</div>
+
+            <!-- Spaced Button-Type Badges -->
+            <div style="display:flex; gap:0.65rem; margin-top:0.3rem; margin-bottom:1.4rem; flex-wrap:wrap;">
+                <span style="background:rgba(223,182,178,0.18); color: #ffffff; font-size:0.76rem; font-weight:700; padding:0.42rem 0.85rem; border-radius:20px; border:1px solid rgba(223,182,178,0.3); display:inline-flex; align-items:center;">Maintenance Logs</span>
+                <span style="background:rgba(107,50,148,0.18); color: #ffffff; font-size:0.76rem; font-weight:700; padding:0.42rem 0.85rem; border-radius:20px; border:1px solid rgba(107,50,148,0.3); display:inline-flex; align-items:center;">Duty Rosters</span>
+            </div>
+
+            <h4 style="font-size:1.18rem; font-weight:700; color: #ffffff; margin-bottom:0.6rem;">Facilities & Maintenance Tracker</h4>
+            <p style="font-size:0.88rem; color: #ffffff; line-height:1.65; margin:0;">Facility maintenance ticket logging and campus infrastructure management logged directly to central administrative security audit trails.</p>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- CTA Banner -->
+<section class="saas-cta-banner reveal">
+    <h2 style="font-size: 2.8rem; font-weight: 800; color: var(--lp-text); margin-bottom: 1.5rem; letter-spacing: -1px;">Ready to Orchestrate Your Academy?</h2>
+    <p style="font-size: 1.15rem; color: var(--lp-text-muted); max-width: 600px; margin: 0 auto 2.5rem; line-height: 1.6;">
+        Activate free developer sandbox access and evaluate our student rosters, timetable builders, and ticketing frameworks.
+    </p>
+    <button onclick="openLoginModal()" class="btn btn-primary btn-premium" style="border-radius: 9999px; padding: 1rem 2.5rem; font-weight: 800; font-size: 1.05rem; box-shadow: 0 10px 25px rgba(107,50,148, 0.45);">
+        Activate Free Sandbox Access
+    </button>
+</section>
+
+<!-- Premium Footer -->
+<footer class="saas-footer">
+    <div class="saas-footer-grid">
+        <!-- Brand Column -->
+        <div class="footer-brand-col">
+            <a href="#" class="saas-brand" style="margin-bottom: 0.5rem;">
+                <span>🏫</span> School360
+            </a>
+            <p class="footer-brand-desc">
+                Empowering modern educational institutions with secure, scalable, and beautifully designed digital workspaces.
+            </p>
+            <div class="footer-socials">
+                <a href="#" class="footer-social-icon" title="Twitter">𝕏</a>
+                <a href="#" class="footer-social-icon" title="GitHub">🐙</a>
+                <a href="#" class="footer-social-icon" title="LinkedIn">in</a>
+            </div>
+        </div>
+        <!-- Column 2: Product Links -->
+        <div class="footer-links-col">
+            <h4>Product</h4>
+            <ul>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#showcase">Showcase</a></li>
+                <li><a href="#faq">FAQ Help</a></li>
+            </ul>
+        </div>
+        <!-- Column 3: Resources Links -->
+        <div class="footer-links-col">
+            <h4>Resources</h4>
+            <ul>
+                <li><a href="#" onclick="openLoginModal(); return false;">Portal Login</a></li>
+                <li><a href="#" onclick="openQRScanner(); return false;">Scan Digital ID</a></li>
+                <li><a href="mailto:support@school360.com">Academic Support</a></li>
+                <li><a href="https://github.com" target="_blank">Documentation</a></li>
+            </ul>
+        </div>
+        <!-- Column 4: Newsletter & Status -->
+        <div class="footer-links-col">
+            <h4>System Status</h4>
+            <div class="footer-status-badge db-status-badge connected">
+                <span class="status-dot"></span>
+                <span class="db-status-text">All services operational</span>
+            </div>
+            <p style="font-size: 0.82rem; color: #49334f; margin-top: 0.5rem; line-height: 1.4;">
+                Version v1.0.0 (Persistent DB Engine)<br>
+                Connected to School360 Live Database.
+            </p>
+        </div>
+    </div>
+
+    <div class="saas-footer-copyright">
+        <p>© 2026 School360. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- Interactive Glassmorphic Login Modal -->
+<!-- Interactive Glassmorphic Login Modal -->
+<div id="login-modal" class="modal">
+    <div class="modal-content glass-login-card" style="max-width: 480px; width: 90%;">
+        <div class="modal-header">
+            <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--lp-text);">Portal Access</h3>
+            <span style="cursor:pointer; font-size:1.5rem; color:var(--lp-text-muted);" onclick="closeLoginModal()">✕</span>
+        </div>
+
+        <p style="color: var(--lp-text-muted); font-size:0.88rem; margin-top:-1rem; margin-bottom:1.5rem;">Select your authentication pathway below</p>
+
+        <!-- Modal Tabs -->
+        <div class="login-tabs">
+            <button class="login-tab-btn active" id="modal-tab-credentials" onclick="switchModalLoginTab('credentials')">🔑 Credentials</button>
+            <button class="login-tab-btn" id="modal-tab-qr" onclick="switchModalLoginTab('qr')">📷 Digital ID</button>
+        </div>
+
+        <!-- Form: Credentials Login -->
+        <div id="modal-login-credentials">
+            <form onsubmit="handleFormLogin(event)">
+                <div class="form-group">
+                    <label for="username" class="form-label" style="color: var(--text-primary);">Username</label>
+                    <input type="text" id="username" class="form-input" placeholder="e.g. Sameeha" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="password" class="form-label" style="color: var(--text-primary);">Password</label>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                </div>
+                <button type="submit" id="btn-login-submit" class="btn btn-primary btn-block" style="box-shadow: 0 4px 15px rgba(107,50,148, 0.4);">
+                    Sign In to Dashboard
+                </button>
+            </form>
+        </div>
+
+        <!-- Form: QR Digital ID Login -->
+        <div id="modal-login-qr" style="display: none; text-align: center; padding: 1rem 0;">
+            <p style="font-size: 0.88rem; color: var(--lp-text-muted); margin-bottom: 1.5rem; line-height: 1.5;">
+                Scan the QR code printed on your digital student or faculty card to log in automatically.
+            </p>
+            <button type="button" class="btn btn-primary btn-block" onclick="triggerQrFromModal()" style="box-shadow: 0 4px 15px rgba(107,50,148, 0.4);">
+                📷 Open Digital ID Scanner
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Scanning Simulation Modal -->
+<div id="qr-modal" class="modal">
+    <div class="modal-content" style="max-width: 440px; width: 90%;">
+        <div class="modal-header">
+            <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--lp-text);">Scan Digital ID Card</h3>
+            <span style="cursor:pointer;font-size:1.5rem; color:var(--lp-text-muted);" onclick="closeQRScanner()">✕</span>
+        </div>
+        <p style="color: var(--lp-text-muted); font-size:0.9rem; margin-bottom:1rem;">Select a saved profile QR Token below to simulate scanning your physical ID card camera feed:</p>
+
+        <div id="qr-reader-container">
+            <div style="font-size:3rem;margin-bottom:0.5rem;">📷</div>
+            <div style="font-size:0.85rem;color: #49334f;">Simulated Camera Frame</div>
+            <div style="position:absolute;width:80%;height:2px;background-color: #6b3294;top:50%;left:10%;animation:scanEffect 2s linear infinite;"></div>
+        </div>
+
+        <div id="qr-account-list" style="max-height:220px;overflow-y:auto;margin-top:1rem;padding-right:0.25rem;">
+            <p style="color: #49334f;font-size:0.85rem;text-align:center;">Loading registered accounts...</p>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Interactions -->
+<script>
+    // Tab switching mock data for Dashboard Showcase
+    const showcaseData = {
+        student: `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center;">
+                <div>
+                    <h3 style="font-size: 1.5rem; font-weight: 800; color: white; margin-bottom: 1rem;">Student Academic Workspace</h3>
+                    <p style="color: #49334f; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem;">
+                        A streamlined portal where students download custom ID cards, request new course modules, view timetable class rosters, and log support queries.
+                    </p>
+                    <ul class="role-features-list" style="margin-top: 1rem;">
+                        <li><span class="role-bullet-check" style="background:rgba(223,182,178,0.15); color: #49334f;">✓</span> <span><strong>Print Digital ID</strong> with unique SVG QR tokens.</span></li>
+                        <li><span class="role-bullet-check" style="background:rgba(223,182,178,0.15); color: #49334f;">✓</span> <span><strong>Enroll/Switch Courses</strong> at any time via modern cards.</span></li>
+                        <li><span class="role-bullet-check" style="background:rgba(223,182,178,0.15); color: #49334f;">✓</span> <span><strong>Real-time Schedule Tracker</strong> reflecting lecture delay status.</span></li>
+                    </ul>
+                </div>
+                <div class="illustration-box">
+                    <svg viewBox="0 0 450 300" width="100%" class="svg-screen-glow">
+                        <rect x="0" y="0" width="450" height="300" rx="16" fill="#190019" stroke="rgba(255,246,240,0.06)" stroke-width="2"/>
+                        <rect x="15" y="50" width="130" height="235" rx="8" fill="rgba(255,246,240,0.02)"/>
+                        <circle cx="80" cy="90" r="22" fill="rgba(107,50,148, 0.15)"/>
+                        <text x="80" y="93" font-size="10" fill="#fff6f0" text-anchor="middle" font-weight="bold" font-family="sans-serif">Sameeha</text>
+                        <rect x="30" y="130" width="100" height="6" rx="3" fill="rgba(255,246,240,0.05)"/>
+                        <rect x="30" y="145" width="100" height="6" rx="3" fill="rgba(255,246,240,0.05)"/>
+
+                        <!-- Roster Cards -->
+                        <text x="165" y="70" font-size="12" font-weight="bold" fill="#fff6f0" font-family="sans-serif">Timetable Calendar</text>
+                        <rect x="165" y="85" width="270" height="50" rx="10" fill="rgba(223,182,178, 0.05)" stroke="rgba(223,182,178, 0.2)"/>
+                        <text x="180" y="105" font-size="9" font-weight="bold" fill="#fff6f0" font-family="sans-serif">Advanced Java Programming</text>
+                        <text x="180" y="120" font-size="8" fill="#dfb6b2" font-family="sans-serif">Monday 08:30 AM | Lab 3 (Active)</text>
+
+                        <rect x="165" y="145" width="270" height="50" rx="10" fill="rgba(255,246,240,0.02)" stroke="rgba(255,246,240,0.04)"/>
+                        <text x="180" y="165" font-size="9" font-weight="bold" fill="#fff6f0" font-family="sans-serif">Web Application Architecture</text>
+                        <text x="180" y="180" font-size="8" fill="#dfb6b2" font-family="sans-serif">Wednesday 11:00 AM | Hall C</text>
+
+                        <rect x="165" y="205" width="270" height="50" rx="10" fill="rgba(255,246,240,0.02)" stroke="rgba(255,246,240,0.04)"/>
+                        <text x="180" y="225" font-size="9" font-weight="bold" fill="#fff6f0" font-family="sans-serif">Database Design &amp; Management</text>
+                        <text x="180" y="240" font-size="8" fill="#dfb6b2" font-family="sans-serif">Friday 02:00 PM | Lab 2</text>
+                    </svg>
+                </div>
+            </div>`,
+        teacher: `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center;">
+                <div>
+                    <h3 style="font-size: 1.5rem; font-weight: 800; color: white; margin-bottom: 1rem;">Faculty Operations Hub</h3>
+                    <p style="color: #49334f; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem;">
+                        Empower teachers to manage academic courses, update schedules, broadcast notices, and query student attendance rosters effortlessly.
+                    </p>
+                    <ul class="role-features-list" style="margin-top: 1rem;">
+                        <li><span class="role-bullet-check" style="background:rgba(223,182,178, 0.15); color: #49334f;">✓</span> <span><strong>Syllabus Creator</strong> to build and assign module specifications.</span></li>
+                        <li><span class="role-bullet-check" style="background:rgba(223,182,178, 0.15); color: #49334f;">✓</span> <span><strong>Live Announcer</strong> to send broadcast messages dynamically.</span></li>
+                        <li><span class="role-bullet-check" style="background:rgba(223,182,178, 0.15); color: #49334f;">✓</span> <span><strong>Roster Adjustments</strong> to delayed status and room numbers.</span></li>
+                    </ul>
+                </div>
+                <div class="illustration-box">
+                    <svg viewBox="0 0 450 300" width="100%" class="svg-screen-glow">
+                        <rect x="0" y="0" width="450" height="300" rx="16" fill="#190019" stroke="rgba(255,246,240,0.06)" stroke-width="2"/>
+                        <rect x="15" y="50" width="130" height="235" rx="8" fill="rgba(255,246,240,0.02)"/>
+                        <text x="80" y="80" font-size="11" font-weight="bold" fill="#fff6f0" text-anchor="middle" font-family="sans-serif">Prof. Madawala</text>
+                        <rect x="30" y="110" width="100" height="20" rx="4" fill="rgba(223,182,178,0.15)" stroke="rgba(223,182,178,0.3)"/>
+                        <text x="80" y="122" font-size="7" font-weight="bold" fill="#dfb6b2" text-anchor="middle" font-family="sans-serif">Faculty Active</text>
+
+                        <!-- Panel Details -->
+                        <text x="165" y="70" font-size="12" font-weight="bold" fill="#fff6f0" font-family="sans-serif">Module &amp; Announcement Controls</text>
+                        <rect x="165" y="85" width="270" height="90" rx="10" fill="rgba(255,246,240,0.02)" stroke="rgba(255,246,240,0.04)"/>
+                        <text x="180" y="105" font-size="9" font-weight="bold" fill="#fff6f0" font-family="sans-serif">Send Broadcast Notice</text>
+                        <rect x="180" y="115" width="240" height="35" rx="6" fill="rgba(0,0,0,0.2)" stroke="rgba(255,246,240,0.05)"/>
+                        <text x="185" y="127" font-size="7" fill="#dfb6b2" font-family="sans-serif">Type notice details e.g. Homework assignment due...</text>
+                        <rect x="370" y="155" width="50" height="15" rx="4" fill="#dfb6b2"/>
+                        <text x="395" y="165" font-size="7" font-weight="bold" fill="#2b124c" text-anchor="middle" font-family="sans-serif">Broadcast</text>
+
+                        <!-- Quick Stats Box -->
+                        <rect x="165" y="190" width="270" height="60" rx="10" fill="rgba(223,182,178, 0.05)" stroke="rgba(223,182,178, 0.2)"/>
+                        <text x="180" y="210" font-size="8" font-weight="bold" fill="#dfb6b2" font-family="sans-serif">ACTIVE STUDENTS COUNTER</text>
+                        <text x="180" y="238" font-size="22" font-weight="bold" fill="#fff6f0" font-family="sans-serif">142</text>
+                        <text x="230" y="233" font-size="8" fill="#dfb6b2" font-family="sans-serif">Students sync'd in Active Java Course</text>
+                    </svg>
+                </div>
+            </div>`,
+        officer: `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center;">
+                <div>
+                    <h3 style="font-size: 1.5rem; font-weight: 800; color: white; margin-bottom: 1rem;">Admissions Review Roster</h3>
+                    <p style="color: #49334f; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem;">
+                        Inspect, verify, and approve incoming course request applications. Allocating student admission codes and classes with complete control.
+                    </p>
+                    <ul class="role-features-list" style="margin-top: 1rem;">
+                        <li><span class="role-bullet-check" style="background:rgba(223,182,178, 0.15); color: #49334f;">✓</span> <span><strong>Dual-Stage Approvals</strong> (Enrollment Officer -> Administrative Staff).</span></li>
+                        <li><span class="role-bullet-check" style="background:rgba(223,182,178, 0.15); color: #49334f;">✓</span> <span><strong>Admission Number Allocator</strong> manually or auto-generated.</span></li>
+                        <li><span class="role-bullet-check" style="background:rgba(223,182,178, 0.15); color: #49334f;">✓</span> <span><strong>Audit Trail Tracking</strong> logs administrative sign-off metrics.</span></li>
+                    </ul>
+                </div>
+                <div class="illustration-box">
+                    <svg viewBox="0 0 450 300" width="100%" class="svg-screen-glow">
+                        <rect x="0" y="0" width="450" height="300" rx="16" fill="#190019" stroke="rgba(255,246,240,0.06)" stroke-width="2"/>
+                        <rect x="15" y="50" width="130" height="235" rx="8" fill="rgba(255,246,240,0.02)"/>
+                        <text x="80" y="80" font-size="11" font-weight="bold" fill="#fff6f0" text-anchor="middle" font-family="sans-serif">Enrollment Officer</text>
+                        <rect x="30" y="110" width="100" height="20" rx="4" fill="rgba(223,182,178,0.15)" stroke="rgba(223,182,178,0.3)"/>
+                        <text x="80" y="122" font-size="7" font-weight="bold" fill="#dfb6b2" text-anchor="middle" font-family="sans-serif">Officer Session</text>
+
+                        <!-- Enrollment Details -->
+                        <text x="165" y="70" font-size="12" font-weight="bold" fill="#fff6f0" font-family="sans-serif">Enrollment Queue</text>
+
+                        <rect x="165" y="85" width="270" height="155" rx="10" fill="rgba(255,246,240,0.02)" stroke="rgba(255,246,240,0.04)"/>
+                        <!-- Row header -->
+                        <rect x="165" y="85" width="270" height="20" rx="10" fill="rgba(255,246,240,0.04)"/>
+                        <text x="175" y="98" font-size="7" font-weight="bold" fill="#dfb6b2" font-family="sans-serif">STUDENT NAME</text>
+                        <text x="270" y="98" font-size="7" font-weight="bold" fill="#dfb6b2" font-family="sans-serif">STATUS</text>
+                        <text x="350" y="98" font-size="7" font-weight="bold" fill="#dfb6b2" font-family="sans-serif">ACTION</text>
+
+                        <!-- Table Rows -->
+                        <text x="175" y="123" font-size="8" fill="#fff6f0" font-family="sans-serif">Sameeha Perera</text>
+                        <rect x="270" y="114" width="40" height="12" rx="6" fill="rgba(107,50,148,0.15)"/>
+                        <text x="290" y="122" font-size="6" font-weight="bold" fill="#6b3294" text-anchor="middle" font-family="sans-serif">PENDING</text>
+                        <rect x="350" y="112" width="30" height="15" rx="4" fill="rgba(223,182,178,0.2)"/>
+                        <text x="365" y="122" font-size="7" font-weight="bold" fill="#dfb6b2" text-anchor="middle" font-family="sans-serif">Approve</text>
+
+                        <text x="175" y="153" font-size="8" fill="#fff6f0" font-family="sans-serif">Faris Jameel</text>
+                        <rect x="270" y="144" width="40" height="12" rx="6" fill="rgba(223,182,178,0.15)"/>
+                        <text x="290" y="152" font-size="6" font-weight="bold" fill="#dfb6b2" text-anchor="middle" font-family="sans-serif">APPROVED</text>
+                        <text x="350" y="153" font-size="7" fill="#dfb6b2" font-family="sans-serif">Complete</text>
+
+                        <text x="175" y="183" font-size="8" fill="#fff6f0" font-family="sans-serif">Ahsan Riza</text>
+                        <rect x="270" y="174" width="40" height="12" rx="6" fill="rgba(107,50,148,0.15)"/>
+                        <text x="290" y="182" font-size="6" font-weight="bold" fill="#6b3294" text-anchor="middle" font-family="sans-serif">REJECTED</text>
+                        <text x="350" y="183" font-size="7" fill="#dfb6b2" font-family="sans-serif">Archived</text>
+                    </svg>
+                </div>
+            </div>`,
+        support: `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center;">
+                <div>
+                    <h3 style="font-size: 1.5rem; font-weight: 800; color: white; margin-bottom: 1rem;">Collaborative Support Desk</h3>
+                    <p style="color: #49334f; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem;">
+                        Solve user interface issues collaboratively. Support tickets manage text replies alongside image screenshot attachments for swift resolution.
+                    </p>
+                    <ul class="role-features-list" style="margin-top: 1rem;">
+                        <li><span class="role-bullet-check" style="background:rgba(223,182,178, 0.15); color: #49334f;">✓</span> <span><strong>Priority Grouping</strong> (HIGH, MEDIUM, LOW) organizes workloads.</span></li>
+                        <li><span class="role-bullet-check" style="background:rgba(223,182,178, 0.15); color: #49334f;">✓</span> <span><strong>Attachment Parser</strong> handles images inside support logs.</span></li>
+                        <li><span class="role-bullet-check" style="background:rgba(223,182,178, 0.15); color: #49334f;">✓</span> <span><strong>Dynamic Updates</strong> send alerts to user dashboards.</span></li>
+                    </ul>
+                </div>
+                <div class="illustration-box">
+                    <svg viewBox="0 0 450 300" width="100%" class="svg-screen-glow">
+                        <rect x="0" y="0" width="450" height="300" rx="16" fill="#190019" stroke="rgba(255,246,240,0.06)" stroke-width="2"/>
+                        <rect x="15" y="50" width="130" height="235" rx="8" fill="rgba(255,246,240,0.02)"/>
+                        <text x="80" y="80" font-size="11" font-weight="bold" fill="#fff6f0" text-anchor="middle" font-family="sans-serif">Support Agent</text>
+                        <rect x="30" y="110" width="100" height="20" rx="4" fill="rgba(223,182,178,0.15)" stroke="rgba(223,182,178,0.3)"/>
+                        <text x="80" y="122" font-size="7" font-weight="bold" fill="#dfb6b2" text-anchor="middle" font-family="sans-serif">Agent Active</text>
+
+                        <!-- Chat Simulator -->
+                        <text x="165" y="70" font-size="12" font-weight="bold" fill="#fff6f0" font-family="sans-serif">Ticket #12 Thread</text>
+                        <rect x="165" y="85" width="270" height="160" rx="10" fill="rgba(255,246,240,0.02)" stroke="rgba(255,246,240,0.04)"/>
+
+                        <!-- Bubble student -->
+                        <path d="M 180,110 h 100 a 6,6 0 0,1 6,6 v 15 a 6,6 0 0,1 -6,6 h -100 a 6,6 0 0,1 -6,-6 v -15 a 6,6 0 0,1 6,-6" fill="rgba(255,246,240,0.04)"/>
+                        <text x="185" y="120" font-size="6" fill="#dfb6b2" font-family="sans-serif">Sameeha Perera (Student)</text>
+                        <text x="185" y="130" font-size="6" fill="#fff6f0" font-family="sans-serif">Timetable loads slowly.</text>
+
+                        <!-- Bubble agent -->
+                        <path d="M 310,150 h 100 a 6,6 0 0,1 6,6 v 15 a 6,6 0 0,1 -6,6 h -100 a 6,6 0 0,1 -6,-6 v -15 a 6,6 0 0,1 6,-6" fill="rgba(107,50,148,0.15)"/>
+                        <text x="315" y="160" font-size="6" fill="#dfb6b2" font-family="sans-serif">Support Agent</text>
+                        <text x="315" y="170" font-size="6" fill="#fff6f0" font-family="sans-serif">Optimizing database cache.</text>
+
+                        <!-- Attachment link -->
+                        <rect x="180" y="195" width="130" height="15" rx="3" fill="rgba(255,246,240,0.03)" stroke="rgba(255,246,240,0.05)"/>
+                        <text x="185" y="205" font-size="5" fill="#dfb6b2" font-family="sans-serif">📎 screenshot-dashboard.png</text>
+                    </svg>
+                </div>
+            </div>`
+    };
+
+    // Switch Showcase Layout Render
+    function switchShowcaseScreen(role) {
+        // Update active state in buttons
+        document.querySelectorAll('.showcase-screen-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        // Find active tab button based on text match
+        const btns = Array.from(document.querySelectorAll('.showcase-screen-btn'));
+        const matchingBtn = btns.find(btn => btn.innerText.toLowerCase().includes(role));
+        if (matchingBtn) matchingBtn.classList.add('active');
+
+        // Render details
+        const target = document.getElementById('showcase-canvas');
+        target.innerHTML = showcaseData[role];
+    }
+
+    // Initialize Showcase
+    document.addEventListener('DOMContentLoaded', () => {
+        switchShowcaseScreen('student');
+        initScrollReveal();
+    });
+
+    // Pricing Billing Mode Switcher
+    function toggleBillingPeriod(mode) {
+        document.querySelectorAll('.pricing-switch-label').forEach(lbl => lbl.classList.remove('active'));
+        if (mode === 'monthly') {
+            document.getElementById('label-monthly').classList.add('active');
+            document.body.classList.remove('yearly-mode');
+        } else {
+            document.getElementById('label-yearly').classList.add('active');
+            document.body.classList.add('yearly-mode');
+        }
+    }
+
+    function toggleBillingPeriodSwitch() {
+        if (document.body.classList.contains('yearly-mode')) {
+            toggleBillingPeriod('monthly');
+        } else {
+            toggleBillingPeriod('yearly');
+        }
+    }
+
+    // Accordion Collapse Drawer
+    function toggleFaq(btn) {
+        const item = btn.parentElement;
+        const isActive = item.classList.contains('active');
+
+        // Close all
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+
+        // Open clicked if it wasn't open
+        if (!isActive) {
+            item.classList.add('active');
+        }
+    }
+
+    // Testimonial slide counter
+    let testimonialIndex = 0;
+    function slideTestimonials(dir) {
+        const track = document.getElementById('testimonials-track');
+        const totalSlides = 3; // Excluding wrap duplicates
+
+        if (dir === 'next') {
+            testimonialIndex = (testimonialIndex + 1) % totalSlides;
+        } else {
+            testimonialIndex = (testimonialIndex - 1 + totalSlides) % totalSlides;
+        }
+
+        // Calculate translate offset based on item widths
+        const itemWidth = document.querySelector('.testimonial-card').offsetWidth;
+        const gap = 32; // 2rem gap
+        track.style.transform = `translateX(-${testimonialIndex * (itemWidth + gap)}px)`;
+    }
+
+    // Interactive Portal Login Modal Trigger Functions
+    function openLoginModal() {
+        document.getElementById('login-modal').classList.add('active');
+    }
+
+    function closeLoginModal() {
+        document.getElementById('login-modal').classList.remove('active');
+    }
+
+    function switchModalLoginTab(tab) {
+        document.querySelectorAll('#login-modal .login-tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('modal-login-credentials').style.display = 'none';
+        document.getElementById('modal-login-qr').style.display = 'none';
+
+        if (tab === 'qr') {
+            document.getElementById('modal-tab-qr').classList.add('active');
+            document.getElementById('modal-login-qr').style.display = 'block';
+        } else {
+            document.getElementById('modal-tab-credentials').classList.add('active');
+            document.getElementById('modal-login-credentials').style.display = 'block';
+        }
+    }
+
+    async function handleRegister(event) {
+        event.preventDefault();
+        const fullName = document.getElementById('reg-fullname').value.trim();
+        const username = document.getElementById('reg-username').value.trim();
+        const password = document.getElementById('reg-password').value;
+        const email = document.getElementById('reg-email').value.trim();
+        const contact = document.getElementById('reg-contact').value.trim();
+
+        if (!fullName || !username || !password || !email || !contact) {
+            showToast("Validation Error", "All fields are required.", "danger");
+            return;
+        }
+
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+            showToast("Invalid Email", "Please enter a valid email address, e.g. name@example.com.", "danger");
+            return;
+        }
+
+        const hasLetter = /[A-Za-z]/.test(password);
+        const hasNumber = /\d/.test(password);
+        const hasSymbol = /[^A-Za-z0-9]/.test(password);
+        if (password.length < 8 || !hasLetter || !hasNumber || !hasSymbol) {
+            showToast("Weak Password", "Password must be at least 8 characters and include a letter, a number, and a symbol.", "danger");
+            return;
+        }
+
+        try {
+            const user = await apiCall('/auth/register', 'POST', { fullName, username, password, email, contact });
+            showToast("Account Created", `Welcome to School360, ${user.fullName}! Logging you in...`, "success");
+            localStorage.setItem('s360_current_user', JSON.stringify(user));
+            setTimeout(() => redirectToDashboard(user.role), 1200);
+        } catch (err) {
+            showToast("Registration Failed", err.message || "Could not create account.", "danger");
+        }
+    }
+
+    function triggerQrFromModal() {
+        closeLoginModal();
+        openQRScanner();
+    }
+
+    function quickFillCredential(role) {
+        const presets = {
+            STUDENT: { u: "Sameeha", p: "Sameeha@360" },
+            TEACHER: { u: "Madawala", p: "Sameeha@360" },
+            ADMIN: { u: "Aathmika", p: "Aathmika@360" },
+            SUPPORT: { u: "Fatheen", p: "Fatheen@360" },
+            STAFF: { u: "Kavinde", p: "Kavinde@360" },
+            ENROLLMENT: { u: "Shakeer", p: "Shakeer@360" },
+            LIBRARIAN: { u: "aathu11", p: "aathu_11" }
+        };
+        const item = presets[role];
+        if (item) {
+            document.querySelector('#login-modal #username').value = item.u;
+            document.querySelector('#login-modal #password').value = item.p;
+            showToast("Credentials Loaded", `Loaded ${role} account credentials (${item.u}). Click Sign In to proceed!`, "info");
+        }
+    }
+
+    async function handleFormLogin(event) {
+        event.preventDefault();
+        const uInput = document.querySelector('#login-modal #username');
+        const pInput = document.querySelector('#login-modal #password');
+        const submitBtn = document.getElementById('btn-login-submit');
+
+        const username = uInput ? uInput.value.trim() : '';
+        const password = pInput ? pInput.value.trim() : '';
+
+        if (!username || !password) {
+            showToast("Validation Error", "All fields are required.", "danger");
+            return;
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `⌛ Authenticating...`;
+        }
+
+        try {
+            const user = await apiCall('/auth/login', 'POST', { username, password });
+            localStorage.setItem('s360_current_user', JSON.stringify(user));
+            showToast("Login Successful", `Welcome back, ${user.fullName || user.username}!`, "success");
+
+            setTimeout(() => redirectToDashboard(user.role), 600);
+        } catch (err) {
+            showToast("Login Failed", err.message || "Invalid username or password.", "danger");
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `Sign In to Dashboard`;
+            }
+        }
+    }
+
+    function openQRScanner() {
+        document.getElementById('qr-modal').classList.add('active');
+        loadQRAccountList();
+    }
+
+    const roleDisplayLabels = {
+        STUDENT:    "Student ID",
+        TEACHER:    "Teacher ID",
+        ADMIN:      "Admin ID",
+        SUPPORT:    "Support Team ID",
+        STAFF:      "Administrative Officer ID",
+        ENROLLMENT: "Enrollment Officer ID",
+        LIBRARIAN:  "Librarian ID"
+    };
+
+    async function loadQRAccountList() {
+        const container = document.getElementById('qr-account-list');
+        container.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;text-align:center;">Loading registered accounts...</p>';
+        
+        // Ensure local storage demo seed exists
+        if (typeof initDemoMode === 'function') initDemoMode();
+
+        const defaultSystemAccounts = [
+            { fullName: "Sameeha",        role: "STUDENT",   qrCodeToken: "QR-STUDENT-SAMEEHA" },
+            { fullName: "Madawala",       role: "TEACHER",   qrCodeToken: "QR-TEACHER-MADAWALA" },
+            { fullName: "Aathmika Shanaz",role: "ADMIN",     qrCodeToken: "QR-ADMIN-AATHMIKA" },
+            { fullName: "Fatheen",        role: "SUPPORT",   qrCodeToken: "QR-SUPPORT-FATHEEN" },
+            { fullName: "Kavinde",        role: "STAFF",     qrCodeToken: "QR-STAFF-KAVINDE" },
+            { fullName: "Shakeer",        role: "ENROLLMENT",qrCodeToken: "QR-ENROLLMENT-SHAKEER" },
+            { fullName: "Aathmika",       role: "LIBRARIAN", qrCodeToken: "QR-LIBRARIAN-AATHU11" }
+        ];
+
+        try {
+            let accounts = null;
+            try {
+                accounts = await apiCall('/auth/directory');
+            } catch (apiErr) {
+                console.warn("API directory endpoint unresolvable, reading local demo user directory", apiErr);
+            }
+            
+            if (!accounts || !Array.isArray(accounts) || accounts.length === 0) {
+                const rawUsers = JSON.parse(localStorage.getItem('s360_users'));
+                if (Array.isArray(rawUsers) && rawUsers.length > 0) {
+                    accounts = rawUsers.map(u => ({
+                        id: u.id,
+                        fullName: u.fullName || u.username,
+                        role: u.role,
+                        qrCodeToken: u.qrCodeToken
+                    }));
+                }
+            }
+
+            if (!accounts || accounts.length === 0) {
+                accounts = defaultSystemAccounts;
+            }
+
+            container.innerHTML = accounts.map(a => `
+                <button class="qr-select-btn" onclick="simulateQRScan('${a.qrCodeToken}')">
+                    <span>${a.fullName || a.username}</span> <strong>${roleDisplayLabels[a.role] || a.role}</strong>
+                </button>
+            `).join('');
+        } catch (err) {
+            console.error("Failed to load QR accounts list", err);
+            container.innerHTML = defaultSystemAccounts.map(a => `
+                <button class="qr-select-btn" onclick="simulateQRScan('${a.qrCodeToken}')">
+                    <span>${a.fullName}</span> <strong>${roleDisplayLabels[a.role] || a.role}</strong>
+                </button>
+            `).join('');
+        }
+    }
+
+    function closeQRScanner() {
+        document.getElementById('qr-modal').classList.remove('active');
+    }
+
+    async function simulateQRScan(token) {
+        closeQRScanner();
+        showToast("QR Detected", "Verifying Digital token credentials...", "info");
+
+        try {
+            const user = await apiCall('/auth/qr-login', 'POST', { qrToken: token });
+            localStorage.setItem('s360_current_user', JSON.stringify(user));
+            showToast("QR Authorized", `Logged in via Digital ID. Welcome, ${user.fullName}!`, "success");
+
+            setTimeout(() => redirectToDashboard(user.role), 1000);
+        } catch (err) {
+            showToast("Authentication Failed", "Invalid QR code token credentials.", "danger");
+        }
+    }
+
+    // Scroll Reveal Animation System using Intersection Observer
+    function initScrollReveal() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: "0px 0px -50px 0px"
+        });
+
+        document.querySelectorAll('.reveal').forEach(el => {
+            observer.observe(el);
+        });
+    }
+
+    // Automatic URL parameter scan for mobile phone QR camera landing
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const qrToken = urlParams.get('qrToken');
+        if (qrToken) {
+            simulateQRScan(qrToken);
+        }
+    });
+</script>
+<script src="js/app.js?v=contrast-8"></script>
+</body>
+</html>

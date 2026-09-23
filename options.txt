@@ -1,0 +1,1 @@
+ & javac -cp @options.txt -d target/classes @sources.txt

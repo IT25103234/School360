@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School360 - Contact Us & Support Desk Protocol</title>
+    <meta name="description" content="Get in touch with the School360 team. We are here to assist students, faculty, administrative staff, and parents with inquiries and support.">
+    <!-- Import Plus Jakarta Sans for modern typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css?v=contrast-8">
+    <script>
+        (function() {
+            var t = localStorage.getItem('theme') || 'dark';
+            if (t === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+    <style>
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .status-banner {
+            background: linear-gradient(90deg, rgba(107,50,148, 0.15) 0%, rgba(107,50,148, 0.15) 100%);
+            border-bottom: 1px solid rgba(107,50,148, 0.3);
+            padding: 0.6rem 1.5rem;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--lp-text);
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .status-pulse {
+            width: 8px;
+            height: 8px;
+            background-color: #6b3294;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px #6b3294;
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(107,50,148, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(107,50,148, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(107,50,148, 0); }
+        }
+
+        .contact-hero {
+            padding-top: 7rem;
+            padding-bottom: 3rem;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-action-pills {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1.75rem;
+        }
+
+        .pill-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.55rem 1.2rem;
+            border-radius: 9999px;
+            background: rgba(255,246,240, 0.05);
+            border: 1px solid rgba(255,246,240, 0.1);
+            color: var(--lp-text);
+            font-size: 0.88rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        body:not(.dark-theme) .pill-btn {
+            background: rgba(0, 0, 0, 0.04);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        .pill-btn:hover {
+            background: rgba(107,50,148, 0.15);
+            border-color: rgba(107,50,148, 0.4);
+            color: #49334f;
+            transform: translateY(-2px);
+        }
+
+        .departments-section {
+            max-width: 1240px;
+            margin: 0 auto 3.5rem auto;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .dept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .dept-card {
+            background: var(--lp-card-bg);
+            border: 1px solid var(--lp-card-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .dept-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(107,50,148, 0.4);
+            box-shadow: 0 12px 30px rgba(107,50,148, 0.1);
+        }
+
+        .dept-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(107,50,148, 0.2), rgba(107,50,148, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 2.5rem;
+            max-width: 1240px;
+            margin: 0 auto 5rem auto;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        @media (max-width: 992px) {
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .glass-card-container {
+            background: var(--lp-card-bg);
+            border: 1px solid var(--lp-card-border);
+            box-shadow: var(--lp-card-shadow);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 2.5rem;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .glass-card-container:hover {
+            border-color: rgba(107,50,148, 0.3);
+        }
+
+        .form-group-custom {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group-custom label {
+            display: block;
+            font-size: 0.88rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--lp-text);
+        }
+
+        .form-control-custom {
+            width: 100%;
+            padding: 0.85rem 1.1rem;
+            font-size: 0.95rem;
+            background: rgba(255,246,240, 0.04);
+            border: 1px solid rgba(255,246,240, 0.1);
+            border-radius: 12px;
+            color: var(--lp-text);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+        }
+
+        body:not(.dark-theme) .form-control-custom {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.12);
+        }
+
+        .form-control-custom:focus {
+            outline: none;
+            border-color: #6b3294;
+            box-shadow: 0 0 0 3px rgba(107,50,148, 0.25);
+            background: rgba(107,50,148, 0.03);
+        }
+
+        select.form-control-custom option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .char-counter {
+            font-size: 0.78rem;
+            color: var(--lp-text-muted);
+            text-align: right;
+            margin-top: 0.35rem;
+        }
+
+        .info-card-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
+            padding: 1.25rem;
+            background: rgba(255,246,240, 0.02);
+            border: 1px solid rgba(255,246,240, 0.05);
+            border-radius: 16px;
+            margin-bottom: 1rem;
+            transition: transform 0.25s ease, background 0.25s ease;
+            position: relative;
+        }
+
+        body:not(.dark-theme) .info-card-item {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        .info-card-item:hover {
+            transform: translateY(-2px);
+            background: rgba(107,50,148, 0.06);
+        }
+
+        .info-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(107,50,148, 0.2) 0%, rgba(107,50,148, 0.2) 100%);
+            border: 1px solid rgba(107,50,148, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .btn-copy-small {
+            margin-left: auto;
+            background: rgba(255,246,240, 0.08);
+            border: 1px solid rgba(255,246,240, 0.15);
+            border-radius: 8px;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.75rem;
+            color: var(--lp-text);
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        body:not(.dark-theme) .btn-copy-small {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-copy-small:hover {
+            background: rgba(107,50,148, 0.2);
+            color: #49334f;
+        }
+
+        /* Campus Tabs */
+        .campus-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.3rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255,246,240, 0.05);
+        }
+
+        .campus-tab {
+            flex: 1;
+            padding: 0.5rem;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border-radius: 8px;
+            color: var(--lp-text-muted);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .campus-tab.active {
+            background: #6b3294;
+            color: #fff6f0;
+            box-shadow: 0 4px 12px rgba(107,50,148, 0.3);
+        }
+
+        .map-box {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,246,240, 0.08);
+            margin-top: 1rem;
+            background: rgba(25,0,25, 0.8);
+        }
+
+        .faq-contact-section {
+            max-width: 900px;
+            margin: 0 auto 6rem auto;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .badge-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            background: rgba(107,50,148, 0.12);
+            border: 1px solid rgba(107,50,148, 0.25);
+            color: #49334f;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 1.25rem;
+        }
+
+        .user-autofill-notice {
+            display: none;
+            background: rgba(107,50,148, 0.1);
+            border: 1px solid rgba(107,50,148, 0.25);
+            border-radius: 10px;
+            padding: 0.6rem 0.9rem;
+            font-size: 0.82rem;
+            color: #49334f;
+            margin-bottom: 1.25rem;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body class="landing-page dark-theme">
+    <!-- Live Operational Status Banner -->
+    <div class="status-banner">
+        <span class="status-pulse"></span>
+        <span>Operational Status: Support Desk Systems Active &amp; Monitoring (Average Response Time: &lt; 2 Hours)</span>
+    </div>
+
+    <!-- Glowing Backdrop Ambient Spheres -->
+    <div class="glowing-bg">
+        <div class="sphere sphere-1"></div>
+        <div class="sphere sphere-2"></div>
+        <div class="sphere sphere-3"></div>
+    </div>
+
+    <!-- Sticky Glassmorphic Navbar -->
+    <nav class="saas-nav">
+        <div class="saas-nav-container">
+            <a href="index.html" class="saas-brand">
+                <span style="font-size: 1.3rem;">🏫</span> School360
+            </a>
+            <ul class="saas-nav-links">
+                <li><a href="index.html" class="saas-nav-link">Home</a></li>
+                <li><a href="index.html#features" class="saas-nav-link">Features</a></li>
+                <li><a href="index.html#showcase" class="saas-nav-link">Dashboard</a></li>
+                <li><a href="contact.html" class="saas-nav-link active" style="color: var(--lp-text); font-weight: 700;">Contact Us</a></li>
+            </ul>
+            <div style="display: flex; align-items: center; gap: 1.25rem;">
+                <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme(); return false;" title="Toggle Theme" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); font-size: 1.1rem; cursor: pointer; color: var(--lp-text); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; transition: all 0.3s;">🌙</button>
+                <a href="index.html" class="btn-saas-nav" id="nav-portal-btn">Portal Access</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="contact-hero">
+        <div style="max-width: 820px; margin: 0 auto; padding: 0 1.5rem;" class="reveal active">
+            <div class="badge-chip">
+                <span>💬 24/7 SUPPORT &amp; INQUIRY DESK PROTOCOL</span>
+            </div>
+            <h1 style="font-size: 3.4rem; font-weight: 800; line-height: 1.15; letter-spacing: -1.5px; margin-bottom: 1.25rem;">
+                Get in Touch with <span style="background: linear-gradient(135deg, #6b3294 0%, #6b3294 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">School360</span>
+            </h1>
+            <p style="font-size: 1.15rem; line-height: 1.6; color: var(--lp-text-muted);">
+                Have questions regarding admissions, module registration, technical support, or campus visits? Submit an inquiry below or reach out directly to our dedicated department desks.
+            </p>
+
+            <div class="hero-action-pills">
+                <a href="#contact-form-section" class="pill-btn">✉️ Send Message</a>
+                <a href="#dept-section" class="pill-btn">🏢 Department Desks</a>
+                <a href="#campus-location-section" class="pill-btn">📍 Campus Locations</a>
+                <a href="#faq-section" class="pill-btn">❓ Help &amp; FAQs</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Department Direct Desks Grid -->
+    <section class="departments-section" id="dept-section">
+        <div style="text-align: center; margin-bottom: 2rem;" class="reveal active">
+            <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--lp-text);">Department Direct Channels</h3>
+            <p style="color: var(--lp-text-muted); font-size: 0.92rem;">Connect directly with the specialized office handling your inquiry.</p>
+        </div>
+
+        <div class="dept-grid reveal active">
+            <!-- Card 1 -->
+            <div class="dept-card">
+                <div class="dept-icon">🎓</div>
+                <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--lp-text); margin-bottom: 0.35rem;">Admissions &amp; Registrar</h4>
+                <p style="font-size: 0.85rem; color: var(--lp-text-muted); margin-bottom: 1rem; line-height: 1.4;">Course enrollments, student registration, verification &amp; transcripts.</p>
+                <div style="font-size: 0.82rem; font-weight: 600; color: #49334f; display: flex; flex-direction: column; gap: 0.3rem;">
+                    <span>📧 admissions@school360.com</span>
+                    <span>📞 +94 11 236 0361</span>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="dept-card">
+                <div class="dept-icon">💻</div>
+                <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--lp-text); margin-bottom: 0.35rem;">IT &amp; Portal Support</h4>
+                <p style="font-size: 0.85rem; color: var(--lp-text-muted); margin-bottom: 1rem; line-height: 1.4;">Account logins, QR digital ID badges, system bugs &amp; portal access.</p>
+                <div style="font-size: 0.82rem; font-weight: 600; color: #49334f; display: flex; flex-direction: column; gap: 0.3rem;">
+                    <span>📧 support@school360.com</span>
+                    <span>📞 +94 11 236 0362</span>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="dept-card">
+                <div class="dept-icon">📚</div>
+                <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--lp-text); margin-bottom: 0.35rem;">Library &amp; Learning Desk</h4>
+                <p style="font-size: 0.85rem; color: var(--lp-text-muted); margin-bottom: 1rem; line-height: 1.4;">Book reservations, digital catalog access, renewals &amp; librarian office.</p>
+                <div style="font-size: 0.82rem; font-weight: 600; color: #49334f; display: flex; flex-direction: column; gap: 0.3rem;">
+                    <span>📧 library@school360.com</span>
+                    <span>📞 +94 11 236 0363</span>
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="dept-card">
+                <div class="dept-icon">💳</div>
+                <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--lp-text); margin-bottom: 0.35rem;">Finance &amp; Accounts</h4>
+                <p style="font-size: 0.85rem; color: var(--lp-text-muted); margin-bottom: 1rem; line-height: 1.4;">Tuition fee payments, invoices, scholarship queries &amp; billing.</p>
+                <div style="font-size: 0.82rem; font-weight: 600; color: #49334f; display: flex; flex-direction: column; gap: 0.3rem;">
+                    <span>📧 finance@school360.com</span>
+                    <span>📞 +94 11 236 0364</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Contact Grid -->
+    <section class="contact-grid" id="contact-form-section">
+        <!-- Form Column -->
+        <div class="glass-card-container reveal active">
+            <div style="margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--lp-text); margin-bottom: 0.35rem;">Send Us a Message</h2>
+                <p style="color: var(--lp-text-muted); font-size: 0.92rem;">Fill out the form below and our response team will get back to you promptly.</p>
+            </div>
+
+            <!-- Autofill indicator badge -->
+            <div id="autofill-notice" class="user-autofill-notice">
+                <span>✨ Auto-filled from your active user profile:</span>
+                <strong id="autofill-user-name" style="color:var(--lp-text);">User</strong>
+            </div>
+
+            <form id="contact-form" onsubmit="handleContactSubmit(event)">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                    <div class="form-group-custom">
+                        <label for="contact-name">Full Name <span style="color: #6b3294;">*</span></label>
+                        <input type="text" id="contact-name" class="form-control-custom" placeholder="e.g. Sameeha Perera" required>
+                    </div>
+                    <div class="form-group-custom">
+                        <label for="contact-email">Email Address <span style="color: #6b3294;">*</span></label>
+                        <input type="email" id="contact-email" class="form-control-custom" placeholder="name@domain.com" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                    <div class="form-group-custom">
+                        <label for="contact-phone">Phone Number</label>
+                        <input type="tel" id="contact-phone" class="form-control-custom" placeholder="e.g. 0771234567">
+                    </div>
+                    <div class="form-group-custom">
+                        <label for="contact-category">I am a...</label>
+                        <select id="contact-category" class="form-control-custom">
+                            <option value="Student">Student</option>
+                            <option value="Teacher/Faculty">Teacher / Faculty</option>
+                            <option value="Parent/Guardian">Parent / Guardian</option>
+                            <option value="Administrator">Administrator / Staff</option>
+                            <option value="Prospective Student">Prospective Student</option>
+                            <option value="Other">Other Inquiry</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label for="contact-subject">Inquiry Subject <span style="color: #6b3294;">*</span></label>
+                    <select id="contact-subject" class="form-control-custom" required>
+                        <option value="General Inquiry">General Inquiry</option>
+                        <option value="Technical Support">Technical &amp; Portal Support</option>
+                        <option value="Admissions &amp; Enrollment">Admissions &amp; Course Enrollment</option>
+                        <option value="Library Services">Library &amp; Digital Resources</option>
+                        <option value="System Feedback">Feedback &amp; Feature Requests</option>
+                    </select>
+                </div>
+
+                <div class="form-group-custom">
+                    <label for="contact-message">Message <span style="color: #6b3294;">*</span></label>
+                    <textarea id="contact-message" class="form-control-custom" rows="5" maxlength="1000" placeholder="How can we help you today? Please provide relevant details..." required oninput="updateCharCount()"></textarea>
+                    <div class="char-counter" id="contact-message-counter">0 / 1000 characters</div>
+                </div>
+
+                <button type="submit" id="btn-submit-contact" class="btn btn-primary btn-premium" style="width: 100%; border-radius: 12px; padding: 1rem; font-weight: 700; font-size: 1rem; box-shadow: 0 10px 25px rgba(107,50,148, 0.4); display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer;">
+                    <span>🚀 Submit Inquiry</span>
+                </button>
+            </form>
+
+            <div id="contact-success-box" style="display: none; padding: 2rem; background: rgba(107,50,148, 0.08); border: 1px solid rgba(107,50,148, 0.3); border-radius: 20px; margin-top: 1.5rem; text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎉</div>
+                <h4 style="color: #49334f; font-weight: 800; font-size: 1.3rem; margin-bottom: 0.5rem;" id="success-title">Message Sent Successfully!</h4>
+                <p style="color: var(--lp-text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;" id="success-desc">Thank you for reaching out to School360. A confirmation has been logged and our support team will respond promptly.</p>
+                
+                <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.2); padding: 0.5rem 1rem; border-radius: 10px; margin-bottom: 1.25rem;">
+                    <span style="font-size: 0.85rem; color: var(--lp-text-muted);">Reference ID:</span>
+                    <strong id="success-ref-id" style="color: #6b3294; font-size: 0.95rem;">S360-CNT-00000</strong>
+                    <button type="button" class="btn-copy-small" onclick="copyReferenceId()">📋 Copy</button>
+                </div>
+
+                <div>
+                    <button onclick="resetContactForm()" class="btn btn-secondary" style="padding: 0.6rem 1.5rem; font-size: 0.9rem; border-radius: 10px; cursor: pointer;">Send Another Message</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info & Campus Location Column -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;" class="reveal active" id="campus-location-section">
+            <!-- Details Card -->
+            <div class="glass-card-container" style="padding: 2rem;">
+                <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--lp-text); margin-bottom: 1.25rem;">Direct Contact Channels</h3>
+
+                <!-- Item 1 -->
+                <div class="info-card-item">
+                    <div class="info-icon-wrapper">📍</div>
+                    <div style="flex: 1;">
+                        <h5 style="font-size: 0.95rem; font-weight: 700; color: var(--lp-text); margin-bottom: 0.25rem;">Main Campus HQ</h5>
+                        <p style="font-size: 0.88rem; color: var(--lp-text-muted); line-height: 1.4;" id="info-campus-address">School360 Academic Complex<br>No. 360 Knowledge Avenue, Colombo 03, Sri Lanka</p>
+                    </div>
+                    <button class="btn-copy-small" onclick="copyToClipboard('No. 360 Knowledge Avenue, Colombo 03, Sri Lanka', 'Address')">📋 Copy</button>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="info-card-item">
+                    <div class="info-icon-wrapper">📞</div>
+                    <div style="flex: 1;">
+                        <h5 style="font-size: 0.95rem; font-weight: 700; color: var(--lp-text); margin-bottom: 0.25rem;">Helpline &amp; Support Desk</h5>
+                        <p style="font-size: 0.88rem; color: var(--lp-text-muted); line-height: 1.4;" id="info-campus-phone">+94 11 236 0360 (General Office)<br>+94 77 123 4567 (Support Desk)</p>
+                    </div>
+                    <button class="btn-copy-small" onclick="copyToClipboard('+94112360360', 'Phone Number')">📞 Call</button>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="info-card-item">
+                    <div class="info-icon-wrapper">✉️</div>
+                    <div style="flex: 1;">
+                        <h5 style="font-size: 0.95rem; font-weight: 700; color: var(--lp-text); margin-bottom: 0.25rem;">Email Channels</h5>
+                        <p style="font-size: 0.88rem; color: var(--lp-text-muted); line-height: 1.4;" id="info-campus-email">info@school360.com (General Inquiries)<br>support@school360.com (Tech Support)</p>
+                    </div>
+                    <button class="btn-copy-small" onclick="copyToClipboard('info@school360.com', 'Email Address')">✉️ Copy</button>
+                </div>
+
+                <!-- Item 4 -->
+                <div class="info-card-item">
+                    <div class="info-icon-wrapper">🕒</div>
+                    <div>
+                        <h5 style="font-size: 0.95rem; font-weight: 700; color: var(--lp-text); margin-bottom: 0.25rem;">Operational Hours</h5>
+                        <p style="font-size: 0.88rem; color: var(--lp-text-muted); line-height: 1.4;">Monday – Friday: 08:00 AM – 06:00 PM<br>Saturday: 09:00 AM – 01:00 PM (Emergency Desk)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Campus Selector & Map Graphic -->
+            <div class="glass-card-container" style="padding: 1.5rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                    <h4 style="font-size: 1rem; font-weight: 700; color: var(--lp-text);">Interactive Campus Map</h4>
+                    <button class="btn-copy-small" onclick="toggleMapView()" id="btn-map-mode">📡 Radar View</button>
+                </div>
+
+                <!-- Campus selector tabs -->
+                <div class="campus-tabs">
+                    <div class="campus-tab active" onclick="switchCampusLocation('colombo')">Colombo HQ</div>
+                    <div class="campus-tab" onclick="switchCampusLocation('kandy')">Kandy Tech Hub</div>
+                    <div class="campus-tab" onclick="switchCampusLocation('galle')">Galle Regional</div>
+                </div>
+
+                <div class="map-box">
+                    <svg id="svg-campus-map" viewBox="0 0 400 180" width="100%" class="svg-screen-glow">
+                        <rect x="0" y="0" width="400" height="180" fill="#2b124c"/>
+                        <!-- Grid Lines -->
+                        <path d="M 0 30 H 400 M 0 60 H 400 M 0 90 H 400 M 0 120 H 400 M 0 150 H 400" stroke="rgba(255,246,240,0.04)" stroke-width="1"/>
+                        <path d="M 50 0 V 180 M 100 0 V 180 M 150 0 V 180 M 200 0 V 180 M 250 0 V 180 M 300 0 V 180 M 350 0 V 180" stroke="rgba(255,246,240,0.04)" stroke-width="1"/>
+                        <!-- Simulated Roads -->
+                        <path id="svg-road-1" d="M 0 90 C 120 90 180 40 400 40" fill="none" stroke="#6b3294" stroke-width="10"/>
+                        <path id="svg-road-2" d="M 200 0 V 180" fill="none" stroke="#6b3294" stroke-width="8"/>
+                        <!-- Radar Circles (Toggled via Radar Mode) -->
+                        <g id="svg-radar-overlay" style="display: none;">
+                            <circle cx="200" cy="90" r="40" fill="none" stroke="rgba(107,50,148,0.25)" stroke-width="1" stroke-dasharray="4,4"/>
+                            <circle cx="200" cy="90" r="70" fill="none" stroke="rgba(107,50,148,0.15)" stroke-width="1" stroke-dasharray="6,6"/>
+                        </g>
+                        <!-- Campus Polygon -->
+                        <rect id="svg-campus-poly" x="150" y="60" width="100" height="60" rx="8" fill="rgba(107,50,148, 0.25)" stroke="#6b3294" stroke-width="2"/>
+                        <text id="svg-campus-title" x="200" y="95" font-size="10" font-weight="bold" fill="#fff6f0" text-anchor="middle" font-family="sans-serif">School360 Main HQ</text>
+                        <!-- Location Pin -->
+                        <circle id="svg-pin-center" cx="200" cy="70" r="6" fill="#6b3294"/>
+                        <circle id="svg-pin-pulse" cx="200" cy="70" r="12" fill="none" stroke="#6b3294" stroke-width="1.5"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Accordion Section -->
+    <section class="faq-contact-section" id="faq-section">
+        <div style="text-align: center; margin-bottom: 2rem;" class="reveal active">
+            <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--lp-text); margin-bottom: 0.5rem;">Frequently Asked Questions</h2>
+            <p style="color: var(--lp-text-muted); font-size: 1rem; margin-bottom: 1.5rem;">Quick answers to common questions regarding support, logins, and campus assistance.</p>
+            
+            <!-- Live Search Bar for FAQ -->
+            <div style="max-width: 480px; margin: 0 auto; position: relative;">
+                <input type="text" id="faq-search-input" class="form-control-custom" placeholder="🔍 Search questions (e.g. response time, ticket, login)..." oninput="filterFaqList()" style="border-radius: 9999px; padding-left: 1.25rem;">
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem;" class="reveal active" id="faq-list-container">
+            <!-- FAQ 1 -->
+            <div class="glass-card-container faq-item" style="padding: 1.25rem 1.75rem;">
+                <div onclick="toggleFaq(this)" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+                    <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--lp-text);">How long does it take to receive a response?</h4>
+                    <span class="faq-icon" style="font-size: 1.2rem; transition: transform 0.3s;">➕</span>
+                </div>
+                <div class="faq-answer" style="display: none; margin-top: 1rem; color: var(--lp-text-muted); font-size: 0.92rem; line-height: 1.6; border-top: 1px solid rgba(255,246,240,0.06); padding-top: 0.75rem;">
+                    Our typical response window is within 2 to 4 business hours for portal users and support tickets. General inquiries submitted via this form are answered within 24 hours.
+                </div>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div class="glass-card-container faq-item" style="padding: 1.25rem 1.75rem;">
+                <div onclick="toggleFaq(this)" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+                    <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--lp-text);">How do enrolled students submit priority technical tickets?</h4>
+                    <span class="faq-icon" style="font-size: 1.2rem; transition: transform 0.3s;">➕</span>
+                </div>
+                <div class="faq-answer" style="display: none; margin-top: 1rem; color: var(--lp-text-muted); font-size: 0.92rem; line-height: 1.6; border-top: 1px solid rgba(255,246,240,0.06); padding-top: 0.75rem;">
+                    Logged-in students can access their Student Portal dashboard and navigate to the Support tab to open a direct ticket with attachment uploads and live status tracking.
+                </div>
+            </div>
+
+            <!-- FAQ 3 -->
+            <div class="glass-card-container faq-item" style="padding: 1.25rem 1.75rem;">
+                <div onclick="toggleFaq(this)" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+                    <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--lp-text);">Where can prospective students inquire about new admissions?</h4>
+                    <span class="faq-icon" style="font-size: 1.2rem; transition: transform 0.3s;">➕</span>
+                </div>
+                <div class="faq-answer" style="display: none; margin-top: 1rem; color: var(--lp-text-muted); font-size: 0.92rem; line-height: 1.6; border-top: 1px solid rgba(255,246,240,0.06); padding-top: 0.75rem;">
+                    Prospective students can select 'Admissions &amp; Course Enrollment' under the inquiry subject dropdown on this page, or contact the admissions helpline directly at +94 11 236 0361.
+                </div>
+            </div>
+
+            <!-- FAQ 4 -->
+            <div class="glass-card-container faq-item" style="padding: 1.25rem 1.75rem;">
+                <div onclick="toggleFaq(this)" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+                    <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--lp-text);">What should I do if I forget my login password or digital QR code?</h4>
+                    <span class="faq-icon" style="font-size: 1.2rem; transition: transform 0.3s;">➕</span>
+                </div>
+                <div class="faq-answer" style="display: none; margin-top: 1rem; color: var(--lp-text-muted); font-size: 0.92rem; line-height: 1.6; border-top: 1px solid rgba(255,246,240,0.06); padding-top: 0.75rem;">
+                    You can contact the IT Support Desk or request a credential reset from an Enrollment Officer or Administrator. Alternatively, submit a message here specifying your username and full name.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="saas-footer">
+        <div class="saas-footer-grid">
+            <!-- Brand Column -->
+            <div class="footer-brand-col">
+                <a href="index.html" class="saas-brand" style="margin-bottom: 0.5rem;">
+                    <span>🏫</span> School360
+                </a>
+                <p class="footer-brand-desc">
+                    Empowering modern educational institutions with secure, scalable, and beautifully designed digital workspaces.
+                </p>
+                <div class="footer-socials">
+                    <a href="#" class="footer-social-icon" title="Twitter">𝕏</a>
+                    <a href="#" class="footer-social-icon" title="GitHub">🐙</a>
+                    <a href="#" class="footer-social-icon" title="LinkedIn">in</a>
+                </div>
+            </div>
+            <!-- Column 2: Product Links -->
+            <div class="footer-links-col">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="index.html#features">Features</a></li>
+                    <li><a href="index.html#showcase">Showcase</a></li>
+                    <li><a href="#faq-section">FAQ Help</a></li>
+                </ul>
+            </div>
+            <!-- Column 3: Resources Links -->
+            <div class="footer-links-col">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="index.html">Portal Login</a></li>
+                    <li><a href="index.html?scanId=true">Scan Digital ID</a></li>
+                    <li><a href="#contact-form-section">Academic Support</a></li>
+                    <li><a href="#faq-section">Documentation</a></li>
+                </ul>
+            </div>
+            <!-- Column 4: System Status -->
+            <div class="footer-links-col">
+                <h4>System Status</h4>
+                <div class="footer-status-badge">
+                    <span class="status-dot"></span>
+                    <span>All services operational</span>
+                </div>
+                <p style="font-size: 0.82rem; color: #49334f; margin-top: 0.5rem; line-height: 1.4;">
+                    Version v1.0.0 (H2 Memory Mode)<br>
+                    Connected to local Tomcat instance.
+                </p>
+            </div>
+        </div>
+
+        <div class="saas-footer-copyright">
+            <p>© 2026 School360. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/app.js?v=contrast-8"></script>
+    <script>
+        // Campus Locations Data Map
+        const campusData = {
+            colombo: {
+                title: "School360 Main HQ",
+                address: "School360 Academic Complex<br>No. 360 Knowledge Avenue, Colombo 03, Sri Lanka",
+                phone: "+94 11 236 0360 (General Office)<br>+94 77 123 4567 (Support Desk)",
+                email: "info@school360.com (General)<br>support@school360.com (Support)",
+                pinX: 200, pinY: 70, polyX: 150, polyY: 60
+            },
+            kandy: {
+                title: "Kandy Tech Hub",
+                address: "School360 Innovation Center<br>No. 45 Hillside Tech Park, Kandy, Sri Lanka",
+                phone: "+94 81 222 3600 (Kandy Office)<br>+94 77 444 8899 (Tech Lab)",
+                email: "kandy@school360.com (Inquiries)<br>techlab@school360.com",
+                pinX: 280, pinY: 50, polyX: 230, polyY: 40
+            },
+            galle: {
+                title: "Galle Regional Center",
+                address: "School360 Maritime Complex<br>No. 12 Coastal Bay Drive, Galle, Sri Lanka",
+                phone: "+94 91 224 0360 (Galle Office)<br>+94 76 555 1122 (Regional Desk)",
+                email: "galle@school360.com (Inquiries)<br>maritime@school360.com",
+                pinX: 120, pinY: 120, polyX: 70, polyY: 110
+            }
+        };
+
+        let currentRefId = "";
+        let isRadarMode = false;
+
+        // On DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Auto fill logged in user details if available
+            autoFillUserData();
+
+            // Setup input restrictions
+            attachContactRestrictions();
+
+            // Observe scroll reveals
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        });
+
+        // Auto fill logged-in user profile info
+        function autoFillUserData() {
+            try {
+                const userStr = localStorage.getItem('s360_current_user');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    if (user && user.fullName) {
+                        const nameInput = document.getElementById('contact-name');
+                        const emailInput = document.getElementById('contact-email');
+                        const phoneInput = document.getElementById('contact-phone');
+                        const catSelect = document.getElementById('contact-category');
+
+                        if (nameInput && !nameInput.value) nameInput.value = user.fullName;
+                        if (emailInput && !emailInput.value && user.email) emailInput.value = user.email;
+                        if (phoneInput && !phoneInput.value && user.contact) phoneInput.value = user.contact;
+
+                        // Preselect category
+                        if (catSelect && user.role) {
+                            const r = user.role.toUpperCase();
+                            if (r === 'STUDENT') catSelect.value = 'Student';
+                            else if (r === 'TEACHER') catSelect.value = 'Teacher/Faculty';
+                            else if (r === 'ADMIN' || r === 'STAFF' || r === 'SUPPORT') catSelect.value = 'Administrator';
+                        }
+
+                        const notice = document.getElementById('autofill-notice');
+                        const nameLbl = document.getElementById('autofill-user-name');
+                        if (notice && nameLbl) {
+                            nameLbl.innerText = `${user.fullName} (${user.role})`;
+                            notice.style.display = 'flex';
+                        }
+
+                        // Update navbar portal button text to user dashboard
+                        const navBtn = document.getElementById('nav-portal-btn');
+                        if (navBtn) {
+                            navBtn.innerText = `Dashboard (${user.role})`;
+                            navBtn.href = getDashboardLink(user.role);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn("Auto fill fallback:", e);
+            }
+        }
+
+        function getDashboardLink(role) {
+            switch ((role || '').toUpperCase()) {
+                case 'STUDENT': return 'student.html';
+                case 'TEACHER': return 'teacher.html';
+                case 'ADMIN': return 'admin.html';
+                case 'SUPPORT': return 'support.html';
+                case 'STAFF': return 'staff.html';
+                case 'ENROLLMENT': return 'enrollment.html';
+                case 'LIBRARIAN': return 'librarian.html';
+                default: return 'index.html';
+            }
+        }
+
+        function attachContactRestrictions() {
+            const nameInput = document.getElementById('contact-name');
+            if (nameInput) {
+                nameInput.addEventListener('input', (e) => {
+                    const prev = e.target.value;
+                    const cleaned = prev.replace(/[^a-zA-Z\s]/g, '');
+                    if (prev !== cleaned) e.target.value = cleaned;
+                });
+            }
+
+            const phoneInput = document.getElementById('contact-phone');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', (e) => {
+                    const prev = e.target.value;
+                    let cleaned = prev.replace(/[^\d\+\s\-]/g, '');
+                    if (cleaned.length > 16) cleaned = cleaned.slice(0, 16);
+                    if (prev !== cleaned) e.target.value = cleaned;
+                });
+            }
+        }
+
+        function updateCharCount() {
+            const msgInput = document.getElementById('contact-message');
+            const counter = document.getElementById('contact-message-counter');
+            if (msgInput && counter) {
+                const len = msgInput.value.length;
+                counter.innerText = `${len} / 1000 characters`;
+                if (len >= 950) {
+                    counter.style.color = '#6b3294';
+                } else {
+                    counter.style.color = 'var(--lp-text-muted)';
+                }
+            }
+        }
+
+        // Form Submission Logic
+        async function handleContactSubmit(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('contact-name').value.trim();
+            const email = document.getElementById('contact-email').value.trim();
+            const phone = document.getElementById('contact-phone').value.trim();
+            const category = document.getElementById('contact-category').value;
+            const subject = document.getElementById('contact-subject').value;
+            const message = document.getElementById('contact-message').value.trim();
+
+            if (!name || !email || !message) {
+                if (typeof showToast === 'function') {
+                    showToast("Validation Error", "Please fill in all required fields marked with *", "danger");
+                } else {
+                    alert("Please fill in all required fields.");
+                }
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit-contact');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳ Processing Inquiry...</span>';
+
+            const payload = { name, email, phone, category, subject, message };
+
+            try {
+                let responseData = null;
+                if (typeof apiCall === 'function') {
+                    try {
+                        responseData = await apiCall('/contact', 'POST', payload);
+                    } catch (apiErr) {
+                        console.warn("Backend API unavailable, executing demo fallback...", apiErr);
+                    }
+                }
+
+                if (!responseData) {
+                    // Demo fallback
+                    responseData = {
+                        status: "success",
+                        message: `Thank you, ${name}! Your inquiry regarding "${subject}" has been received. Our support team will get back to you shortly.`,
+                        referenceId: "S360-CNT-" + Math.floor(10000 + Math.random() * 90000)
+                    };
+                }
+
+                currentRefId = responseData.referenceId || "S360-CNT-GENERAL";
+
+                if (typeof showToast === 'function') {
+                    showToast("Inquiry Logged", responseData.message, "success");
+                }
+
+                document.getElementById('contact-form').style.display = 'none';
+                const successBox = document.getElementById('contact-success-box');
+                document.getElementById('success-desc').innerText = responseData.message;
+                document.getElementById('success-ref-id').innerText = currentRefId;
+                successBox.style.display = 'block';
+
+            } catch (err) {
+                if (typeof showToast === 'function') {
+                    showToast("Submission Error", err.message || "Failed to submit message. Please try again.", "danger");
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        function resetContactForm() {
+            document.getElementById('contact-form').reset();
+            document.getElementById('contact-form').style.display = 'block';
+            document.getElementById('contact-success-box').style.display = 'none';
+            autoFillUserData();
+            updateCharCount();
+        }
+
+        // Copy Reference ID
+        function copyReferenceId() {
+            if (currentRefId) {
+                navigator.clipboard.writeText(currentRefId).then(() => {
+                    if (typeof showToast === 'function') {
+                        showToast("Copied!", `Reference ID ${currentRefId} copied to clipboard.`, "success");
+                    }
+                }).catch(() => {
+                    alert("Reference ID: " + currentRefId);
+                });
+            }
+        }
+
+        // Copy to clipboard helper
+        function copyToClipboard(text, label) {
+            navigator.clipboard.writeText(text).then(() => {
+                if (typeof showToast === 'function') {
+                    showToast("Copied to Clipboard", `${label} successfully copied.`, "success");
+                }
+            }).catch(() => {
+                alert(text);
+            });
+        }
+
+        // Campus Locations Tabs Switcher
+        function switchCampusLocation(locKey) {
+            const data = campusData[locKey];
+            if (!data) return;
+
+            // Update active tab styling
+            document.querySelectorAll('.campus-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update details
+            document.getElementById('info-campus-address').innerHTML = data.address;
+            document.getElementById('info-campus-phone').innerHTML = data.phone;
+            document.getElementById('info-campus-email').innerHTML = data.email;
+
+            // Update SVG map elements
+            const poly = document.getElementById('svg-campus-poly');
+            const pinCenter = document.getElementById('svg-pin-center');
+            const pinPulse = document.getElementById('svg-pin-pulse');
+            const title = document.getElementById('svg-campus-title');
+
+            if (poly && pinCenter && pinPulse && title) {
+                poly.setAttribute('x', data.polyX);
+                poly.setAttribute('y', data.polyY);
+                pinCenter.setAttribute('cx', data.pinX);
+                pinCenter.setAttribute('cy', data.pinY);
+                pinPulse.setAttribute('cx', data.pinX);
+                pinPulse.setAttribute('cy', data.pinY);
+                title.setAttribute('x', data.pinX);
+                title.setAttribute('y', data.pinY + 25);
+                title.textContent = data.title;
+            }
+        }
+
+        // Toggle Map View Mode (Standard Grid vs Radar Overlay)
+        function toggleMapView() {
+            const radar = document.getElementById('svg-radar-overlay');
+            const btn = document.getElementById('btn-map-mode');
+            if (radar && btn) {
+                isRadarMode = !isRadarMode;
+                radar.style.display = isRadarMode ? 'block' : 'none';
+                btn.innerHTML = isRadarMode ? '🗺️ Standard Grid' : '📡 Radar View';
+                if (typeof showToast === 'function') {
+                    showToast("Map View Changed", isRadarMode ? "Enabled Radar Overlay View" : "Switched to Standard Grid View", "info");
+                }
+            }
+        }
+
+        // FAQ Toggle & Accordion Logic
+        function toggleFaq(el) {
+            const faqItem = el.closest('.faq-item');
+            const answer = faqItem.querySelector('.faq-answer');
+            const icon = faqItem.querySelector('.faq-icon');
+
+            if (answer.style.display === 'block') {
+                answer.style.display = 'none';
+                icon.innerText = '➕';
+            } else {
+                answer.style.display = 'block';
+                icon.innerText = '➖';
+            }
+        }
+
+        // FAQ Live Search Filter
+        function filterFaqList() {
+            const query = (document.getElementById('faq-search-input')?.value || '').toLowerCase().trim();
+            const items = document.querySelectorAll('.faq-item');
+
+            items.forEach(item => {
+                const text = item.innerText.toLowerCase();
+                if (!query || text.includes(query)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

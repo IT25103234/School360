@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School360 - Administrator Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css?v=contrast-8">
+    <style>
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .chart-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+        }
+        .chart-card canvas {
+            max-width: 100%;
+            height: 180px;
+            margin-top: 1rem;
+        }
+    </style>
+    <script>
+        (function() {
+            var t = localStorage.getItem('theme') || 'dark';
+            if (t === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <span>🏫 School360</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item active" id="menu-overview"><a href="#" onclick="switchTab('overview')">📊 System Overview</a></li>
+            <li class="sidebar-item" id="menu-users"><a href="#" onclick="switchTab('users')">👥 User Management</a></li>
+            <li class="sidebar-item" id="menu-register-user"><a href="#" onclick="resetUserForm(); switchTab('register-user')">➕ Register User</a></li>
+            <li class="sidebar-item" id="menu-courses"><a href="#" onclick="switchTab('courses')">🎓 Program Registry</a></li>
+            <li class="sidebar-item" id="menu-oversight"><a href="#" onclick="switchTab('oversight')">⚠️ Escalations & Maintenance</a></li>
+            <li class="sidebar-item" id="menu-logs"><a href="#" onclick="switchTab('logs')">📜 System Audit Logs</a></li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <button class="btn btn-qr btn-block" onclick="logout()">🚪 Logout</button>
+        </div>
+    </nav>
+
+    <!-- Main Workspace -->
+    <main class="main-content">
+        <header class="header-bar">
+            <div class="header-title">
+                <h2 id="welcome-message">Hello, Administrator</h2>
+                <p>Welcome to the core School360 administration panel. Monitor system metrics and user rosters.</p>
+            </div>
+            <div class="header-actions">
+                <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme(); return false;" title="Toggle Theme">🌙</button>
+            </div>
+        </header>
+
+        <!-- Tab 1: System Overview (Stats & Charts) -->
+        <section id="tab-overview" class="tab-content active">
+            <!-- Stat Cards -->
+            <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3 id="stat-total-students">0</h3>
+                        <p>Total Student Count</p>
+                    </div>
+                    <div class="stat-icon primary">🎓</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3 id="stat-attendance-percent">0%</h3>
+                        <p>Class Attendance Avg</p>
+                    </div>
+                    <div class="stat-icon success">✔️</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3 id="stat-open-tickets">0</h3>
+                        <p>Active Support Tickets</p>
+                    </div>
+                    <div class="stat-icon danger">🎫</div>
+                </div>
+                <div class="stat-card" style="cursor:pointer;" onclick="reconnectDatabase(true)" title="Click to Test & Reconnect Database">
+                    <div class="stat-info">
+                        <h3 id="stat-db-status" style="font-size:1.05rem;"><span class="db-status-badge connected">🟢 Connected</span></h3>
+                        <p class="db-status-text" style="font-size:0.8rem;color:#6b3294;margin-top:0.2rem;">Live DB Active</p>
+                    </div>
+                    <div class="stat-icon" style="background:rgba(107,50,148,0.15);color:#6b3294;">🔌</div>
+                </div>
+            </div>
+
+
+
+
+            <!-- Analytical Charts -->
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h4>Student Stakeholder Breakdown</h4>
+                    <canvas id="stakeholders-chart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h4>Support Tickets status</h4>
+                    <canvas id="tickets-status-chart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h4>Average Class Attendance Gauge</h4>
+                    <canvas id="attendance-gauge-chart"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-grid" style="grid-template-columns: 1fr;">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3>General Registry Reports</h3>
+                        <button class="btn btn-qr" onclick="exportTableToCSV('admin-students-table', 'students_registry.csv')">📥 Export Students</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="custom-table" id="admin-students-table">
+                            <thead>
+                                <tr>
+                                    <th>Admission Number</th>
+                                    <th>Name</th>
+                                    <th>Course Reference</th>
+                                    <th>Class Name</th>
+                                    <th>Admissions Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-students-list">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 2: User Management -->
+        <section id="tab-users" class="tab-content" style="display:none;">
+            <div class="section-card">
+                <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h3>Roster of Registered Accounts</h3>
+                        <p style="color:var(--text-muted);font-size:0.85rem;margin-top:0.25rem;">View and manage all system stakeholders.</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="resetUserForm(); switchTab('register-user');" style="display:inline-flex; align-items:center; gap:0.5rem; padding: 0.6rem 1.2rem; font-weight: 600; cursor: pointer;">
+                        <span>➕</span> Register New User
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Role Type</th>
+                                <th>Email Reference</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-users-list">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab: Dedicated Register User Form Page -->
+        <section id="tab-register-user" class="tab-content" style="display:none;">
+            <div class="section-card" style="max-width: 680px; margin: 0 auto; padding: 2rem;">
+                <div class="section-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                    <h3 id="user-form-title" style="font-size: 1.35rem; font-weight: 700; color: var(--text-primary);">Register Account</h3>
+                    <p style="color:var(--text-muted); font-size: 0.88rem; margin-top: 0.25rem;">Create a new user account with assigned system privileges.</p>
+                </div>
+                <form id="user-form" onsubmit="handleSaveUser(event)" autocomplete="off">
+                    <input type="hidden" id="user-id">
+                    <div class="form-group">
+                        <label class="form-label" for="user-fullname">Full Name</label>
+                        <input type="text" id="user-fullname" class="form-input" placeholder="e.g. John Doe" required pattern="[A-Za-z\s]+" title="Letters and spaces only" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="user-username">Username</label>
+                        <input type="text" id="user-username" class="form-input" placeholder="e.g. john_school360" required autocomplete="new-password">
+                    </div>
+                    <div class="form-group" id="password-form-group">
+                        <label class="form-label" for="user-password">Password</label>
+                        <input type="password" id="user-password" class="form-input" placeholder="••••••••" minlength="8" required autocomplete="new-password">
+                        <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.35rem;">Min 8 characters, with at least one letter, one number, and one symbol.</p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="user-role">Stakeholder Role</label>
+                        <select id="user-role" class="form-input" required>
+                            <option value="STUDENT">STUDENT</option>
+                            <option value="TEACHER">TEACHER</option>
+                            <option value="SUPPORT">STUDENT SUPPORT TEAM</option>
+                            <option value="STAFF">ADMINISTRATIVE OFFICER</option>
+                            <option value="ENROLLMENT">ENROLLMENT OFFICER</option>
+                            <option value="LIBRARIAN">LIBRARIAN</option>
+                            <option value="ADMIN">SYSTEM ADMINISTRATOR</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="user-email">Email</label>
+                        <input type="email" id="user-email" class="form-input" placeholder="john@school360.com" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 2rem;">
+                        <label class="form-label" for="user-contact">Contact Number</label>
+                        <input type="text" id="user-contact" class="form-input" placeholder="e.g. 0771234567" required pattern="\d{1,16}" maxlength="16" inputmode="numeric">
+                    </div>
+                    <div style="display: flex; gap: 1rem; align-items: center; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
+                        <button type="button" class="btn btn-qr" id="btn-cancel-edit-user" style="display:none; padding: 0.75rem 1.5rem;" onclick="resetUserForm(); switchTab('users');">Cancel Edit</button>
+                        <button type="submit" class="btn btn-primary" id="btn-save-user" style="padding: 0.75rem 2rem; font-weight: 600;">Save Account</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+
+
+        <!-- Tab 3: Program Registry (Courses CRUD) -->
+        <section id="tab-courses" class="tab-content" style="display:none;">
+            <div class="dashboard-grid">
+                <div>
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3>Academic Course Registers</h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Course Name</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-courses-list">
+                                    <!-- Loaded dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3 id="course-form-title">Create Course Program</h3>
+                        </div>
+                        <form onsubmit="handleSaveCourse(event)">
+                            <input type="hidden" id="course-id">
+                            <div class="form-group">
+                                <label class="form-label" for="course-name">Course Name</label>
+                                <input type="text" id="course-name" class="form-input" placeholder="e.g. BSc (Hons) in Cyber Security" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="course-code">Course Code</label>
+                                <input type="text" id="course-code" class="form-input" placeholder="e.g. CS-303" required>
+                            </div>
+                            <div class="form-group" style="margin-bottom:2rem;">
+                                <label class="form-label" for="course-desc">Syllabus Summary</label>
+                                <textarea id="course-desc" class="form-input" rows="4" placeholder="Course outline..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block" id="btn-save-course">Create Course</button>
+                            <button type="button" class="btn btn-qr btn-block" id="btn-cancel-edit-course" style="display:none;margin-top:0.5rem;" onclick="resetCourseForm()">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 4: Escalations & Maintenance -->
+        <section id="tab-oversight" class="tab-content" style="display:none;">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Escalated Support Tickets</h3>
+                    <p style="color:var(--text-muted);font-size:0.85rem;">Tickets flagged by the Student Support Team for administrative review.</p>
+                </div>
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Title</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Raised</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-escalated-list">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Facility Maintenance Reports</h3>
+                    <p style="color:var(--text-muted);font-size:0.85rem;">Issues reported by Support & Administrative staff across campus facilities.</p>
+                </div>
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Reported By</th>
+                                <th>Area</th>
+                                <th>Issue</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-maintenance-list">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 4: System Audit Logs -->
+        <section id="tab-logs" class="tab-content" style="display:none;">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Operation Audit Log</h3>
+                    <button class="btn btn-qr" onclick="exportTableToCSV('audit-log-table', 'audit_logs.csv')">📥 Export Logs</button>
+                </div>
+                <div class="table-container" style="max-height: 500px; overflow-y: auto;">
+                    <table class="custom-table" id="audit-log-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Severity</th>
+                                <th>Log Description</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-logs-list">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+
+    <script src="js/app.js?v=contrast-8"></script>
+    <script>
+        let usersList = [];
+        let coursesList = [];
+
+        const oldCheckAuth = checkAuth;
+        checkAuth = async function() {
+            oldCheckAuth();
+            if (currentUser && currentUser.role === 'ADMIN') {
+                document.getElementById('welcome-message').innerText = `Hello, ${currentUser.fullName}`;
+                await loadAdminStats();
+                await loadUsers();
+                await loadCourses();
+                await loadLogs();
+                await loadEscalatedTickets();
+                await loadMaintenanceReports();
+            }
+        };
+
+        async function loadEscalatedTickets() {
+            try {
+                const tickets = await apiCall('/support/tickets');
+                const escalated = tickets.filter(t => t.escalationStatus === 'ESCALATED');
+                const tbody = document.getElementById('admin-escalated-list');
+                tbody.innerHTML = '';
+                if (escalated.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No escalated tickets right now.</td></tr>';
+                    return;
+                }
+                escalated.forEach(t => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${t.studentName}</strong></td>
+                            <td>${t.title}</td>
+                            <td><span class="badge ${t.priority === 'HIGH' ? 'badge-danger' : 'badge-info'}">${t.priority}</span></td>
+                            <td><span class="badge badge-warning">${t.status}</span></td>
+                            <td>${t.createdDate}</td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function loadMaintenanceReports() {
+            try {
+                const reports = await apiCall('/maintenance-reports');
+                const tbody = document.getElementById('admin-maintenance-list');
+                tbody.innerHTML = '';
+                if (reports.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No maintenance reports filed yet.</td></tr>';
+                    return;
+                }
+                reports.slice().reverse().forEach(r => {
+                    let statusBadge = `<span class="badge badge-warning">PENDING</span>`;
+                    if (r.status === 'IN_PROGRESS') statusBadge = `<span class="badge badge-info">IN PROGRESS</span>`;
+                    if (r.status === 'RESOLVED') statusBadge = `<span class="badge badge-success">RESOLVED</span>`;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${r.reportedByName}</td>
+                            <td>${r.area}</td>
+                            <td>${r.issue}</td>
+                            <td><span class="badge ${r.priority === 'HIGH' ? 'badge-danger' : 'badge-info'}">${r.priority}</span></td>
+                            <td>${statusBadge}</td>
+                            <td>
+                                ${r.status !== 'RESOLVED' ? `<button class="btn btn-qr" style="padding:0.25rem 0.5rem;font-size:0.75rem;" onclick="advanceMaintenanceStatus(${r.id}, '${r.status}')">Mark ${r.status === 'PENDING' ? 'In Progress' : 'Resolved'}</button>` : ''}
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function advanceMaintenanceStatus(id, currentStatus) {
+            const nextStatus = currentStatus === 'PENDING' ? 'IN_PROGRESS' : 'RESOLVED';
+            try {
+                await apiCall(`/maintenance-reports/${id}`, 'PUT', { status: nextStatus });
+                showToast("Report Updated", `Maintenance report marked as ${nextStatus.replace('_',' ')}.`, "success");
+                await loadMaintenanceReports();
+            } catch (err) {
+                showToast("Update Failed", err.message, "danger");
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabId}`).style.display = 'block';
+            document.getElementById(`menu-${tabId}`).classList.add('active');
+        }
+
+        async function loadAdminStats() {
+            try {
+                const stats = await apiCall('/admin/stats');
+                
+                // Write stat card values
+                document.getElementById('stat-total-students').innerText = stats.studentCount;
+                document.getElementById('stat-attendance-percent').innerText = `${stats.attendancePercentage}%`;
+                document.getElementById('stat-open-tickets').innerText = stats.ticketStatusBreakdown.OPEN;
+
+                // Render Canvas Charts
+                renderStakeholderChart(stats.roleCounts);
+                renderTicketStatusChart(stats.ticketStatusBreakdown);
+                renderAttendanceGauge(stats.attendancePercentage);
+                
+                // Load students directory view
+                await loadStudentsRegistry();
+            } catch (err) {
+                showToast("Stats Load Error", err.message, "danger");
+            }
+        }
+
+        async function loadStudentsRegistry() {
+            try {
+                const users = await apiCall('/admin/users');
+                const tbody = document.getElementById('admin-students-list');
+                tbody.innerHTML = '';
+
+                // Load all students details
+                const courses = await apiCall('/students/courses');
+
+                if (CONFIG.isDemoMode) {
+                    const students = JSON.parse(localStorage.getItem('s360_students'));
+                    if (!students || students.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No student records found.</td></tr>';
+                        return;
+                    }
+                    students.forEach(s => {
+                        const userRef = users.find(u => u.id === s.userId);
+                        const cRef = courses.find(c => c.id === s.courseId);
+                        if (userRef) {
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td><strong>${s.admissionNumber || 'PENDING'}</strong></td>
+                                    <td>${userRef.fullName}</td>
+                                    <td>${cRef ? cRef.name : 'Unassigned'}</td>
+                                    <td>${s.className ? `${s.className} (${s.section})` : '-'}</td>
+                                    <td><span class="badge ${s.enrollmentStatus === 'APPROVED_STAFF' ? 'badge-success' : 'badge-warning'}">${s.enrollmentStatus || 'UNENROLLED'}</span></td>
+                                </tr>
+                            `;
+                        }
+                    });
+                } else {
+                    // API implementation can fetch roster details directly from database tables
+                    // Let's populate mock for display safety
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Syncing from MySQL databases...</td></tr>';
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                usersList = await apiCall('/admin/users');
+                const tbody = document.getElementById('admin-users-list');
+                tbody.innerHTML = '';
+
+                usersList.forEach(u => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${u.fullName}</strong></td>
+                            <td>${u.username}</td>
+                            <td><span class="badge badge-info" style="font-size:0.7rem;">${u.role}</span></td>
+                            <td>${u.email}</td>
+                            <td style="white-space:nowrap;">
+                                <div style="display:inline-flex;flex-direction:row;align-items:center;gap:0.35rem;white-space:nowrap;">
+                                    <button class="btn btn-qr" style="padding:0.25rem 0.5rem;font-size:0.75rem;white-space:nowrap;" onclick="editUser(${u.id})">Edit</button>
+                                    <button class="btn btn-qr" style="padding:0.25rem 0.5rem;font-size:0.75rem;color:var(--danger);white-space:nowrap;" onclick="deleteUser(${u.id})">✕</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function handleSaveUser(event) {
+            event.preventDefault();
+            const id = document.getElementById('user-id').value;
+            const fullName = document.getElementById('user-fullname').value.trim();
+            const username = document.getElementById('user-username').value.trim();
+            const role = document.getElementById('user-role').value;
+            const email = document.getElementById('user-email').value.trim();
+            const contact = document.getElementById('user-contact').value.trim();
+            
+            if (!fullName || !username || !role || !email || !contact) {
+                showToast("Validation Error", "All fields are required.", "danger");
+                return;
+            }
+            const nameCheck = validateName(fullName);
+            if (!nameCheck.valid) {
+                showToast("Validation Error", nameCheck.message, "danger");
+                return;
+            }
+            const phoneCheck = validatePhone(contact);
+            if (!phoneCheck.valid) {
+                showToast("Validation Error", phoneCheck.message, "danger");
+                return;
+            }
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                showToast("Invalid Email", "Please enter a valid email address, e.g. name@example.com.", "danger");
+                return;
+            }
+            if (id && parseInt(id) === currentUser.id && role !== 'ADMIN') {
+                showToast("Action Forbidden", "You cannot change your own role away from Administrator — ask another admin to do it.", "warning");
+                return;
+            }
+
+            try {
+                if (id) {
+                    await apiCall(`/admin/users/${id}`, 'PUT', { fullName, role, email, contact });
+                    showToast("User Updated", "Roster account updated.", "success");
+                } else {
+                    const password = document.getElementById('user-password').value;
+                    if (!password) {
+                        showToast("Validation Error", "Password is required for new users.", "danger");
+                        return;
+                    }
+                    const hasLetter = /[A-Za-z]/.test(password);
+                    const hasNumber = /\d/.test(password);
+                    const hasSymbol = /[^A-Za-z0-9]/.test(password);
+                    if (password.length < 8 || !hasLetter || !hasNumber || !hasSymbol) {
+                        showToast("Weak Password", "Password must be at least 8 characters and include a letter, a number, and a symbol.", "danger");
+                        return;
+                    }
+                    await apiCall('/admin/users', 'POST', { fullName, username, password, role, email, contact });
+                    showToast("User Registered", "Roster account saved successfully.", "success");
+                }
+                resetUserForm();
+                await loadUsers();
+                await loadAdminStats();
+                switchTab('users');
+            } catch (err) {
+                showToast("Save Failed", err.message, "danger");
+            }
+        }
+
+        function editUser(id) {
+            const u = usersList.find(x => x.id === id);
+            if (!u) return;
+
+            const setVal = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val; };
+            setVal('user-id', u.id);
+            setVal('user-fullname', u.fullName);
+            setVal('user-username', u.username);
+            setVal('user-role', u.role);
+            setVal('user-email', u.email);
+            setVal('user-contact', u.contact);
+
+            // Password group hide on edit
+            const passGroup = document.getElementById('password-form-group');
+            if (passGroup) passGroup.style.display = 'none';
+
+            const passInput = document.getElementById('user-password');
+            if (passInput) passInput.required = false;
+
+            const userInput = document.getElementById('user-username');
+            if (userInput) userInput.disabled = true;
+
+            const titleEl = document.getElementById('user-form-title');
+            if (titleEl) titleEl.innerText = "Edit Account Details";
+
+            const saveBtn = document.getElementById('btn-save-user');
+            if (saveBtn) saveBtn.innerText = "Update Account";
+
+            const cancelBtn = document.getElementById('btn-cancel-edit-user');
+            if (cancelBtn) cancelBtn.style.display = 'inline-block';
+
+            switchTab('register-user');
+        }
+
+        function resetUserForm() {
+            const setVal = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val; };
+            setVal('user-id', '');
+            setVal('user-fullname', '');
+            setVal('user-username', '');
+            setVal('user-password', '');
+            setVal('user-email', '');
+            setVal('user-contact', '');
+            setVal('user-role', 'STUDENT');
+
+            const passGroup = document.getElementById('password-form-group');
+            if (passGroup) passGroup.style.display = 'block';
+
+            const passInput = document.getElementById('user-password');
+            if (passInput) passInput.required = true;
+
+            const userInput = document.getElementById('user-username');
+            if (userInput) userInput.disabled = false;
+
+            const titleEl = document.getElementById('user-form-title');
+            if (titleEl) titleEl.innerText = "Register Account";
+
+            const saveBtn = document.getElementById('btn-save-user');
+            if (saveBtn) saveBtn.innerText = "Save Account";
+
+            const cancelBtn = document.getElementById('btn-cancel-edit-user');
+            if (cancelBtn) cancelBtn.style.display = 'none';
+        }
+
+
+
+
+        async function deleteUser(id) {
+            if (id === currentUser.id) {
+                showToast("Action Forbidden", "You cannot delete your own session account.", "warning");
+                return;
+            }
+            if (!confirm("Permanently delete this user account? Student/Lecturer references will clear.")) return;
+            try {
+                await apiCall(`/admin/users/${id}`, 'DELETE');
+                showToast("Account Deleted", "Removed profile references.", "success");
+                await loadUsers();
+                await loadAdminStats();
+            } catch (err) {
+                showToast("Deletion Failed", err.message, "danger");
+            }
+        }
+
+        // --- Courses CRUD operations ---
+        async function loadCourses() {
+            try {
+                coursesList = await apiCall('/students/courses');
+                const tbody = document.getElementById('admin-courses-list');
+                tbody.innerHTML = '';
+
+                coursesList.forEach(c => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${c.code}</strong></td>
+                            <td>${c.name}</td>
+                            <td>${c.description}</td>
+                            <td style="white-space:nowrap;">
+                                <div style="display:inline-flex;flex-direction:row;align-items:center;gap:0.35rem;white-space:nowrap;">
+                                    <button class="btn btn-qr" style="padding:0.25rem 0.5rem;font-size:0.75rem;white-space:nowrap;" onclick="editCourse(${c.id})">Edit</button>
+                                    <button class="btn btn-qr" style="padding:0.25rem 0.5rem;font-size:0.75rem;color:var(--danger);white-space:nowrap;" onclick="deleteCourse(${c.id})">✕</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function handleSaveCourse(event) {
+            event.preventDefault();
+            const id = document.getElementById('course-id').value;
+            const name = document.getElementById('course-name').value.trim();
+            const code = document.getElementById('course-code').value.trim();
+            const description = document.getElementById('course-desc').value.trim();
+
+            if (!name || !code || !description) {
+                showToast("Validation Error", "All fields are required.", "danger");
+                return;
+            }
+
+            try {
+                if (id) {
+                    await apiCall(`/admin/courses/${id}`, 'PUT', { name, code, description });
+                    showToast("Course Updated", "Program outline updated.", "success");
+                } else {
+                    await apiCall('/admin/courses', 'POST', { name, code, description });
+                    showToast("Course Created", "Academic program registered.", "success");
+                }
+                resetCourseForm();
+                await loadCourses();
+            } catch (err) {
+                showToast("Save Failed", err.message, "danger");
+            }
+        }
+
+        function editCourse(id) {
+            const c = coursesList.find(x => x.id === id);
+            if (!c) return;
+
+            document.getElementById('course-id').value = c.id;
+            document.getElementById('course-name').value = c.name;
+            document.getElementById('course-code').value = c.code;
+            document.getElementById('course-desc').value = c.description;
+
+            document.getElementById('course-form-title').innerText = "Modify Course Details";
+            document.getElementById('btn-save-course').innerText = "Update Course";
+            document.getElementById('btn-cancel-edit-course').style.display = 'block';
+        }
+
+        function resetCourseForm() {
+            document.getElementById('course-id').value = '';
+            document.getElementById('course-name').value = '';
+            document.getElementById('course-code').value = '';
+            document.getElementById('course-desc').value = '';
+            document.getElementById('course-form-title').innerText = "Create Course Program";
+            document.getElementById('btn-save-course').innerText = "Create Course";
+            document.getElementById('btn-cancel-edit-course').style.display = 'none';
+        }
+
+        async function deleteCourse(id) {
+            if (!confirm("Permanently delete this course program from catalog registers?")) return;
+            try {
+                await apiCall(`/admin/courses/${id}`, 'DELETE');
+                showToast("Course Deleted", "Removed course reference.", "success");
+                await loadCourses();
+            } catch (err) {
+                showToast("Failed to delete", err.message, "danger");
+            }
+        }
+
+        // --- System Logs ---
+        async function loadLogs() {
+            try {
+                const logs = await apiCall('/admin/logs');
+                const tbody = document.getElementById('admin-logs-list');
+                tbody.innerHTML = '';
+
+                logs.forEach(l => {
+                    let sevClass = 'badge-info';
+                    if (l.severity === 'WARNING') sevClass = 'badge-warning';
+                    if (l.severity === 'ERROR') sevClass = 'badge-danger';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-family:monospace;font-size:0.8rem;white-space:nowrap;">${l.timestamp}</td>
+                            <td><span class="badge ${sevClass}">${l.severity}</span></td>
+                            <td style="font-size:0.85rem;">${l.message}</td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // --- Canvas Drawing Charts (No library required) ---
+        function renderStakeholderChart(counts) {
+            const canvas = document.getElementById('stakeholders-chart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 340;
+            canvas.height = 180;
+            ctx.clearRect(0,0,340,180);
+
+            const data = [counts.STUDENT, counts.TEACHER, counts.STAFF, counts.SUPPORT, counts.ENROLLMENT, counts.LIBRARIAN || 0];
+            const labels = ["STU", "TCH", "ADM", "SST", "ENR", "LIB"];
+            const colors = ["#6b3294", "#6b3294", "#6b3294", "#6b3294", "#6b3294", "#6b3294"];
+
+            const max = Math.max(...data, 1);
+            const chartHeight = 120;
+            const colWidth = 28;
+            const colGap = 12;
+            const startX = 25;
+
+            // Draw bars
+            for (let i = 0; i < data.length; i++) {
+                const h = (data[i] / max) * chartHeight;
+                const x = startX + i * (colWidth + colGap);
+                const y = chartHeight - h + 20;
+
+                ctx.fillStyle = colors[i];
+                ctx.fillRect(x, y, colWidth, h);
+
+                // Label and count
+                ctx.fillStyle = "var(--text-primary)";
+                ctx.font = "bold 9px sans-serif";
+                ctx.fillText(labels[i], x + 8, chartHeight + 35);
+                ctx.fillText(data[i], x + 12, y - 6);
+            }
+        }
+
+        function renderTicketStatusChart(breakdown) {
+            const canvas = document.getElementById('tickets-status-chart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 300;
+            canvas.height = 180;
+            ctx.clearRect(0,0,300,180);
+
+            const values = [breakdown.OPEN, breakdown.PENDING, breakdown.IN_PROGRESS, breakdown.RESOLVED + breakdown.CLOSED];
+            const colors = ["#6b3294", "#6b3294", "#6b3294", "#6b3294"];
+            const total = values.reduce((a,b) => a+b, 0) || 1;
+
+            // Donut Pie chart
+            const centerX = 150;
+            const centerY = 90;
+            const radius = 60;
+            let currentAngle = -0.5 * Math.PI;
+
+            for (let i = 0; i < values.length; i++) {
+                const portion = values[i] / total;
+                const angle = portion * 2 * Math.PI;
+
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + angle);
+                ctx.closePath();
+                ctx.fillStyle = colors[i];
+                ctx.fill();
+
+                currentAngle += angle;
+            }
+
+            // Draw inner circle for donut
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 35, 0, 2 * Math.PI);
+            ctx.fillStyle = "var(--bg-secondary)";
+            ctx.fill();
+        }
+
+        function renderAttendanceGauge(percent) {
+            const canvas = document.getElementById('attendance-gauge-chart');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 300;
+            canvas.height = 180;
+            ctx.clearRect(0,0,300,180);
+
+            const centerX = 150;
+            const centerY = 110;
+            const radius = 60;
+
+            // Background arc
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, Math.PI, 2 * Math.PI);
+            ctx.lineWidth = 15;
+            ctx.strokeStyle = "var(--border-color)";
+            ctx.stroke();
+
+            // Value arc
+            const endAngle = Math.PI + (percent / 100.0) * Math.PI;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, Math.PI, endAngle);
+            ctx.lineWidth = 15;
+            ctx.strokeStyle = percent > 75 ? "#6b3294" : "#6b3294";
+            ctx.stroke();
+
+            // Text
+            ctx.fillStyle = "var(--text-primary)";
+            ctx.font = "bold 20px sans-serif";
+            ctx.fillText(`${percent}%`, centerX - 25, centerY - 10);
+        }
+
+        const oldSwitchTab = switchTab;
+        switchTab = function(tabId) {
+            oldSwitchTab(tabId);
+            if (tabId === 'users') {
+                resetUserForm();
+                setTimeout(resetUserForm, 50);
+                loadUsers();
+            }
+            if (tabId === 'courses') {
+                loadCourses();
+            }
+            if (tabId === 'logs') {
+                loadLogs();
+            }
+            if (tabId === 'overview') {
+                loadAdminStats();
+                if (typeof checkDatabaseStatus === 'function') checkDatabaseStatus();
+            }
+        }
+        window.addEventListener('DOMContentLoaded', () => {
+            resetUserForm();
+            setTimeout(resetUserForm, 100);
+            if (typeof checkDatabaseStatus === 'function') checkDatabaseStatus();
+        });
+    </script>
+
+</body>
+</html>
+
+
+

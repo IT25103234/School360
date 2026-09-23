@@ -1,0 +1,2706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School360 – Library Management</title>
+    <meta name="description" content="School360 Library Management – manage books, members, borrowing, and reservations.">
+    <link rel="stylesheet" href="css/styles.css?v=contrast-8">
+    <script>
+        (function() {
+            var t = localStorage.getItem('theme') || 'dark';
+            if (t === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+    <style>
+        /* ── Library-specific overrides ── */
+        :root {
+            --lib-accent: #6b3294;
+            --lib-accent-hover: #522b5b;
+            --lib-accent-light: rgba(107,50,148,.12);
+            --lib-teal: #6b3294;
+            --lib-teal-light: rgba(107,50,148,.12);
+            --lib-amber: #6b3294;
+            --lib-amber-light: rgba(107,50,148,.12);
+        }
+
+        /* ─── Sidebar ─── */
+        .sidebar {
+            width: 245px; min-width: 245px;
+            position: fixed; top: 0; left: 0; height: 100vh;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            z-index: 100;
+        }
+        .sidebar-menu {
+            list-style: none; padding: 0.5rem 0;
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        /* Custom scrollbar inside sidebar */
+        .sidebar-menu::-webkit-scrollbar { width: 4px; }
+        .sidebar-menu::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-menu::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        .sidebar-item a {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.65rem 1.2rem; font-size: 0.875rem; font-weight: 500;
+            color: var(--text-secondary); text-decoration: none; border-radius: 8px;
+            margin: 2px 8px; transition: all .2s;
+        }
+        .sidebar-item:hover a, .sidebar-item.active a {
+            background: var(--lib-accent-light); color: var(--lib-accent);
+        }
+        .sidebar-divider {
+            padding: 0.5rem 1.2rem; font-size: 0.7rem; font-weight: 700;
+            letter-spacing: .08em; text-transform: uppercase;
+            color: var(--text-muted); margin-top: 0.5rem;
+        }
+
+        /* ─── Stat Cards Row ─── */
+        .lib-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .lib-stat-card {
+            background: var(--bg-secondary); border-radius: 14px;
+            border: 1px solid var(--border-color); padding: 1.1rem 1.3rem;
+            display: flex; align-items: center; gap: 1rem;
+            box-shadow: var(--card-shadow);
+            transition: transform .2s;
+        }
+        .lib-stat-card:hover { transform: translateY(-2px); }
+        .lib-stat-icon {
+            width: 46px; height: 46px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; flex-shrink: 0;
+        }
+        .lib-stat-icon.purple { background: var(--lib-accent-light); }
+        .lib-stat-icon.teal   { background: var(--lib-teal-light); }
+        .lib-stat-icon.amber  { background: var(--lib-amber-light); }
+        .lib-stat-icon.green  { background: var(--success-light); }
+        .lib-stat-icon.red    { background: var(--danger-light); }
+        .lib-stat-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+        .lib-stat-value { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+
+        /* ─── Filter tabs ─── */
+        .lib-tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .lib-tab-btn {
+            padding: 0.5rem 1.1rem; border-radius: 9px; border: 1px solid var(--border-color);
+            background: var(--bg-secondary); color: var(--text-secondary);
+            font-size: 0.83rem; font-weight: 500; cursor: pointer; transition: all .2s;
+            display: flex; align-items: center; gap: 0.4rem;
+        }
+        .lib-tab-btn:hover { border-color: var(--lib-accent); color: var(--lib-accent); }
+        .lib-tab-btn.active {
+            background: var(--lib-accent); color: #fff; border-color: var(--lib-accent);
+            box-shadow: 0 4px 12px rgba(107,50,148,.3);
+        }
+
+        /* ─── Panels ─── */
+        .lib-panel { display: none; animation: fadeSlideIn .25s ease; }
+        .lib-panel.active { display: block; }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ─── Section card ─── */
+        .section-card { background: var(--bg-secondary); border-radius: 16px; border: 1px solid var(--border-color); padding: 1.5rem; box-shadow: var(--card-shadow); margin-bottom: 1.2rem; }
+        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.6rem; }
+        .section-header h3 { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); }
+
+        /* ─── Two-column grid ─── */
+        .lib-grid-2 { display: grid; grid-template-columns: 1fr 340px; gap: 1.2rem; align-items: start; }
+        .lib-grid-2 > * { min-width: 0; }
+        @media(max-width:1100px) { .lib-grid-2 { grid-template-columns: 1fr; } }
+
+        /* ─── Table ─── */
+        .table-container { overflow-x: auto; border-radius: 10px; }
+        .custom-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .custom-table thead th {
+            background: var(--bg-tertiary); color: var(--text-secondary);
+            font-weight: 600; padding: 0.75rem 1rem; text-align: left;
+            font-size: 0.78rem; letter-spacing: .04em; text-transform: uppercase;
+        }
+        .custom-table tbody tr { border-bottom: 1px solid var(--border-color); transition: background .15s; }
+        .custom-table tbody tr:hover { background: var(--bg-tertiary); }
+        .custom-table tbody td { padding: 0.75rem 1rem; color: var(--text-primary); vertical-align: middle; }
+
+        /* ─── Badges ─── */
+        .badge { display: inline-block; padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.72rem; font-weight: 600; letter-spacing: .03em; }
+        .badge-success { background: var(--success-light); color: var(--success); }
+        .badge-danger  { background: var(--danger-light);  color: var(--danger);  }
+        .badge-warning { background: var(--warning-light); color: var(--warning); }
+        .badge-info    { background: var(--info-light);    color: var(--info);    }
+        .badge-purple  { background: var(--lib-accent-light); color: var(--lib-accent); }
+        .badge-teal    { background: var(--lib-teal-light); color: var(--lib-teal); }
+
+        /* ─── Buttons ─── */
+        .btn { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; border: none; transition: all .2s; text-decoration: none; font-family: inherit; }
+        .btn-primary { background: var(--lib-accent); color: #fff; }
+        .btn-primary:hover { background: var(--lib-accent-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(107,50,148,.35); }
+        .btn-teal { background: var(--lib-teal); color: #fff; }
+        .btn-teal:hover { background: #522b5b; transform: translateY(-1px); }
+        .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); }
+        .btn-outline:hover { border-color: var(--lib-accent); color: var(--lib-accent); }
+        .btn-danger-soft { background: var(--danger-light); color: var(--danger); border: none; }
+        .btn-danger-soft:hover { background: var(--danger); color: #fff; }
+        .btn-sm { padding: 0.3rem 0.65rem; font-size: 0.78rem; border-radius: 6px; }
+        .btn-block { width: 100%; justify-content: center; }
+
+        /* ─── Form ─── */
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.35rem; }
+        .form-input {
+            width: 100%; padding: 0.6rem 0.9rem; border-radius: 8px;
+            border: 1px solid var(--border-color); background: var(--bg-tertiary);
+            color: var(--text-primary); font-size: 0.875rem; outline: none; transition: border-color .2s;
+            font-family: inherit;
+        }
+        .form-input:focus { border-color: var(--lib-accent); box-shadow: 0 0 0 3px rgba(107,50,148,.1); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+
+        /* ─── Modal ─── */
+        .modal {
+            display: none; position: fixed; inset: 0; z-index: 1000;
+            background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
+            align-items: center; justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-box {
+            background: var(--bg-secondary); border-radius: 18px;
+            border: 1px solid var(--border-color); padding: 1.8rem;
+            width: min(92vw, 520px); max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 25px 60px rgba(0,0,0,.25);
+            animation: modalIn .25s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(.94) translateY(10px); }
+            to   { opacity: 1; transform: scale(1)  translateY(0); }
+        }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.4rem; }
+        .modal-header h3 { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+        .modal-close { cursor: pointer; font-size: 1.3rem; color: var(--text-muted); background: none; border: none; transition: color .2s; line-height: 1; font-family: inherit; }
+        .modal-close:hover { color: var(--danger); }
+
+        /* ─── Search bar ─── */
+        .search-bar { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+        .search-input-wrap { position: relative; }
+        .search-icon { position: absolute; left: 0.7rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; font-size: 0.9rem; }
+
+        /* ─── Action bar ─── */
+        .action-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+
+        /* ─── Book Detail ─── */
+        .book-detail-row { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; font-size: 0.87rem; }
+        .book-detail-row strong { color: var(--text-muted); min-width: 110px; flex-shrink: 0; }
+        .book-detail-row span  { color: var(--text-primary); font-weight: 500; }
+
+        /* ─── Announcement card ─── */
+        .announcement-card {
+            border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 1rem 1.2rem; margin-bottom: 0.8rem; background: var(--bg-tertiary);
+            display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;
+            transition: box-shadow .2s;
+        }
+        .announcement-card:hover { box-shadow: 0 4px 15px rgba(0,0,0,.07); }
+        .announcement-body h4 { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.3rem; }
+        .announcement-body p  { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
+        .announcement-meta   { font-size: 0.74rem; color: var(--text-muted); margin-top: 0.4rem; }
+
+        /* ─── Member chip ─── */
+        .member-chip { display: flex; align-items: center; gap: 0.5rem; }
+        .member-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--lib-accent-light); color: var(--lib-accent); font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+        /* ─── Empty state ─── */
+        .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+        .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+        .empty-state p { font-size: 0.9rem; }
+
+        /* ─── Scrollbar ─── */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+        /* ─── Action buttons in table cells ─── */
+        .td-actions { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+        .td-actions-col { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+
+        /* ─── Layout ─── */
+        .main-content { margin-left: 245px; padding: 1.5rem 2rem; min-height: 100vh; background: var(--bg-primary); }
+        @media(max-width:768px) { .main-content { margin-left: 0; padding: 1rem; } .lib-stats { grid-template-columns: repeat(2,1fr); } }
+
+        /* ─── Header ─── */
+        .header-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+        .header-bar h2 { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); }
+        .header-bar p  { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.15rem; }
+        .header-actions { display: flex; align-items: center; gap: 0.7rem; }
+        .theme-toggle { background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.45rem 0.75rem; cursor: pointer; font-size: 1.1rem; transition: all .2s; font-family: inherit; }
+        .theme-toggle:hover { border-color: var(--lib-accent); }
+
+        /* ─── Librarian Digital ID Card ─── */
+        .lib-id-container { display: flex; justify-content: center; padding: 2rem 0 1rem; }
+        .lib-id-card {
+            width: 340px; border-radius: 20px;
+            background: linear-gradient(135deg, #190019 0%, #6b3294 60%, #522b5b 100%);
+            box-shadow: 0 20px 60px rgba(107,50,148,.5), 0 0 0 1px rgba(255,246,240,.08);
+            overflow: hidden; position: relative; color: #fff;
+        }
+        .lib-id-card::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 70% 20%, rgba(255,246,240,.12) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .lib-id-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 1.2rem 0.6rem;
+            border-bottom: 1px solid rgba(255,246,240,.12);
+        }
+        .lib-id-brand { font-size: 0.7rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
+        .lib-id-chip {
+            width: 28px; height: 20px; border-radius: 4px;
+            background: linear-gradient(135deg, #6b3294, #6b3294);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,.3);
+        }
+        .lib-id-body { display: flex; align-items: center; gap: 1rem; padding: 1.1rem 1.2rem; }
+        .lib-id-avatar {
+            width: 64px; height: 64px; border-radius: 50%;
+            background: rgba(255,246,240,.18); border: 2px solid rgba(255,246,240,.35);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; font-weight: 800; flex-shrink: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,.3);
+        }
+        .lib-id-details h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .lib-id-details p  { font-size: 0.75rem; opacity: .8; margin-bottom: 0.15rem; }
+        .lib-id-role-tag {
+            display: inline-block; margin-top: 0.4rem;
+            background: rgba(255,246,240,.18); border: 1px solid rgba(255,246,240,.25);
+            border-radius: 20px; padding: 0.15rem 0.65rem;
+            font-size: 0.68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+        }
+        .lib-id-footer {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.8rem 1.2rem 1rem;
+            border-top: 1px solid rgba(255,246,240,.12);
+            background: rgba(0,0,0,.1);
+        }
+        .lib-id-qr { flex-shrink: 0; }
+        .lib-id-sig { font-size: 0.7rem; opacity: .7; text-align: right; line-height: 1.5; }
+        .lib-id-sig strong { display: block; font-family: 'Courier New', monospace; font-size: 0.75rem; }
+
+        /* Sidebar footer */
+        .sidebar-footer { padding: 1rem; flex-shrink: 0; }
+
+        /* ─── Print Styles ─── */
+        @media print {
+            body {
+                background: #fff6f0 !important;
+                color: #000000 !important;
+            }
+            .sidebar, .header-bar, .lib-stats, .lib-tabs, .search-bar, .table-container,
+            .section-header, .btn, p, header, nav, footer, .sidebar-footer {
+                display: none !important;
+            }
+            .main-content {
+                margin-left: 0 !important;
+                padding: 0 !important;
+                background: transparent !important;
+            }
+            .lib-panel {
+                display: none !important;
+            }
+            #panel-digital-id {
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                min-height: 100vh !important;
+                padding: 2rem 0 !important;
+                margin: 0 !important;
+            }
+            #panel-digital-id .section-card {
+                border: none !important;
+                box-shadow: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .lib-id-container {
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .lib-id-card {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                box-shadow: none !important;
+                margin: 0 auto !important;
+                transform: scale(1.15);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════════════ -->
+<nav class="sidebar">
+    <div class="sidebar-brand"><span>🏫 School360</span></div>
+    <ul class="sidebar-menu">
+        <div class="sidebar-divider">📚 Catalog</div>
+        <li class="sidebar-item active" id="menu-books"><a href="#" onclick="showPanel('books');return false;">📖 Book Catalog</a></li>
+        <li class="sidebar-item" id="menu-add-book"><a href="#" onclick="showPanel('add-book');return false;">➕ Add New Book</a></li>
+        <li class="sidebar-item" id="menu-availability"><a href="#" onclick="showPanel('availability');return false;">✅ Book Availability</a></li>
+
+        <div class="sidebar-divider">👥 Members</div>
+        <li class="sidebar-item" id="menu-members"><a href="#" onclick="showPanel('members');return false;">🪪 Library Members</a></li>
+        <li class="sidebar-item" id="menu-add-member"><a href="#" onclick="showPanel('add-member');return false;">👤 Register Member</a></li>
+
+        <div class="sidebar-divider">🔄 Circulation</div>
+        <li class="sidebar-item" id="menu-borrow"><a href="#" onclick="showPanel('borrow');return false;">📤 Borrow Records</a></li>
+        <li class="sidebar-item" id="menu-reservations"><a href="#" onclick="showPanel('reservations');return false;" title="Library Book Reservations">🔖 <span class="nav-text">Library Book Reservations</span> <span id="pending-res-badge" class="badge badge-warning" style="display:none;font-size:0.7rem;padding:2px 7px;border-radius:10px;margin-left:auto;">0</span></a></li>
+
+        <div class="sidebar-divider">📝 Other</div>
+        <li class="sidebar-item" id="menu-announcements"><a href="#" onclick="showPanel('announcements');return false;">📣 Announcements</a></li>
+        <li class="sidebar-item" id="menu-versions"><a href="#" onclick="showPanel('versions');return false;">🕘 Edition History</a></li>
+
+        <div class="sidebar-divider">🧑 Account</div>
+        <li class="sidebar-item" id="menu-digital-id"><a href="#" onclick="showPanel('digital-id');return false;">🪺 Digital Librarian ID</a></li>
+    </ul>
+    <div class="sidebar-footer">
+        <button class="btn btn-outline btn-block" onclick="logout()" style="font-size:0.85rem;">🚪 Logout</button>
+    </div>
+</nav>
+
+<!-- ════════════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════════════ -->
+<main class="main-content">
+    <header class="header-bar">
+        <div class="header-title">
+            <h2 id="welcome-message">📚 Library Management</h2>
+            <p id="header-sub">Manage books, members, circulation, and announcements.</p>
+        </div>
+        <div class="header-actions">
+            <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme(); return false;" title="Toggle Theme">🌙</button>
+        </div>
+    </header>
+
+    <!-- ── STATS ROW ── -->
+    <div class="lib-stats">
+        <div class="lib-stat-card clickable" onclick="showPanel('books')" style="cursor:pointer;" title="Click to open Book Catalog">
+            <div class="lib-stat-icon purple">📚</div>
+            <div><div class="lib-stat-label">Total Books</div><div class="lib-stat-value" id="stat-total-books">0</div></div>
+        </div>
+        <div class="lib-stat-card clickable" onclick="showPanel('members')" style="cursor:pointer;" title="Click to open Library Members">
+            <div class="lib-stat-icon teal">👥</div>
+            <div><div class="lib-stat-label">Members</div><div class="lib-stat-value" id="stat-members">0</div></div>
+        </div>
+        <div class="lib-stat-card clickable" onclick="showPanel('borrow')" style="cursor:pointer;" title="Click to open Borrow Records">
+            <div class="lib-stat-icon amber">📤</div>
+            <div><div class="lib-stat-label">Borrowed</div><div class="lib-stat-value" id="stat-borrowed">0</div></div>
+        </div>
+        <div class="lib-stat-card clickable" onclick="showPanel('reservations')" style="cursor:pointer;" title="Click to open Book Reservations">
+            <div class="lib-stat-icon green">🔖</div>
+            <div><div class="lib-stat-label">Reservations</div><div class="lib-stat-value" id="stat-reservations">0</div></div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PANEL 1 – BOOK CATALOG
+    ══════════════════════════════════════ -->
+    <div class="lib-panel active" id="panel-books">
+        <div class="section-card">
+            <div class="section-header">
+                <h3>📖 Library Catalog</h3>
+                <div class="search-bar">
+                    <div class="search-input-wrap">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="search-books" class="form-input" placeholder="Search title or author…" style="padding-left:2.1rem;width:210px;" oninput="renderBooks()">
+                    </div>
+                    <select id="filter-books-status" class="form-input" style="width:150px;" onchange="renderBooks()">
+                        <option value="ALL">All Statuses</option>
+                        <option value="AVAILABLE">Available</option>
+                        <option value="UNAVAILABLE">Unavailable</option>
+                    </select>
+                    <button class="btn btn-outline btn-sm" onclick="refreshLibrarianData(true)">🔄 Refresh</button>
+                </div>
+            </div>
+            <div class="action-bar">
+                <button class="btn btn-primary btn-sm" onclick="showPanel('add-book')">➕ Add Book</button>
+                <button class="btn btn-teal btn-sm" onclick="showPanel('borrow')">📤 Record Borrow</button>
+                <button class="btn btn-outline btn-sm" onclick="showPanel('reservations')">🔖 Reserve</button>
+            </div>
+            <div class="table-container">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th><th>Author</th><th>ISBN</th><th>Category</th>
+                            <th>Edition</th><th>Copies</th><th>Status</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="books-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PANEL 2 – ADD / EDIT BOOK
+    ══════════════════════════════════════ -->
+    <div class="lib-panel" id="panel-add-book">
+        <div class="lib-grid-2">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 id="book-form-title">➕ Add New Book</h3>
+                    <button class="btn btn-outline btn-sm" onclick="resetBookForm();showPanel('books')">← Back</button>
+                </div>
+                <form onsubmit="handleSaveBook(event)" id="book-form">
+                    <input type="hidden" id="book-id">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="book-title">Book Title *</label>
+                            <input type="text" id="book-title" class="form-input" placeholder="e.g. Introduction to Algorithms" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="book-author">Author *</label>
+                            <input type="text" id="book-author" class="form-input" placeholder="e.g. Thomas H. Cormen" required pattern="[A-Za-z\s.\-']+" title="Text letters and spaces only">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="book-isbn">ISBN *</label>
+                            <input type="text" id="book-isbn" class="form-input" placeholder="e.g. 9780262046305" required pattern="\d{13}" maxlength="13" inputmode="numeric" title="Exactly 13 numeric digits (numbers only)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="book-category">Category *</label>
+                            <input type="text" id="book-category" class="form-input" placeholder="e.g. Computer Science" required pattern="[A-Za-z\s\-]+" title="Text letters and spaces only">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="book-edition">Edition *</label>
+                            <input type="text" id="book-edition" class="form-input" placeholder="e.g. 3rd Edition" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="book-copies">Copies Available *</label>
+                            <input type="number" id="book-copies" class="form-input" placeholder="e.g. 5" min="0" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="book-status">Availability Status</label>
+                            <select id="book-status" class="form-input">
+                                <option value="AVAILABLE">Available</option>
+                                <option value="UNAVAILABLE">Unavailable</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="book-location">Shelf / Location</label>
+                            <input type="text" id="book-location" class="form-input" placeholder="e.g. Section B, Row 4">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="book-desc">Description</label>
+                        <textarea id="book-desc" class="form-input" rows="3" placeholder="Brief description…"></textarea>
+                    </div>
+                    <div style="display:flex;gap:0.7rem;margin-top:0.5rem;">
+                        <button type="submit" class="btn btn-primary" style="flex:1;" id="btn-save-book">Publish Book</button>
+                        <button type="button" class="btn btn-outline" id="btn-cancel-edit-book" style="display:none;" onclick="resetBookForm()">Cancel Edit</button>
+                    </div>
+                </form>
+            </div>
+            <div>
+                <div class="section-card" style="background:var(--lib-accent-light);border-color:var(--lib-accent);">
+                    <h4 style="color:var(--lib-accent);margin-bottom:0.8rem;">📋 Quick Guidelines</h4>
+                    <ul style="font-size:0.83rem;color:var(--text-secondary);line-height:1.9;padding-left:1.1rem;">
+                        <li>ISBN must contain exactly 13 numeric digits (no symbols or text).</li>
+                        <li>Author and Category fields accept text values only (no numbers).</li>
+                        <li>Set copies to 0 and status <em>Unavailable</em> for out-of-stock books.</li>
+                        <li>Use <strong>Edition History</strong> to track version updates.</li>
+                        <li>Only books marked <em>Unavailable</em> can be permanently removed.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PANEL 3 – BOOK AVAILABILITY
+    ══════════════════════════════════════ -->
+    <div class="lib-panel" id="panel-availability">
+        <div class="section-card">
+            <div class="section-header">
+                <h3>✅ Book Availability</h3>
+                <div class="search-input-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-avail" class="form-input" placeholder="Search books…" style="padding-left:2.1rem;width:220px;" oninput="renderAvailability()">
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="custom-table">
+                    <thead>
+                        <tr><th>Title</th><th>Author</th><th>Copies</th><th>Status</th><th>Location</th><th>Update Availability</th></tr>
+                    </thead>
+                    <tbody id="avail-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PANEL 4 – LIBRARY MEMBERS
+    ══════════════════════════════════════ -->
+    <div class="lib-panel" id="panel-members">
+        <div class="section-card">
+            <div class="section-header">
+                <h3>🪪 Library Members</h3>
+                <div class="search-bar">
+                    <div class="search-input-wrap">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="search-members" class="form-input" placeholder="Search members…" style="padding-left:2.1rem;width:210px;" oninput="renderMembers()">
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="showPanel('add-member')">👤 Register Member</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="custom-table">
+                    <thead>
+                        <tr><th>Member</th><th>Member ID</th><th>Type</th><th>Email</th><th>Phone</th><th>Joined</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="members-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PANEL 5 – REGISTER MEMBER
+    ══════════════════════════════════════ -->
+    <div class="lib-panel" id="panel-add-member">
+        <div class="lib-grid-2">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3 id="member-form-title">👤 Register Library Member</h3>
+                    <button class="btn btn-outline btn-sm" onclick="resetMemberForm();showPanel('members')">← Back</button>
+                </div>
+                <form onsubmit="handleSaveMember(event)">
+                    <input type="hidden" id="member-id">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="member-name">Full Name *</label>
+                            <input type="text" id="member-name" class="form-input" placeholder="e.g. Alice Johnson" required pattern="[A-Za-z\s]+" title="Letters and spaces only">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="member-mid">Member ID *</label>
+                            <input type="text" id="member-mid" class="form-input" placeholder="e.g. LIB-2024-001" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="member-type">Member Type *</label>
+                            <select id="member-type" class="form-input" required>
+                                <option value="">Select Type</option>
+                                <option value="Student">Student</option>
+                                <option value="Teacher">Teacher</option>
+                                <option value="Staff">Staff</option>
+                                <option value="Guest">Guest</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="member-class">Class / Department</label>
+                            <input type="text" id="member-class" class="form-input" placeholder="e.g. Grade 10 / Science">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="member-email">Email *</label>
+                            <input type="email" id="member-email" class="form-input" placeholder="e.g. alice@school.edu" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="member-phone">Phone</label>
+                            <input type="text" id="member-phone" class="form-input" placeholder="e.g. 0771234567" pattern="\d{1,16}" maxlength="16" inputmode="numeric">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="member-status-field">Member Status</label>
+                        <select id="member-status-field" class="form-input">
+                            <option value="ACTIVE">Active</option>
+                            <option value="SUSPENDED">Suspended</option>
+                            <option value="INACTIVE">Inactive</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;gap:0.7rem;margin-top:0.5rem;">
+                        <button type="submit" class="btn btn-primary" style="flex:1;" id="btn-save-member">Register Member</button>
+                        <button type="button" class="btn btn-outline" id="btn-cancel-edit-member" style="display:none;" onclick="resetMemberForm()">Cancel Edit</button>
+                    </div>
+                </form>
+            </div>
+            <div>
+                <div class="section-card" style="background:var(--lib-teal-light);border-color:var(--lib-teal);">
+                    <h4 style="color:var(--lib-teal);margin-bottom:0.8rem;">📋 Registration Notes</h4>
+                    <ul style="font-size:0.83rem;color:var(--text-secondary);line-height:1.9;padding-left:1.1rem;">
+                        <li>Member ID must be unique across all records.</li>
+                        <li>Students may borrow up to <strong>3 books</strong> at a time.</li>
+                        <li>Teachers may borrow up to <strong>5 books</strong> at a time.</li>
+                        <li>Suspended members cannot borrow or reserve books.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PANEL 6 – BORROW RECORDS
+    ══════════════════════════════════════ -->
+    <!-- ══════════════════════════════════════
+         PANEL 6 – BORROW RECORDS & RETURNABLE CUSTOMERS
+    ══════════════════════════════════════ -->
+    <div class="lib-panel" id="panel-borrow">
+        <div class="lib-grid-2">
+            <div>
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3>📤 Borrowing Records</h3>
+                        <div class="search-input-wrap">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="search-borrow" class="form-input" placeholder="Search customer, ID or book…" style="padding-left:2.1rem;width:230px;" oninput="renderBorrows()">
+                        </div>
+                    </div>
+                    <div class="lib-tabs">
+                        <button class="lib-tab-btn active" id="borrow-filter-ALL" onclick="setBorrowFilter('ALL')">All</button>
+                        <button class="lib-tab-btn" id="borrow-filter-BORROWED" onclick="setBorrowFilter('BORROWED')">Active</button>
+                        <button class="lib-tab-btn" id="borrow-filter-RETURNED" onclick="setBorrowFilter('RETURNED')">Returned</button>
+                        <button class="lib-tab-btn" id="borrow-filter-OVERDUE" onclick="setBorrowFilter('OVERDUE')">Overdue</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr><th>Customer / Member</th><th>Book</th><th>Borrowed</th><th>Due Date</th><th>Return Status</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="borrow-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Returnable Customer Details Card -->
+                <div class="section-card" style="margin-top:1.2rem;border-color:var(--lib-teal);">
+                    <div class="section-header">
+                        <h3 style="color:var(--lib-teal);">👥 Returnable Customers (Active Holders)</h3>
+                        <div class="search-input-wrap">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="search-returnable" class="form-input" placeholder="Search returnable customers…" style="padding-left:2.1rem;width:220px;" oninput="renderReturnableCustomers()">
+                        </div>
+                    </div>
+                    <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:1rem;">Members currently holding returnable books with due dates, contact details, and instant return processing.</p>
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr><th>Customer Details</th><th>Book Title</th><th>Due Date</th><th>Return Status</th><th>Contact Info</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="returnable-customers-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="section-card">
+                <div class="section-header"><h3>📝 Record Borrow</h3></div>
+                <form onsubmit="handleSaveBorrow(event)">
+                    <input type="hidden" id="borrow-id">
+                    <div class="form-group">
+                        <label class="form-label" for="borrow-member">Member ID / Name *</label>
+                        <input type="text" id="borrow-member" class="form-input" placeholder="e.g. LIB-2024-001" required list="member-datalist">
+                        <datalist id="member-datalist"></datalist>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="borrow-book">Book Title / ISBN *</label>
+                        <input type="text" id="borrow-book" class="form-input" placeholder="Search book…" required list="book-datalist">
+                        <datalist id="book-datalist"></datalist>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="borrow-date">Borrow Date *</label>
+                            <input type="date" id="borrow-date" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="borrow-due">Due Date *</label>
+                            <input type="date" id="borrow-due" class="form-input" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="borrow-notes">Notes</label>
+                        <input type="text" id="borrow-notes" class="form-input" placeholder="Optional notes…">
+                    </div>
+                    <button type="submit" class="btn btn-teal btn-block">📤 Record Borrow</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PANEL 7 – RESERVATIONS
+    ══════════════════════════════════════ -->
+    <div class="lib-panel" id="panel-reservations">
+        <!-- Top Overview & Action Header Card -->
+        <div class="section-card" style="margin-bottom: 1.25rem;">
+            <div class="section-header" style="flex-wrap:wrap;gap:1rem;">
+                <div>
+                    <h3 style="font-size:1.25rem;font-weight:700;display:flex;align-items:center;gap:0.5rem;">
+                        🔖 Library Book Reservations Queue
+                    </h3>
+                    <p style="font-size:0.83rem;color:var(--text-muted);margin-top:0.25rem;">
+                        Review student book reservation requests, approve allocations, or cancel pending requests in real-time.
+                    </p>
+                </div>
+                <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+                    <div class="search-input-wrap">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="search-reservations" class="form-input" placeholder="Search member or book…" style="padding-left:2.2rem;width:240px;" oninput="renderReservations()">
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="toggleReservationForm()">➕ Manual Reserve</button>
+                    <button class="btn btn-outline btn-sm" onclick="refreshLibrarianData(true)">🔄 Refresh</button>
+                </div>
+            </div>
+
+            <!-- Quick Status Filter Pills -->
+            <div class="res-filter-tabs" style="padding-top: 0.5rem;">
+                <button class="res-filter-pill active" id="res-filter-all" onclick="filterReservationStatus('ALL')">All Requests (<span id="res-count-all">0</span>)</button>
+                <button class="res-filter-pill" id="res-filter-pending" onclick="filterReservationStatus('PENDING')">🟡 Pending Approval (<span id="res-count-pending">0</span>)</button>
+                <button class="res-filter-pill" id="res-filter-approved" onclick="filterReservationStatus('APPROVED')">✅ Approved (<span id="res-count-approved">0</span>)</button>
+                <button class="res-filter-pill" id="res-filter-cancelled" onclick="filterReservationStatus('CANCELLED')">❌ Cancelled (<span id="res-count-cancelled">0</span>)</button>
+            </div>
+        </div>
+
+        <!-- Collapsible Manual Book Reservation Form -->
+        <div class="section-card" id="res-manual-card" style="display:none;margin-bottom:1.25rem;border:1px solid var(--primary-light);">
+            <div class="section-header">
+                <h3>🔖 Create Manual Book Reservation</h3>
+                <button class="btn btn-outline btn-sm" onclick="toggleReservationForm()">✕ Close</button>
+            </div>
+            <form onsubmit="handleSaveReservation(event)" style="margin-top:0.5rem;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="res-member">Member ID / Name *</label>
+                        <input type="text" id="res-member" class="form-input" placeholder="Member ID or name" required list="member-datalist">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="res-book">Book Title / ISBN *</label>
+                        <input type="text" id="res-book" class="form-input" placeholder="Book title or ISBN" required list="book-datalist">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="res-date">Reserved On *</label>
+                        <input type="date" id="res-date" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="res-expiry">Expiry Date *</label>
+                        <input type="date" id="res-expiry" class="form-input" required>
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="toggleReservationForm()">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">🔖 Submit Reservation</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Wide Spacious Reservations Queue Table -->
+        <div class="section-card">
+            <div class="res-table-wrap">
+                <table class="custom-table" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="min-width:170px;padding:0.9rem 1rem;">Member Name & ID</th>
+                            <th style="min-width:200px;padding:0.9rem 1rem;">Book Title</th>
+                            <th style="min-width:120px;padding:0.9rem 1rem;">Reserved On</th>
+                            <th style="min-width:120px;padding:0.9rem 1rem;">Expiry Date</th>
+                            <th style="min-width:150px;padding:0.9rem 1rem;">Reservation Status</th>
+                            <th style="min-width:220px;padding:0.9rem 1rem;text-align:left;">Approve / Cancel Action Bar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservations-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PANEL 8 – ANNOUNCEMENTS
+    ══════════════════════════════════════ -->
+    <div class="lib-panel" id="panel-announcements">
+        <div class="lib-grid-2">
+            <div>
+                <div class="section-card">
+                    <div class="section-header"><h3>📣 Library Announcements</h3></div>
+                    <div id="announcements-list"></div>
+                </div>
+            </div>
+            <div class="section-card">
+                <div class="section-header"><h3 id="ann-form-title">📝 New Announcement</h3></div>
+                <form onsubmit="handleSaveAnnouncement(event)">
+                    <input type="hidden" id="ann-id">
+                    <div class="form-group">
+                        <label class="form-label" for="ann-title">Title *</label>
+                        <input type="text" id="ann-title" class="form-input" placeholder="e.g. Library Closed on Friday" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="ann-type">Type</label>
+                        <select id="ann-type" class="form-input">
+                            <option value="General">General</option>
+                            <option value="Notice">Notice</option>
+                            <option value="Holiday">Holiday</option>
+                            <option value="Event">Event</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="ann-content">Content *</label>
+                        <textarea id="ann-content" class="form-input" rows="5" placeholder="Write announcement details…" required></textarea>
+                    </div>
+                    <div style="display:flex;gap:0.7rem;">
+                        <button type="submit" class="btn btn-primary" style="flex:1;" id="btn-save-ann">Post Announcement</button>
+                        <button type="button" class="btn btn-outline" id="btn-cancel-ann" style="display:none;" onclick="resetAnnForm()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PANEL 9 – EDITION HISTORY
+    ══════════════════════════════════════ -->
+    <div class="lib-panel" id="panel-versions">
+        <div class="section-card">
+            <div class="section-header" style="flex-wrap:wrap;gap:1rem;">
+                <div>
+                    <h3 style="display:flex;align-items:center;gap:0.5rem;">🕘 Edition / Version History</h3>
+                    <p style="font-size:0.82rem;color:var(--text-muted);margin-top:0.25rem;">Every edition update published for catalog titles.</p>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="openVersionModal()">➕ Publish New Edition</button>
+            </div>
+            <div class="table-container">
+                <table class="custom-table">
+                    <thead>
+                        <tr><th>Book Title</th><th>Prev. Edition</th><th>New Edition</th><th>Release Notes</th><th>Published By</th><th>Date</th><th style="width:100px;">Action</th></tr>
+                    </thead>
+                    <tbody id="version-history-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PANEL 10 – DIGITAL LIBRARIAN ID
+    ══════════════════════════════════════ -->
+    <div class="lib-panel" id="panel-digital-id">
+        <div class="section-card" style="max-width:560px;margin:0 auto;text-align:center;">
+            <div class="section-header" style="justify-content:center;">
+                <h3>🪺 Digital Librarian Pass</h3>
+            </div>
+            <div class="lib-id-container">
+                <div class="lib-id-card">
+                    <div class="lib-id-header">
+                        <span class="lib-id-brand">🏫 SCHOOL 360</span>
+                        <div class="lib-id-chip"></div>
+                    </div>
+                    <div class="lib-id-body">
+                        <div class="lib-id-avatar" id="lib-card-avatar">A</div>
+                        <div class="lib-id-details" style="text-align:left;">
+                            <h3 id="lib-card-name">Aathmika</h3>
+                            <p id="lib-card-id">ID: LIB-CARD-2024-8890</p>
+                            <p id="lib-card-email">aathu@school360.com</p>
+                            <span class="lib-id-role-tag">HEAD LIBRARIAN</span>
+                        </div>
+                    </div>
+                    <div class="lib-id-footer">
+                        <div class="lib-id-qr" id="lib-card-qr"></div>
+                        <div class="lib-id-sig">
+                            <strong>School360</strong>
+                            <span>Library System</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p style="font-size:0.85rem;color:var(--text-muted);margin-top:1rem;margin-bottom:1rem;">
+                📷 <strong>Scan with Phone Camera:</strong> Scanning this QR code with your phone camera will automatically open our website and authenticate your session.
+            </p>
+            <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ Download / Print Librarian ID</button>
+        </div>
+    </div>
+</main>
+
+<!-- ════════════════════════════════════════════════
+     MODALS
+════════════════════════════════════════════════ -->
+
+<!-- Book Detail Modal -->
+<div class="modal" id="modal-book-detail">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>📖 Book Details</h3>
+            <button class="modal-close" onclick="closeModal('modal-book-detail')">✕</button>
+        </div>
+        <div id="book-detail-content"></div>
+        <div style="display:flex;gap:0.7rem;margin-top:1.2rem;flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" id="btn-detail-edit">✏️ Edit Book</button>
+            <button class="btn btn-teal btn-sm" id="btn-detail-borrow">📤 Record Borrow</button>
+            <button class="btn btn-outline btn-sm" id="btn-detail-version">🔄 Update Version</button>
+        </div>
+    </div>
+</div>
+
+<!-- Version Update Modal -->
+<div class="modal" id="modal-version">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>🔄 Publish New Edition</h3>
+            <button class="modal-close" onclick="closeModal('modal-version')">✕</button>
+        </div>
+        <form onsubmit="handleUpdateVersion(event)">
+            <input type="hidden" id="version-book-id">
+            <div class="form-group" id="version-select-group" style="display:none;">
+                <label class="form-label" for="version-book-select">Select Book *</label>
+                <select id="version-book-select" class="form-input" onchange="onVersionBookSelectChange()"></select>
+            </div>
+            <div class="form-group" id="version-title-group">
+                <label class="form-label">Book Title</label>
+                <input type="text" id="version-book-title" class="form-input" disabled style="opacity:.7;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Current Edition</label>
+                <input type="text" id="version-current-edition" class="form-input" disabled style="opacity:.7;">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="version-new-edition">New Edition *</label>
+                <input type="text" id="version-new-edition" class="form-input" placeholder="e.g. 4th Edition" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="version-notes">Release Notes *</label>
+                <textarea id="version-notes" class="form-input" rows="3" placeholder="What changed in this edition?" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Publish Version</button>
+        </form>
+    </div>
+</div>
+
+<!-- Borrowed Book Detail Modal -->
+<div class="modal" id="modal-borrow-detail">
+    <div class="modal-box" style="width:min(94vw,560px);">
+        <div class="modal-header">
+            <h3>📋 Borrowed Book Details</h3>
+            <button class="modal-close" onclick="closeModal('modal-borrow-detail')">✕</button>
+        </div>
+        <div id="borrow-detail-content"></div>
+        <div style="display:flex;gap:0.7rem;margin-top:1.2rem;flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" id="btn-borrow-detail-status">🔄 Update Status</button>
+            <button class="btn btn-teal btn-sm" id="btn-borrow-detail-return">✅ Mark Returned</button>
+            <button class="btn btn-outline btn-sm" onclick="closeModal('modal-borrow-detail')">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Borrow Status Modal -->
+<div class="modal" id="modal-borrow-status">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>🔄 Update Borrowing Status</h3>
+            <button class="modal-close" onclick="closeModal('modal-borrow-status')">✕</button>
+        </div>
+        <div id="borrow-status-info" style="font-size:0.87rem;color:var(--text-secondary);margin-bottom:1rem;padding:0.7rem;background:var(--bg-tertiary);border-radius:8px;"></div>
+        <div class="form-group">
+            <label class="form-label" for="borrow-status-select">Borrowing Status</label>
+            <select id="borrow-status-select" class="form-input">
+                <option value="BORROWED">Borrowed (Active)</option>
+                <option value="RETURNED">Returned</option>
+                <option value="OVERDUE">Overdue</option>
+                <option value="EXTENDED">Extended / Renewed</option>
+                <option value="LOST">Lost / Unreturned</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="borrow-return-date">Return Date (if returned)</label>
+            <input type="date" id="borrow-return-date" class="form-input">
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="borrow-status-notes">Notes / Observations</label>
+            <input type="text" id="borrow-status-notes" class="form-input" placeholder="e.g. Returned with slight wear / Extended for exam week">
+        </div>
+        <div style="display:flex;gap:0.7rem;margin-top:0.5rem;">
+            <button class="btn btn-primary btn-sm" style="flex:1;" onclick="confirmUpdateBorrowStatus()">✅ Save Status</button>
+            <button class="btn btn-danger-soft btn-sm" onclick="deleteBorrowRecord()">🗑️ Delete Record</button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Member Modal -->
+<div class="modal" id="modal-edit-member">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>✏️ Update Member Details</h3>
+            <button class="modal-close" onclick="closeModal('modal-edit-member')">✕</button>
+        </div>
+        <form onsubmit="handleUpdateMember(event)">
+            <input type="hidden" id="edit-member-id">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="edit-member-name">Full Name *</label>
+                    <input type="text" id="edit-member-name" class="form-input" required pattern="[A-Za-z\s]+" title="Letters and spaces only">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="edit-member-type">Type</label>
+                    <select id="edit-member-type" class="form-input">
+                        <option value="Student">Student</option>
+                        <option value="Teacher">Teacher</option>
+                        <option value="Staff">Staff</option>
+                        <option value="Guest">Guest</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="edit-member-email">Email *</label>
+                    <input type="email" id="edit-member-email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="edit-member-phone">Phone</label>
+                    <input type="text" id="edit-member-phone" class="form-input" pattern="\d{1,16}" maxlength="16" inputmode="numeric">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="edit-member-class">Class / Dept.</label>
+                    <input type="text" id="edit-member-class" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="edit-member-status">Status</label>
+                    <select id="edit-member-status" class="form-input">
+                        <option value="ACTIVE">Active</option>
+                        <option value="SUSPENDED">Suspended</option>
+                        <option value="INACTIVE">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display:flex;gap:0.7rem;margin-top:0.5rem;">
+                <button type="submit" class="btn btn-primary" style="flex:1;">Save Changes</button>
+                <button type="button" class="btn btn-danger-soft btn-sm" onclick="confirmRemoveMember()">🗑️ Remove Member</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Detailed Member Record View Modal -->
+<div class="modal" id="modal-member-record">
+    <div class="modal-box" style="width:min(95vw,650px);">
+        <div class="modal-header">
+            <h3>🪪 Library Member Record</h3>
+            <button class="modal-close" onclick="closeModal('modal-member-record')">✕</button>
+        </div>
+        <div id="member-record-content"></div>
+        <div style="display:flex;gap:0.6rem;margin-top:1.2rem;flex-wrap:wrap;justify-content:flex-end;">
+            <button class="btn btn-primary btn-sm" id="btn-record-reserve">🔖 Reserve Book for Member</button>
+            <button class="btn btn-teal btn-sm" id="btn-record-issue">📤 Issue / Borrow Book</button>
+            <button class="btn btn-outline btn-sm" id="btn-record-edit">✏️ Edit Member</button>
+            <button class="btn btn-outline btn-sm" onclick="closeModal('modal-member-record')">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Dedicated Member Reservation Modal -->
+<div class="modal" id="modal-reserve-member">
+    <div class="modal-box" style="width:min(94vw,560px);">
+        <div class="modal-header">
+            <h3>🔖 Reserve Book for Member</h3>
+            <button class="modal-close" onclick="closeModal('modal-reserve-member')">✕</button>
+        </div>
+        
+        <!-- Target Member Banner -->
+        <div id="res-member-banner" style="background:var(--lib-accent-light);border:1px solid var(--lib-accent);padding:0.9rem 1.1rem;border-radius:12px;margin-bottom:1.2rem;display:flex;align-items:center;gap:1rem;">
+            <div id="res-member-avatar" class="member-avatar" style="width:44px;height:44px;font-size:1.1rem;background:var(--lib-accent);color:#fff;">M</div>
+            <div>
+                <h4 id="res-member-name" style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:0.15rem;">Member Name</h4>
+                <div style="font-size:0.78rem;color:var(--text-secondary);display:flex;gap:0.75rem;flex-wrap:wrap;">
+                    <span id="res-member-mid" style="font-family:monospace;font-weight:600;color:var(--lib-accent);">LIB-2024-001</span>
+                    <span id="res-member-type" class="badge badge-purple">Student</span>
+                    <span id="res-member-email">email@school.edu</span>
+                </div>
+            </div>
+        </div>
+
+        <form onsubmit="handleSaveMemberReservation(event)">
+            <input type="hidden" id="res-target-member-id">
+            <input type="hidden" id="res-target-member-name">
+            
+            <div class="form-group">
+                <label class="form-label" for="res-book-select">Select Book to Reserve *</label>
+                <select id="res-book-select" class="form-input" required onchange="onReserveBookSelectChange()">
+                    <option value="">-- Choose a book from catalog --</option>
+                </select>
+            </div>
+
+            <!-- Book Quick Preview Box -->
+            <div id="res-book-preview" style="display:none;background:var(--bg-tertiary);border-radius:10px;padding:0.8rem 1rem;margin-bottom:1rem;font-size:0.83rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem;">
+                    <strong id="res-preview-title" style="font-size:0.9rem;color:var(--text-primary);">Book Title</strong>
+                    <span id="res-preview-status">Status</span>
+                </div>
+                <div style="color:var(--text-secondary);line-height:1.6;">
+                    <div>Author: <span id="res-preview-author" style="font-weight:500;">—</span> | Category: <span id="res-preview-cat" style="font-weight:500;">—</span></div>
+                    <div>Edition: <span id="res-preview-edition" style="font-weight:500;">—</span> | Copies Available: <span id="res-preview-copies" style="font-weight:600;color:var(--lib-accent);">0</span></div>
+                    <div>Shelf Location: <span id="res-preview-location" style="font-weight:500;">—</span></div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="res-mem-date">Reservation Date *</label>
+                    <input type="date" id="res-mem-date" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="res-mem-expiry">Expiry Date *</label>
+                    <input type="date" id="res-mem-expiry" class="form-input" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="res-mem-status">Initial Reservation Status</label>
+                <select id="res-mem-status" class="form-input">
+                    <option value="PENDING">Pending Approval</option>
+                    <option value="APPROVED">Approved (Confirmed Allocation)</option>
+                </select>
+            </div>
+
+            <div style="display:flex;gap:0.7rem;margin-top:1.2rem;">
+                <button type="submit" class="btn btn-primary btn-block">🔖 Confirm Reservation for Member</button>
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-reserve-member')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Borrowing History Modal -->
+<div class="modal" id="modal-borrow-history">
+    <div class="modal-box" style="width:min(95vw,680px);">
+        <div class="modal-header">
+            <h3 id="history-modal-title">📋 Borrowing History</h3>
+            <button class="modal-close" onclick="closeModal('modal-borrow-history')">✕</button>
+        </div>
+        <div class="table-container">
+            <table class="custom-table">
+                <thead><tr><th>Book</th><th>Borrowed</th><th>Due</th><th>Returned</th><th>Status</th></tr></thead>
+                <tbody id="history-modal-list"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="js/app.js?v=contrast-8"></script>
+<script>
+/* ================================================================
+   LIBRARY MANAGEMENT – FULL SCRIPT
+   ================================================================ */
+let booksList = [];
+let membersList = [];
+let borrowsList = [];
+let reservationsList = [];
+let announcementsList = [];
+let versionHistoryList = [];
+let borrowFilter = 'ALL';
+let reservationFilter = 'ALL';
+let activeBorrowId = null;
+let activeMemberId = null;
+
+const todayStr = () => new Date().toISOString().split('T')[0];
+const addDays  = (d, n) => { const dt = new Date(d); dt.setDate(dt.getDate() + n); return dt.toISOString().split('T')[0]; };
+
+/* ── Demo seed ── */
+function seedDemoData() {
+    booksList = [
+        { id:1, title:'Introduction to Algorithms', author:'Cormen et al.', isbn:'9780262046305', category:'Computer Science', edition:'4th Ed', copies:5, status:'AVAILABLE', location:'Sec A, Row 1', description:'A comprehensive textbook on algorithms and data structures.' },
+        { id:2, title:'Atomic Habits', author:'James Clear', isbn:'9780735211292', category:'Self-Help', edition:'1st Ed', copies:3, status:'AVAILABLE', location:'Sec C, Row 2', description:'Tiny changes that create remarkable results.' },
+        { id:3, title:'The Art of War', author:'Sun Tzu', isbn:'9781590302255', category:'Philosophy', edition:'Classics Ed', copies:0, status:'UNAVAILABLE', location:'Sec D, Row 5', description:'Ancient Chinese military and strategic treatise.' },
+        { id:4, title:'Physics for Scientists', author:'Serway & Jewett', isbn:'9781133947271', category:'Physics', edition:'10th Ed', copies:8, status:'AVAILABLE', location:'Sec B, Row 3', description:'Calculus-based physics for engineers and scientists.' },
+    ];
+    membersList = [
+        { id:1, name:'Alice Johnson', mid:'LIB-2024-001', type:'Student', dept:'Grade 10', email:'alice@school.edu', phone:'+1 555-0101', status:'ACTIVE', joined: todayStr() },
+        { id:2, name:'Bob Smith',     mid:'LIB-2024-002', type:'Teacher', dept:'Science',  email:'bob@school.edu',   phone:'+1 555-0102', status:'ACTIVE', joined: todayStr() },
+        { id:3, name:'Carol White',   mid:'LIB-2024-003', type:'Staff',   dept:'Admin',    email:'carol@school.edu', phone:'+1 555-0103', status:'SUSPENDED', joined: addDays(todayStr(),-30) },
+    ];
+    borrowsList = [
+        { id:1, memberId:1, memberName:'Alice Johnson', bookId:1, bookTitle:'Introduction to Algorithms', borrowDate:addDays(todayStr(),-10), dueDate:addDays(todayStr(),4),  returnDate:null, status:'BORROWED', notes:'' },
+        { id:2, memberId:2, memberName:'Bob Smith',     bookId:2, bookTitle:'Atomic Habits',              borrowDate:addDays(todayStr(),-20), dueDate:addDays(todayStr(),-5), returnDate:null, status:'OVERDUE',  notes:'' },
+    ];
+    reservationsList = [
+        { id:1, memberId:1, memberName:'Alice Johnson', bookId:3, bookTitle:'The Art of War', reservedOn:todayStr(), expiry:addDays(todayStr(),7), status:'PENDING' },
+    ];
+    announcementsList = [
+        { id:1, title:'Library Open on Saturday', type:'Notice', content:'The library will be open this Saturday from 9AM–4PM for exam preparation.', postedBy:'Librarian', postedOn:todayStr() },
+        { id:2, title:'New Books Arrived',        type:'General', content:'Fifty new titles across Science and Literature sections have been added.', postedBy:'Librarian', postedOn:addDays(todayStr(),-3) },
+    ];
+    versionHistoryList = [
+        { bookTitle:'Introduction to Algorithms', previousEdition:'3rd Ed', newEdition:'4th Ed', notes:'Updated graph algorithm chapters and new exercises.', publishedBy:'Librarian', publishedDate:addDays(todayStr(),-60) },
+    ];
+}
+
+/* ── Auth hook & DB loader ── */
+const _origCheckAuth = (typeof checkAuth === 'function') ? checkAuth : null;
+checkAuth = async function() {
+    if (_origCheckAuth) _origCheckAuth();
+    if (typeof currentUser !== 'undefined' && currentUser && currentUser.fullName) {
+        const welcomeEl = document.getElementById('welcome-message');
+        if (welcomeEl) welcomeEl.innerText = `📚 Hello, ${currentUser.fullName}`;
+    }
+    await refreshLibrarianData(false);
+};
+
+async function refreshLibrarianData(showToastFeedback = true) {
+    try {
+        const [bks, mbrs, bws, rvs, anns, vrs] = await Promise.allSettled([
+            apiCall('/library/books'), apiCall('/library/members'),
+            apiCall('/library/borrows'), apiCall('/library/reservations'),
+            apiCall('/library/announcements'), apiCall('/library/version-history')
+        ]);
+        if (bks.status  === 'fulfilled' && Array.isArray(bks.value))  booksList          = bks.value;
+        if (mbrs.status === 'fulfilled' && Array.isArray(mbrs.value)) membersList        = mbrs.value;
+        if (bws.status  === 'fulfilled' && Array.isArray(bws.value))  borrowsList        = bws.value;
+        if (rvs.status  === 'fulfilled' && Array.isArray(rvs.value))  reservationsList   = rvs.value;
+        if (anns.status === 'fulfilled' && Array.isArray(anns.value)) announcementsList  = anns.value;
+        if (vrs.status  === 'fulfilled' && Array.isArray(vrs.value))  versionHistoryList = vrs.value;
+
+        if (bks.status !== 'fulfilled' && mbrs.status !== 'fulfilled') {
+            seedDemoData();
+        }
+    } catch(e) {
+        seedDemoData();
+    }
+    updateStats(); renderAll(); populateDataLists();
+    if (showToastFeedback && typeof showToast === 'function') {
+        showToast('Refreshed!', 'Library management data updated.', 'info');
+    }
+}
+
+/* ── Panel navigation ── */
+function showPanel(panelId) {
+    document.querySelectorAll('.lib-panel').forEach(p  => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    const panel = document.getElementById('panel-' + panelId);
+    const menu  = document.getElementById('menu-'  + panelId);
+    if (panel) panel.classList.add('active');
+    if (menu)  menu.classList.add('active');
+    if (panelId === 'borrow')       { populateBorrowDefaults(); renderBorrows(); }
+    if (panelId === 'reservations') { populateResDates();       renderReservations(); }
+    if (panelId === 'availability') renderAvailability();
+    if (panelId === 'members')      renderMembers();
+    if (panelId === 'books')        renderBooks();
+    if (panelId === 'announcements')renderAnnouncements();
+    if (panelId === 'versions')     renderVersionHistory();
+    if (panelId === 'digital-id')    renderDigitalLibrarianID();
+}
+
+function populateBorrowDefaults() {
+    document.getElementById('borrow-date').value = todayStr();
+    document.getElementById('borrow-due').value  = addDays(todayStr(), 14);
+}
+function populateResDates() {
+    document.getElementById('res-date').value   = todayStr();
+    document.getElementById('res-expiry').value = addDays(todayStr(), 7);
+}
+
+/* ── Stats ── */
+function updateStats() {
+    const pendingCount = reservationsList.filter(r => r.status === 'PENDING').length;
+    document.getElementById('stat-total-books').textContent  = booksList.length;
+    document.getElementById('stat-members').textContent      = membersList.length;
+    document.getElementById('stat-borrowed').textContent     = borrowsList.filter(b => b.status === 'BORROWED' || b.status === 'OVERDUE').length;
+    document.getElementById('stat-reservations').textContent = pendingCount;
+
+    const badge = document.getElementById('pending-res-badge');
+    if (badge) {
+        if (pendingCount > 0) {
+            badge.textContent = pendingCount;
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+function renderAll() {
+    renderBooks(); renderAvailability(); renderMembers();
+    renderBorrows(); renderReservations(); renderAnnouncements(); renderVersionHistory(); renderDigitalLibrarianID();
+}
+
+function populateDataLists() {
+    document.getElementById('member-datalist').innerHTML = membersList.map(m => `<option value="${m.mid}">${m.name}</option>`).join('');
+    document.getElementById('book-datalist').innerHTML   = booksList.map(b   => `<option value="${b.isbn}">${b.title}</option>`).join('');
+}
+
+/* ── Modals ── */
+function openModal(id)  { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+document.querySelectorAll('.modal').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });
+});
+
+/* ── Helpers ── */
+function statusBadge(s) {
+    return s === 'AVAILABLE'
+        ? '<span class="badge badge-success">Available</span>'
+        : '<span class="badge badge-danger">Unavailable</span>';
+}
+function memberStatusBadge(s) {
+    const c = { ACTIVE:'success', SUSPENDED:'danger', INACTIVE:'warning' };
+    return `<span class="badge badge-${c[s]||'info'}">${s}</span>`;
+}
+function borrowStatusBadge(s) {
+    const c = { BORROWED:'teal', RETURNED:'success', OVERDUE:'danger' };
+    return `<span class="badge badge-${c[s]||'info'}">${s}</span>`;
+}
+function reservationStatusBadge(s) {
+    if (s === 'PENDING') return `<span class="badge badge-warning" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:0.78rem;font-weight:600;border-radius:12px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#6b3294;"></span> PENDING APPROVAL</span>`;
+    if (s === 'APPROVED') return `<span class="badge badge-success" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:0.78rem;font-weight:600;border-radius:12px;">✅ APPROVED</span>`;
+    if (s === 'CANCELLED' || s === 'REJECTED') return `<span class="badge badge-danger" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:0.78rem;font-weight:600;border-radius:12px;">✕ CANCELLED</span>`;
+    return `<span class="badge badge-info">${s}</span>`;
+}
+function emptyRow(cols, msg) {
+    return `<tr><td colspan="${cols}" style="text-align:center;padding:2.5rem;color:var(--text-muted)">${msg}</td></tr>`;
+}
+async function apiSave(url, method, data) {
+    return await apiCall(url, method, data);
+}
+
+/* ================================================================
+   BOOK CATALOG
+================================================================ */
+function renderBooks() {
+    const tbody  = document.getElementById('books-list');
+    if (!tbody) return;
+    const search = (document.getElementById('search-books')?.value || '').toLowerCase().trim();
+    const sf     = document.getElementById('filter-books-status')?.value || 'ALL';
+    const filtered = booksList.filter(b => {
+        const titleMatch  = (b.title || '').toLowerCase().includes(search);
+        const authorMatch = (b.author || '').toLowerCase().includes(search);
+        const catMatch    = (b.category || '').toLowerCase().includes(search);
+        const isbnMatch   = (b.isbn || '').toLowerCase().includes(search);
+        const matchQuery  = !search || titleMatch || authorMatch || catMatch || isbnMatch;
+        const matchStatus = (sf === 'ALL' || b.status === sf);
+        return matchQuery && matchStatus;
+    });
+    if (!filtered.length) { tbody.innerHTML = emptyRow(8, 'No books found in the catalog.'); return; }
+    tbody.innerHTML = filtered.map(b => `
+        <tr>
+            <td><strong>${b.title}</strong></td>
+            <td>${b.author}</td>
+            <td style="font-size:0.78rem;font-family:monospace;">${b.isbn}</td>
+            <td><span class="badge badge-info">${b.category}</span></td>
+            <td>${b.edition}</td>
+            <td>${b.copies}</td>
+            <td>${statusBadge(b.status)}</td>
+            <td style="white-space:nowrap;display:flex;gap:4px;flex-wrap:wrap;">
+                <button class="btn btn-outline btn-sm" onclick="viewBookDetail(${b.id})">👁 View</button>
+                <button class="btn btn-primary btn-sm" onclick="openReserveBookForMemberModalFromCatalog(${b.id})" title="Reserve this book for a member">🔖 Reserve</button>
+                <button class="btn btn-outline btn-sm" onclick="editBook(${b.id})">✏️ Edit</button>
+                <button class="btn btn-outline btn-sm" onclick="openVersionModal(${b.id})">🔄</button>
+                <button class="btn btn-danger-soft btn-sm" onclick="deleteBook(${b.id})">🗑</button>
+            </td>
+        </tr>`).join('');
+}
+
+function viewBookDetail(id) {
+    const b = booksList.find(x => x.id === id);
+    if (!b) return;
+    document.getElementById('book-detail-content').innerHTML = `
+        <div class="book-detail-row"><strong>Title</strong><span>${b.title}</span></div>
+        <div class="book-detail-row"><strong>Author</strong><span>${b.author}</span></div>
+        <div class="book-detail-row"><strong>ISBN</strong><span style="font-family:monospace">${b.isbn}</span></div>
+        <div class="book-detail-row"><strong>Category</strong><span>${b.category}</span></div>
+        <div class="book-detail-row"><strong>Edition</strong><span>${b.edition}</span></div>
+        <div class="book-detail-row"><strong>Copies</strong><span>${b.copies}</span></div>
+        <div class="book-detail-row"><strong>Status</strong><span>${statusBadge(b.status)}</span></div>
+        <div class="book-detail-row"><strong>Location</strong><span>${b.location || '—'}</span></div>
+        <div class="book-detail-row"><strong>Description</strong><span style="line-height:1.6">${b.description || '—'}</span></div>`;
+    document.getElementById('btn-detail-edit').onclick    = () => { closeModal('modal-book-detail'); editBook(id); };
+    document.getElementById('btn-detail-borrow').onclick  = () => { closeModal('modal-book-detail'); showPanel('borrow'); };
+    document.getElementById('btn-detail-version').onclick = () => { closeModal('modal-book-detail'); openVersionModal(id); };
+    openModal('modal-book-detail');
+}
+
+async function handleSaveBook(event) {
+    event.preventDefault();
+    const id = document.getElementById('book-id').value;
+    const title    = document.getElementById('book-title').value.trim();
+    const author   = document.getElementById('book-author').value.trim();
+    const isbn     = document.getElementById('book-isbn').value.trim();
+    const category = document.getElementById('book-category').value.trim();
+
+    // 1. Author Validation: Text only (letters, spaces, dots, hyphens, apostrophes)
+    const authorRegex = /^[A-Za-z\s.\-']+$/;
+    if (!author || !authorRegex.test(author)) {
+        showToast('Validation Error', 'Author name can only contain text letters (no numbers allowed).', 'danger');
+        document.getElementById('book-author').focus();
+        return;
+    }
+
+    // 2. ISBN Validation: Exactly 13 numeric digits, no symbols or text
+    const isbnRegex = /^\d{13}$/;
+    if (!isbn || !isbnRegex.test(isbn)) {
+        showToast('Validation Error', 'ISBN number must contain exactly 13 numeric digits (no symbols or text allowed).', 'danger');
+        document.getElementById('book-isbn').focus();
+        return;
+    }
+
+    // 3. Category Validation: Text only (letters, spaces, hyphens)
+    const categoryRegex = /^[A-Za-z\s\-]+$/;
+    if (!category || !categoryRegex.test(category)) {
+        showToast('Validation Error', 'Category can only contain text values (no numbers allowed).', 'danger');
+        document.getElementById('book-category').focus();
+        return;
+    }
+
+    const copiesRaw = document.getElementById('book-copies').value;
+    const copiesVal = copiesRaw !== '' && !isNaN(copiesRaw) ? parseInt(copiesRaw, 10) : 0;
+
+    const payload = {
+        title:   title,
+        author:  author,
+        isbn:    isbn,
+        category:category,
+        edition: document.getElementById('book-edition').value.trim(),
+        copies:  copiesVal,
+        status:  document.getElementById('book-status').value,
+        location:document.getElementById('book-location').value.trim(),
+        description: document.getElementById('book-desc').value.trim(),
+    };
+    try {
+        if (id) {
+            const updated = await apiCall('/library/books/' + id, 'PUT', payload);
+            const idx = booksList.findIndex(b => b.id == id);
+            if (idx > -1 && updated) {
+                booksList[idx] = updated;
+            } else if (idx > -1) {
+                booksList[idx] = { ...booksList[idx], ...payload };
+            }
+            showToast('Book Updated', '"' + payload.title + '" updated in database.', 'success');
+        } else {
+            const saved = await apiCall('/library/books', 'POST', payload);
+            booksList.push(saved || { id: Date.now(), ...payload });
+            showToast('Book Added', '"' + payload.title + '" added to database catalog.', 'success');
+        }
+        resetBookForm(); updateStats(); renderBooks(); populateDataLists();
+        showPanel('books');
+    } catch(err) {
+        console.error("Book save error:", err);
+        showToast('Database Update Error', err.message || 'Could not update book in database.', 'danger');
+    }
+}
+
+function renderDigitalLibrarianID() {
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('s360_current_user')); } catch(e){}
+    if (!user) {
+        user = { fullName: 'Aathmika', username: 'aathu11', email: 'aathu@school360.com', qrCodeToken: 'QR-LIBRARIAN-AATHU11' };
+    }
+    const nameStr = user.fullName || user.username || 'Aathmika';
+    const initial = nameStr.charAt(0).toUpperCase();
+    const avatarEl = document.getElementById('lib-card-avatar');
+    const nameEl   = document.getElementById('lib-card-name');
+    const emailEl  = document.getElementById('lib-card-email');
+    const idEl     = document.getElementById('lib-card-id');
+    const qrEl     = document.getElementById('lib-card-qr');
+
+    if (avatarEl) avatarEl.textContent = initial;
+    if (nameEl)   nameEl.textContent   = nameStr;
+    if (emailEl)  emailEl.textContent  = user.email || 'aathu@school360.com';
+    if (idEl)     idEl.textContent     = 'ID: LIB-CARD-' + (user.id || '2024-8890');
+    
+    const qrToken  = user.qrCodeToken || 'QR-LIBRARIAN-AATHU11';
+    const qrWebUrl = getQRWebUrl(qrToken);
+    if (qrEl) qrEl.innerHTML = generateQRCodeSVG(qrWebUrl, 75);
+}
+
+function editBook(id) {
+    const b = booksList.find(x => x.id === id);
+    if (!b) return;
+    document.getElementById('book-id').value       = b.id;
+    document.getElementById('book-title').value    = b.title;
+    document.getElementById('book-author').value   = b.author;
+    document.getElementById('book-isbn').value     = b.isbn;
+    document.getElementById('book-category').value = b.category;
+    document.getElementById('book-edition').value  = b.edition;
+    document.getElementById('book-copies').value   = b.copies;
+    document.getElementById('book-status').value   = b.status;
+    document.getElementById('book-location').value = b.location || '';
+    document.getElementById('book-desc').value     = b.description || '';
+    document.getElementById('book-form-title').innerText = '✏️ Edit Book Details';
+    document.getElementById('btn-save-book').innerText   = 'Save Changes';
+    document.getElementById('btn-cancel-edit-book').style.display = 'inline-flex';
+    showPanel('add-book');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetBookForm() {
+    document.getElementById('book-id').value       = '';
+    document.getElementById('book-title').value    = '';
+    document.getElementById('book-author').value   = '';
+    document.getElementById('book-isbn').value     = '';
+    document.getElementById('book-category').value = '';
+    document.getElementById('book-edition').value  = '';
+    document.getElementById('book-copies').value   = '';
+    document.getElementById('book-status').value   = 'AVAILABLE';
+    document.getElementById('book-location').value = '';
+    document.getElementById('book-desc').value     = '';
+    document.getElementById('book-form-title').innerText = '➕ Add New Book';
+    document.getElementById('btn-save-book').innerText   = 'Publish Book';
+    document.getElementById('btn-cancel-edit-book').style.display = 'none';
+}
+
+async function deleteBook(id) {
+    const b = booksList.find(x => x.id === id);
+    if (!b) return;
+    if (b.status !== 'UNAVAILABLE') {
+        showToast('Action Locked', 'Mark the book as Unavailable before removing it.', 'warning');
+        return;
+    }
+    if (!confirm('Permanently remove "' + b.title + '" from the catalog? This cannot be undone.')) return;
+    try { await apiSave('/library/books/' + id, 'DELETE'); } catch(e) {}
+    booksList = booksList.filter(x => x.id !== id);
+    showToast('Book Removed', '"' + b.title + '" deleted.', 'success');
+    updateStats(); renderBooks(); populateDataLists();
+}
+
+/* ── Availability ── */
+function renderAvailability() {
+    const tbody  = document.getElementById('avail-list');
+    if (!tbody) return;
+    const search = (document.getElementById('search-avail')?.value || '').toLowerCase().trim();
+    const filtered = booksList.filter(b => 
+        (b.title || '').toLowerCase().includes(search) || 
+        (b.author || '').toLowerCase().includes(search) ||
+        (b.category || '').toLowerCase().includes(search) ||
+        (b.isbn || '').toLowerCase().includes(search)
+    );
+    if (!filtered.length) { tbody.innerHTML = emptyRow(6, 'No books found.'); return; }
+    tbody.innerHTML = filtered.map(b => `
+        <tr>
+            <td><strong>${b.title}</strong></td>
+            <td>${b.author}</td>
+            <td>${b.copies}</td>
+            <td>${statusBadge(b.status)}</td>
+            <td style="font-size:0.8rem;color:var(--text-muted)">${b.location || '—'}</td>
+            <td>
+                <button class="btn btn-sm ${b.status === 'AVAILABLE' ? 'btn-danger-soft' : 'btn-teal'}" onclick="toggleAvailability(${b.id})">
+                    ${b.status === 'AVAILABLE' ? '🔴 Mark Unavailable' : '🟢 Mark Available'}
+                </button>
+            </td>
+        </tr>`).join('');
+}
+
+async function toggleAvailability(id) {
+    const b = booksList.find(x => x.id === id);
+    if (!b) return;
+    const ns = b.status === 'AVAILABLE' ? 'UNAVAILABLE' : 'AVAILABLE';
+    try { await apiSave('/library/books/' + id, 'PUT', { ...b, status: ns }); } catch(e) {}
+    b.status = ns;
+    showToast('Updated', '"' + b.title + '" is now ' + ns + '.', 'success');
+    renderAvailability(); renderBooks();
+}
+
+/* ================================================================
+   VERSION HISTORY
+================================================================ */
+function openVersionModal(id) {
+    const b = booksList.find(x => x.id === id);
+    if (!b) return;
+    document.getElementById('version-book-id').value           = b.id;
+    document.getElementById('version-book-title').value        = b.title;
+    document.getElementById('version-current-edition').value   = b.edition;
+    document.getElementById('version-new-edition').value       = '';
+    document.getElementById('version-notes').value             = '';
+    openModal('modal-version');
+}
+
+async function handleUpdateVersion(event) {
+    event.preventDefault();
+    const id         = document.getElementById('version-book-id').value;
+    const b          = booksList.find(x => x.id == id);
+    const newEdition = document.getElementById('version-new-edition').value.trim();
+    const notes      = document.getElementById('version-notes').value.trim();
+    const entry = {
+        bookTitle: b?.title || '', previousEdition: b?.edition || '',
+        newEdition, notes,
+        publishedBy: (typeof currentUser !== 'undefined' && currentUser?.fullName) || 'Librarian',
+        publishedDate: todayStr()
+    };
+    try { await apiSave('/library/books/' + id + '/version', 'POST', { newEdition, notes, publishedBy: entry.publishedBy }); } catch(e) {}
+    if (b) b.edition = newEdition;
+    versionHistoryList.unshift(entry);
+    showToast('Version Published', 'New edition "' + newEdition + '" recorded.', 'success');
+    closeModal('modal-version'); renderVersionHistory(); renderBooks();
+}
+
+function renderVersionHistory() {
+    const tbody = document.getElementById('version-history-list');
+    if (!versionHistoryList.length) { tbody.innerHTML = emptyRow(6, 'No edition updates yet.'); return; }
+    tbody.innerHTML = versionHistoryList.map(v => `
+        <tr>
+            <td><strong>${v.bookTitle}</strong></td>
+            <td>${v.previousEdition}</td>
+            <td>${v.newEdition}</td>
+            <td style="font-size:0.82rem;max-width:240px">${v.notes}</td>
+            <td>${v.publishedBy}</td>
+            <td>${v.publishedDate}</td>
+        </tr>`).join('');
+}
+
+/* ================================================================
+   MEMBERS
+================================================================ */
+function renderMembers() {
+    const tbody  = document.getElementById('members-list');
+    if (!tbody) return;
+    const search = (document.getElementById('search-members')?.value || '').toLowerCase().trim();
+    const filtered = membersList.filter(m => 
+        (m.name || '').toLowerCase().includes(search) || 
+        (m.mid || '').toLowerCase().includes(search) ||
+        (m.email || '').toLowerCase().includes(search) ||
+        (m.phone || '').toLowerCase().includes(search) ||
+        (m.type || '').toLowerCase().includes(search) ||
+        (m.dept || '').toLowerCase().includes(search)
+    );
+    if (!filtered.length) { tbody.innerHTML = emptyRow(8, 'No members found matching search.'); return; }
+    tbody.innerHTML = filtered.map(m => `
+        <tr>
+            <td>
+                <div class="member-chip">
+                    <div class="member-avatar">${m.name ? m.name.charAt(0).toUpperCase() : 'M'}</div>
+                    <div>
+                        <strong>${m.name}</strong>
+                        ${m.dept ? `<div style="font-size:0.75rem;color:var(--text-muted);">${m.dept}</div>` : ''}
+                    </div>
+                </div>
+            </td>
+            <td style="font-family:monospace;font-size:0.82rem;font-weight:600;color:var(--lib-accent);">${m.mid}</td>
+            <td><span class="badge badge-purple">${m.type}</span></td>
+            <td style="font-size:0.82rem">${m.email}</td>
+            <td style="font-size:0.82rem">${m.phone || '—'}</td>
+            <td style="font-size:0.8rem;color:var(--text-muted)">${m.joined}</td>
+            <td>${memberStatusBadge(m.status)}</td>
+            <td style="white-space:nowrap;">
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                    <button class="btn btn-outline btn-sm" onclick="viewMemberRecord(${m.id})" title="View full member record details">👁 Record</button>
+                    <button class="btn btn-primary btn-sm" onclick="openReserveForMemberModal(${m.id})" title="Reserve a book for this member">🔖 Reserve Book</button>
+                    <button class="btn btn-outline btn-sm" onclick="openEditMemberModal(${m.id})" title="Edit member details">✏️ Edit</button>
+                    <button class="btn btn-teal btn-sm" onclick="viewMemberHistory(${m.id})" title="Borrowing history">📋 History</button>
+                </div>
+            </td>
+        </tr>`).join('');
+}
+
+function viewMemberRecord(id) {
+    const m = membersList.find(x => x.id === id);
+    if (!m) return;
+    activeMemberId = id;
+
+    // Get active borrows for member
+    const memberBorrows = borrowsList.filter(b => (b.memberId === id || b.memberName === m.name));
+    const activeBorrows = memberBorrows.filter(b => b.status !== 'RETURNED');
+    
+    // Get reservations for member
+    const memberReservations = reservationsList.filter(r => (r.memberId === id || r.memberName === m.name));
+
+    let borrowsHtml = '';
+    if (!activeBorrows.length) {
+        borrowsHtml = '<p style="font-size:0.82rem;color:var(--text-muted);margin:0.4rem 0;">No active borrowed books.</p>';
+    } else {
+        borrowsHtml = `
+            <div style="display:flex;flex-direction:column;gap:0.4rem;margin-top:0.4rem;">
+                ${activeBorrows.map(b => `
+                    <div style="background:var(--bg-secondary);padding:0.6rem 0.8rem;border-radius:8px;border:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;">
+                        <div>
+                            <strong>${b.bookTitle}</strong>
+                            <div style="font-size:0.74rem;color:var(--text-muted);">Borrowed: ${b.borrowDate} · Due: ${b.dueDate}</div>
+                        </div>
+                        <div>${borrowStatusBadge(b.status)}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    let reservationsHtml = '';
+    if (!memberReservations.length) {
+        reservationsHtml = '<p style="font-size:0.82rem;color:var(--text-muted);margin:0.4rem 0;">No book reservations found.</p>';
+    } else {
+        reservationsHtml = `
+            <div style="display:flex;flex-direction:column;gap:0.4rem;margin-top:0.4rem;">
+                ${memberReservations.map(r => `
+                    <div style="background:var(--bg-secondary);padding:0.6rem 0.8rem;border-radius:8px;border:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;">
+                        <div>
+                            <strong>${r.bookTitle}</strong>
+                            <div style="font-size:0.74rem;color:var(--text-muted);">Reserved on: ${r.reservedOn || '—'} · Expiry: ${r.expiry || '—'}</div>
+                        </div>
+                        <div>${reservationStatusBadge(r.status)}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    document.getElementById('member-record-content').innerHTML = `
+        <div style="background:linear-gradient(135deg, var(--lib-accent-light), rgba(107,50,148,.05));border:1px solid var(--lib-accent-light);border-radius:14px;padding:1.2rem;margin-bottom:1rem;display:flex;align-items:center;gap:1.2rem;">
+            <div class="member-avatar" style="width:56px;height:56px;font-size:1.4rem;font-weight:800;background:var(--lib-accent);color:#fff;">${m.name ? m.name.charAt(0).toUpperCase() : 'M'}</div>
+            <div style="flex:1;">
+                <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+                    <h3 style="font-size:1.15rem;font-weight:800;color:var(--text-primary);">${m.name}</h3>
+                    <span class="badge badge-purple">${m.type}</span>
+                    ${memberStatusBadge(m.status)}
+                </div>
+                <div style="font-size:0.83rem;color:var(--text-muted);margin-top:0.2rem;display:flex;gap:1rem;flex-wrap:wrap;">
+                    <span>🆔 Member ID: <strong style="font-family:monospace;color:var(--lib-accent);">${m.mid}</strong></span>
+                    <span>🏫 Dept/Class: <strong>${m.dept || '—'}</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row" style="margin-bottom:1rem;">
+            <div style="background:var(--bg-tertiary);padding:0.8rem 1rem;border-radius:10px;border:1px solid var(--border-color);">
+                <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;">Contact Information</div>
+                <div style="font-size:0.85rem;margin-top:0.4rem;line-height:1.6;">
+                    <div>📧 <strong>Email:</strong> ${m.email}</div>
+                    <div>📞 <strong>Phone:</strong> ${m.phone || '—'}</div>
+                    <div>📅 <strong>Joined:</strong> ${m.joined}</div>
+                </div>
+            </div>
+            <div style="background:var(--bg-tertiary);padding:0.8rem 1rem;border-radius:10px;border:1px solid var(--border-color);">
+                <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;">Library Account Summary</div>
+                <div style="font-size:0.85rem;margin-top:0.4rem;line-height:1.6;">
+                    <div>📚 <strong>Active Borrows:</strong> ${activeBorrows.length} book(s)</div>
+                    <div>🔖 <strong>Book Reservations:</strong> ${memberReservations.length} total</div>
+                    <div>⚡ <strong>Status:</strong> ${m.status}</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="background:var(--bg-tertiary);padding:0.9rem 1rem;border-radius:12px;border:1px solid var(--border-color);margin-bottom:1rem;">
+            <div style="font-size:0.82rem;font-weight:700;color:var(--text-primary);margin-bottom:0.4rem;">📤 Current Active Borrowed Books (${activeBorrows.length})</div>
+            ${borrowsHtml}
+        </div>
+
+        <div style="background:var(--bg-tertiary);padding:0.9rem 1rem;border-radius:12px;border:1px solid var(--border-color);">
+            <div style="font-size:0.82rem;font-weight:700;color:var(--text-primary);margin-bottom:0.4rem;">🔖 Book Reservations History (${memberReservations.length})</div>
+            ${reservationsHtml}
+        </div>
+    `;
+
+    document.getElementById('btn-record-reserve').onclick = () => { closeModal('modal-member-record'); openReserveForMemberModal(id); };
+    document.getElementById('btn-record-issue').onclick   = () => { closeModal('modal-member-record'); prefillBorrowForMember(id); };
+    document.getElementById('btn-record-edit').onclick    = () => { closeModal('modal-member-record'); openEditMemberModal(id); };
+
+    openModal('modal-member-record');
+}
+
+function openReserveForMemberModal(memberId, bookId = null) {
+    const m = membersList.find(x => x.id === memberId);
+    if (!m) return;
+
+    // Populate banner details
+    document.getElementById('res-target-member-id').value   = m.id;
+    document.getElementById('res-target-member-name').value = m.name;
+    document.getElementById('res-member-avatar').textContent = m.name ? m.name.charAt(0).toUpperCase() : 'M';
+    document.getElementById('res-member-name').textContent   = m.name;
+    document.getElementById('res-member-mid').textContent    = m.mid;
+    document.getElementById('res-member-type').textContent   = m.type;
+    document.getElementById('res-member-email').textContent  = m.email;
+
+    // Populate Books Select Dropdown
+    const selectEl = document.getElementById('res-book-select');
+    selectEl.innerHTML = '<option value="">-- Choose a book from catalog --</option>' + 
+        booksList.map(b => `<option value="${b.id}">${b.title} (${b.copies !== undefined ? b.copies : 0} copies - ${b.status})</option>`).join('');
+
+    if (bookId) {
+        selectEl.value = bookId;
+    } else {
+        selectEl.value = '';
+    }
+
+    // Set dates
+    document.getElementById('res-mem-date').value   = todayStr();
+    document.getElementById('res-mem-expiry').value = addDays(todayStr(), 7);
+    document.getElementById('res-mem-status').value = 'PENDING';
+
+    onReserveBookSelectChange();
+    openModal('modal-reserve-member');
+}
+
+function onReserveBookSelectChange() {
+    const bookId = parseInt(document.getElementById('res-book-select').value);
+    const previewEl = document.getElementById('res-book-preview');
+    if (!bookId) {
+        previewEl.style.display = 'none';
+        return;
+    }
+    const b = booksList.find(x => x.id === bookId);
+    if (!b) {
+        previewEl.style.display = 'none';
+        return;
+    }
+    document.getElementById('res-preview-title').textContent = b.title;
+    document.getElementById('res-preview-author').textContent = b.author || '—';
+    document.getElementById('res-preview-cat').textContent = b.category || '—';
+    document.getElementById('res-preview-edition').textContent = b.edition || '—';
+    document.getElementById('res-preview-copies').textContent = b.copies !== undefined ? b.copies : 0;
+    document.getElementById('res-preview-location').textContent = b.location || '—';
+    document.getElementById('res-preview-status').innerHTML = statusBadge(b.status);
+
+    previewEl.style.display = 'block';
+}
+
+async function handleSaveMemberReservation(event) {
+    event.preventDefault();
+    const memberId   = parseInt(document.getElementById('res-target-member-id').value);
+    const memberName = document.getElementById('res-target-member-name').value;
+    const bookId     = parseInt(document.getElementById('res-book-select').value);
+    const b          = booksList.find(x => x.id === bookId);
+    
+    if (!bookId || !b) {
+        showToast('Selection Required', 'Please select a book from the catalog.', 'danger');
+        return;
+    }
+
+    const payload = {
+        memberId:   memberId,
+        memberName: memberName,
+        bookId:     bookId,
+        bookTitle:  b.title,
+        reservedOn: document.getElementById('res-mem-date').value || todayStr(),
+        expiry:     document.getElementById('res-mem-expiry').value || addDays(todayStr(), 7),
+        status:     document.getElementById('res-mem-status').value || 'PENDING'
+    };
+
+    try {
+        const res = await apiSave('/library/reservations', 'POST', payload);
+        payload.id = res?.id || Date.now();
+    } catch(e) {
+        payload.id = Date.now();
+    }
+
+    reservationsList.unshift(payload);
+    showToast('Book Reserved', `"${b.title}" reserved for ${memberName}.`, 'success');
+    closeModal('modal-reserve-member');
+    updateStats();
+    renderReservations();
+}
+
+function prefillBorrowForMember(memberId) {
+    const m = membersList.find(x => x.id === memberId);
+    if (!m) return;
+    showPanel('borrow');
+    document.getElementById('borrow-member').value = m.mid;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function openReserveBookForMemberModalFromCatalog(bookId) {
+    const b = booksList.find(x => x.id === bookId);
+    if (!b) return;
+    if (!membersList || !membersList.length) {
+        showToast('No Members', 'Register library members first.', 'warning');
+        return;
+    }
+    openReserveForMemberModal(membersList[0].id, b.id);
+}
+
+async function handleSaveMember(event) {
+    event.preventDefault();
+    const id = document.getElementById('member-id').value;
+    const payload = {
+        name:   document.getElementById('member-name').value.trim(),
+        mid:    document.getElementById('member-mid').value.trim(),
+        type:   document.getElementById('member-type').value,
+        dept:   document.getElementById('member-class').value.trim(),
+        email:  document.getElementById('member-email').value.trim(),
+        phone:  document.getElementById('member-phone').value.trim(),
+        status: document.getElementById('member-status-field').value,
+        joined: todayStr(),
+    };
+    const nameCheck = validateName(payload.name);
+    if (!nameCheck.valid) {
+        showToast("Validation Error", nameCheck.message, "danger");
+        return;
+    }
+    if (payload.phone) {
+        const phoneCheck = validatePhone(payload.phone);
+        if (!phoneCheck.valid) {
+            showToast("Validation Error", phoneCheck.message, "danger");
+            return;
+        }
+    }
+    try {
+        if (id) {
+            await apiSave('/library/members/' + id, 'PUT', payload);
+            const idx = membersList.findIndex(m => m.id == id);
+            if (idx > -1) membersList[idx] = { ...membersList[idx], ...payload };
+            showToast('Updated', payload.name + ' updated.', 'success');
+        } else {
+            const saved = await apiSave('/library/members', 'POST', payload);
+            membersList.push({ id: saved?.id || Date.now(), ...payload });
+            showToast('Registered', payload.name + ' is now a library member.', 'success');
+        }
+    } catch(e) {}
+    resetMemberForm(); updateStats(); renderMembers(); populateDataLists();
+    showPanel('members');
+}
+
+function openEditMemberModal(id) {
+    const m = membersList.find(x => x.id === id);
+    if (!m) return;
+    activeMemberId = id;
+    document.getElementById('edit-member-id').value     = m.id;
+    document.getElementById('edit-member-name').value   = m.name;
+    document.getElementById('edit-member-type').value   = m.type;
+    document.getElementById('edit-member-email').value  = m.email;
+    document.getElementById('edit-member-phone').value  = m.phone || '';
+    document.getElementById('edit-member-class').value  = m.dept  || '';
+    document.getElementById('edit-member-status').value = m.status;
+    openModal('modal-edit-member');
+}
+
+async function handleUpdateMember(event) {
+    event.preventDefault();
+    const id = document.getElementById('edit-member-id').value;
+    const payload = {
+        name:   document.getElementById('edit-member-name').value.trim(),
+        type:   document.getElementById('edit-member-type').value,
+        email:  document.getElementById('edit-member-email').value.trim(),
+        phone:  document.getElementById('edit-member-phone').value.trim(),
+        dept:   document.getElementById('edit-member-class').value.trim(),
+        status: document.getElementById('edit-member-status').value,
+    };
+    const nameCheck = validateName(payload.name);
+    if (!nameCheck.valid) {
+        showToast("Validation Error", nameCheck.message, "danger");
+        return;
+    }
+    if (payload.phone) {
+        const phoneCheck = validatePhone(payload.phone);
+        if (!phoneCheck.valid) {
+            showToast("Validation Error", phoneCheck.message, "danger");
+            return;
+        }
+    }
+    try { await apiSave('/library/members/' + id, 'PUT', payload); } catch(e) {}
+    const idx = membersList.findIndex(m => m.id == id);
+    if (idx > -1) membersList[idx] = { ...membersList[idx], ...payload };
+    showToast('Member Updated', payload.name + ' updated.', 'success');
+    closeModal('modal-edit-member'); renderMembers(); populateDataLists();
+}
+
+async function confirmRemoveMember() {
+    const m = membersList.find(x => x.id === activeMemberId);
+    if (!m || !confirm('Remove ' + m.name + ' from library records? This cannot be undone.')) return;
+    try { await apiSave('/library/members/' + m.id, 'DELETE'); } catch(e) {}
+    membersList = membersList.filter(x => x.id !== m.id);
+    showToast('Member Removed', m.name + ' removed.', 'success');
+    closeModal('modal-edit-member'); updateStats(); renderMembers(); populateDataLists();
+}
+
+function viewMemberHistory(id) {
+    const m = membersList.find(x => x.id === id);
+    if (!m) return;
+    document.getElementById('history-modal-title').textContent = '📋 Borrowing History — ' + m.name;
+    const records = borrowsList.filter(b => b.memberId === id);
+    const tbody = document.getElementById('history-modal-list');
+    if (!records.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">No borrowing history.</td></tr>';
+    } else {
+        tbody.innerHTML = records.map(r => `
+            <tr>
+                <td><strong>${r.bookTitle}</strong></td>
+                <td>${r.borrowDate}</td>
+                <td>${r.dueDate}</td>
+                <td>${r.returnDate || '—'}</td>
+                <td>${borrowStatusBadge(r.status)}</td>
+            </tr>`).join('');
+    }
+    openModal('modal-borrow-history');
+}
+
+function resetMemberForm() {
+    ['member-id','member-name','member-mid','member-class','member-email','member-phone'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('member-type').value         = '';
+    document.getElementById('member-status-field').value = 'ACTIVE';
+    document.getElementById('member-form-title').innerText        = '👤 Register Library Member';
+    document.getElementById('btn-save-member').innerText          = 'Register Member';
+    document.getElementById('btn-cancel-edit-member').style.display = 'none';
+}
+
+/* ================================================================
+   BORROW RECORDS & RETURNABLE CUSTOMERS
+================================================================ */
+function borrowStatusBadge(s) {
+    const c = { BORROWED:'teal', RETURNED:'success', OVERDUE:'danger', EXTENDED:'purple', LOST:'warning' };
+    const labelMap = { BORROWED:'Active', RETURNED:'Returned', OVERDUE:'Overdue', EXTENDED:'Extended', LOST:'Lost' };
+    return `<span class="badge badge-${c[s]||'info'}">${labelMap[s]||s}</span>`;
+}
+
+function setBorrowFilter(f) {
+    borrowFilter = f;
+    document.querySelectorAll('[id^="borrow-filter-"]').forEach(b => b.classList.remove('active'));
+    document.getElementById('borrow-filter-' + f)?.classList.add('active');
+    renderBorrows();
+}
+
+function renderBorrows() {
+    const tbody  = document.getElementById('borrow-list');
+    if (!tbody) return;
+    const search = (document.getElementById('search-borrow')?.value || '').toLowerCase().trim();
+    
+    const filtered = borrowsList.filter(r => {
+        const member     = membersList.find(m => m.id === r.memberId || m.name === r.memberName);
+        const midMatch   = member ? (member.mid || '').toLowerCase().includes(search) : false;
+        const emailMatch = member ? (member.email || '').toLowerCase().includes(search) : false;
+        const phoneMatch = member && member.phone ? (member.phone || '').toLowerCase().includes(search) : false;
+        const nameMatch  = (r.memberName || '').toLowerCase().includes(search);
+        const bookMatch  = (r.bookTitle || '').toLowerCase().includes(search);
+        const statusMatch = (r.status || '').toLowerCase().includes(search);
+
+        const matchesQuery = !search || nameMatch || bookMatch || midMatch || emailMatch || phoneMatch || statusMatch;
+        const matchesFilter = (borrowFilter === 'ALL' || r.status === borrowFilter);
+
+        return matchesQuery && matchesFilter;
+    });
+
+    if (!filtered.length) { tbody.innerHTML = emptyRow(6, 'No borrow records match search filter.'); return; }
+
+    tbody.innerHTML = filtered.map(r => {
+        const member = membersList.find(m => m.id === r.memberId || m.name === r.memberName);
+        const midStr = member ? ` <small style="color:var(--text-muted);">(${member.mid})</small>` : '';
+
+        // Calculate return status days
+        let statusNote = '';
+        if (r.status === 'RETURNED' && r.returnDate) {
+            statusNote = `<div style="font-size:0.72rem;color:var(--success);">Returned ${r.returnDate}</div>`;
+        } else if (r.dueDate) {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const due = new Date(r.dueDate); due.setHours(0,0,0,0);
+            const diffDays = Math.round((due - today) / (1000 * 60 * 60 * 24));
+            if (diffDays < 0) {
+                statusNote = `<div style="font-size:0.72rem;color:var(--danger);font-weight:600;">Overdue by ${Math.abs(diffDays)} day(s)</div>`;
+            } else {
+                statusNote = `<div style="font-size:0.72rem;color:var(--text-muted);">${diffDays} day(s) left</div>`;
+            }
+        }
+
+        return `
+        <tr>
+            <td>
+                <div class="member-chip">
+                    <div class="member-avatar">${r.memberName ? r.memberName.charAt(0) : 'M'}</div>
+                    <div>
+                        <strong>${r.memberName}</strong>${midStr}
+                    </div>
+                </div>
+            </td>
+            <td><strong>${r.bookTitle}</strong></td>
+            <td style="font-size:0.82rem">${r.borrowDate}</td>
+            <td style="font-size:0.82rem">${r.dueDate}</td>
+            <td>
+                ${borrowStatusBadge(r.status)}
+                ${statusNote}
+            </td>
+            <td>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                    <button class="btn btn-outline btn-sm" onclick="viewBorrowDetail(${r.id})">👁 Details</button>
+                    <button class="btn btn-outline btn-sm" onclick="openBorrowStatusModal(${r.id})">🔄 Status</button>
+                    ${r.status !== 'RETURNED' ? `<button class="btn btn-teal btn-sm" onclick="quickReturnBorrow(${r.id})">✅ Return</button>` : ''}
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+
+    renderReturnableCustomers();
+}
+
+function renderReturnableCustomers() {
+    const tbody = document.getElementById('returnable-customers-list');
+    if (!tbody) return;
+    const search = (document.getElementById('search-returnable')?.value || '').toLowerCase().trim();
+
+    // Active returnable borrowers (not yet returned)
+    const activeReturnables = borrowsList.filter(r => r.status !== 'RETURNED');
+
+    const filtered = activeReturnables.filter(r => {
+        const member     = membersList.find(m => m.id === r.memberId || m.name === r.memberName);
+        const midMatch   = member ? (member.mid || '').toLowerCase().includes(search) : false;
+        const emailMatch = member ? (member.email || '').toLowerCase().includes(search) : false;
+        const phoneMatch = member && member.phone ? (member.phone || '').toLowerCase().includes(search) : false;
+        const nameMatch  = (r.memberName || '').toLowerCase().includes(search);
+        const bookMatch  = (r.bookTitle || '').toLowerCase().includes(search);
+
+        return !search || nameMatch || bookMatch || midMatch || emailMatch || phoneMatch;
+    });
+
+    if (!filtered.length) {
+        tbody.innerHTML = emptyRow(6, 'No returnable customers matching search criteria.');
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(r => {
+        const member = membersList.find(m => m.id === r.memberId || m.name === r.memberName);
+        const midVal  = member ? member.mid  : 'LIB-MBR';
+        const emailVal= member ? member.email: '—';
+        const phoneVal= member ? member.phone: '—';
+        const typeVal = member ? member.type : 'Member';
+
+        const today = new Date(); today.setHours(0,0,0,0);
+        const due = new Date(r.dueDate || todayStr()); due.setHours(0,0,0,0);
+        const diffDays = Math.round((due - today) / (1000 * 60 * 60 * 24));
+        
+        let statusBadgeHtml = '';
+        if (diffDays < 0) {
+            statusBadgeHtml = `<span class="badge badge-danger">Overdue (${Math.abs(diffDays)} days)</span>`;
+        } else if (diffDays === 0) {
+            statusBadgeHtml = `<span class="badge badge-warning">Due Today</span>`;
+        } else {
+            statusBadgeHtml = `<span class="badge badge-teal">Due in ${diffDays} day(s)</span>`;
+        }
+
+        return `
+        <tr>
+            <td>
+                <div class="member-chip">
+                    <div class="member-avatar">${r.memberName.charAt(0)}</div>
+                    <div>
+                        <strong>${r.memberName}</strong>
+                        <div style="font-size:0.75rem;font-family:monospace;color:var(--text-muted);">${midVal} • ${typeVal}</div>
+                    </div>
+                </div>
+            </td>
+            <td><strong>${r.bookTitle}</strong></td>
+            <td style="font-size:0.82rem;">${r.dueDate}</td>
+            <td>${statusBadgeHtml}</td>
+            <td style="font-size:0.78rem;">
+                <div>📧 ${emailVal}</div>
+                <div>📞 ${phoneVal}</div>
+            </td>
+            <td>
+                <div style="display:flex;gap:4px;">
+                    <button class="btn btn-outline btn-sm" onclick="viewBorrowDetail(${r.id})">👁 Details</button>
+                    <button class="btn btn-teal btn-sm" onclick="quickReturnBorrow(${r.id})">✅ Process Return</button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function viewBorrowDetail(id) {
+    const r = borrowsList.find(x => x.id === id);
+    if (!r) return;
+    activeBorrowId = id;
+    const member = membersList.find(m => m.id === r.memberId || m.name === r.memberName);
+    const book   = booksList.find(b => b.id === r.bookId || b.title === r.bookTitle);
+
+    const today = new Date(); today.setHours(0,0,0,0);
+    const due = new Date(r.dueDate || todayStr()); due.setHours(0,0,0,0);
+    const diffDays = Math.round((due - today) / (1000 * 60 * 60 * 24));
+    
+    let returnabilityStr = '';
+    if (r.status === 'RETURNED') {
+        returnabilityStr = `<span class="badge badge-success">Returned on ${r.returnDate || 'record date'}</span>`;
+    } else if (diffDays < 0) {
+        returnabilityStr = `<span class="badge badge-danger">OVERDUE BY ${Math.abs(diffDays)} DAYS (Eligible for return & fine review)</span>`;
+    } else {
+        returnabilityStr = `<span class="badge badge-teal">ACTIVE RETURNABLE (${diffDays} day(s) remaining)</span>`;
+    }
+
+    document.getElementById('borrow-detail-content').innerHTML = `
+        <div style="background:var(--bg-tertiary);padding:0.9rem;border-radius:10px;margin-bottom:1rem;">
+            <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:0.4rem;">Return & Borrow Status</div>
+            <div style="margin-bottom:0.4rem;">${borrowStatusBadge(r.status)} ${returnabilityStr}</div>
+        </div>
+        <div class="book-detail-row"><strong>Customer / Borrower:</strong><span>${r.memberName}</span></div>
+        <div class="book-detail-row"><strong>Member ID:</strong><span style="font-family:monospace">${member ? member.mid : 'N/A'}</span></div>
+        <div class="book-detail-row"><strong>Member Role / Dept:</strong><span>${member ? (member.type + ' (' + member.dept + ')') : 'Member'}</span></div>
+        <div class="book-detail-row"><strong>Contact Email:</strong><span>${member ? member.email : 'N/A'}</span></div>
+        <div class="book-detail-row"><strong>Contact Phone:</strong><span>${member ? member.phone : 'N/A'}</span></div>
+        <hr style="border:none;border-top:1px dashed var(--border-color);margin:0.8rem 0;">
+        <div class="book-detail-row"><strong>Book Title:</strong><span>${r.bookTitle}</span></div>
+        <div class="book-detail-row"><strong>ISBN:</strong><span style="font-family:monospace">${book ? book.isbn : 'N/A'}</span></div>
+        <div class="book-detail-row"><strong>Category:</strong><span>${book ? book.category : 'N/A'}</span></div>
+        <div class="book-detail-row"><strong>Edition:</strong><span>${book ? book.edition : 'N/A'}</span></div>
+        <hr style="border:none;border-top:1px dashed var(--border-color);margin:0.8rem 0;">
+        <div class="book-detail-row"><strong>Borrow Date:</strong><span>${r.borrowDate}</span></div>
+        <div class="book-detail-row"><strong>Due Date:</strong><span>${r.dueDate}</span></div>
+        <div class="book-detail-row"><strong>Return Date:</strong><span>${r.returnDate || 'Not yet returned'}</span></div>
+        <div class="book-detail-row"><strong>Notes:</strong><span>${r.notes || 'No special notes'}</span></div>
+    `;
+
+    document.getElementById('btn-borrow-detail-status').onclick = () => { closeModal('modal-borrow-detail'); openBorrowStatusModal(id); };
+    document.getElementById('btn-borrow-detail-return').onclick = () => { closeModal('modal-borrow-detail'); quickReturnBorrow(id); };
+    openModal('modal-borrow-detail');
+}
+
+async function quickReturnBorrow(id) {
+    const r = borrowsList.find(x => x.id === id);
+    if (!r) return;
+    if (!confirm(`Confirm book return for "${r.bookTitle}" borrowed by ${r.memberName}?`)) return;
+
+    const returnDate = todayStr();
+    try {
+        await apiSave(`/library/borrows/${id}/status`, 'PUT', { status: 'RETURNED', returnDate: returnDate });
+    } catch(e) {}
+
+    r.status = 'RETURNED';
+    r.returnDate = returnDate;
+
+    // Restore book copy availability locally
+    const book = booksList.find(b => b.id === r.bookId || b.title === r.bookTitle);
+    if (book) {
+        book.copies = (book.copies || 0) + 1;
+        if (book.status === 'UNAVAILABLE' && book.copies > 0) book.status = 'AVAILABLE';
+    }
+
+    showToast('Book Returned', `"${r.bookTitle}" successfully returned by ${r.memberName}.`, 'success');
+    updateStats(); renderBorrows(); renderBooks(); renderAvailability();
+}
+
+async function handleSaveBorrow(event) {
+    event.preventDefault();
+    const payload = {
+        memberName: document.getElementById('borrow-member').value.trim(),
+        bookTitle:  document.getElementById('borrow-book').value.trim(),
+        borrowDate: document.getElementById('borrow-date').value,
+        dueDate:    document.getElementById('borrow-due').value,
+        notes:      document.getElementById('borrow-notes').value.trim(),
+        status: 'BORROWED', returnDate: null,
+        memberId: membersList.find(m => m.mid === document.getElementById('borrow-member').value.trim() || m.name === document.getElementById('borrow-member').value.trim())?.id || 0,
+        bookId:   booksList.find(b => b.isbn === document.getElementById('borrow-book').value.trim() || b.title === document.getElementById('borrow-book').value.trim())?.id || 0,
+    };
+    if (!payload.memberName || !payload.bookTitle) { showToast('Error', 'Fill in member and book fields.', 'danger'); return; }
+    try { const s = await apiSave('/library/borrows', 'POST', payload); payload.id = s?.id || Date.now(); } catch(e) { payload.id = Date.now(); }
+    borrowsList.unshift(payload);
+
+    // Decrement copies locally
+    const bMatch = booksList.find(b => b.id === payload.bookId || b.title === payload.bookTitle);
+    if (bMatch && bMatch.copies > 0) {
+        bMatch.copies -= 1;
+        if (bMatch.copies === 0) bMatch.status = 'UNAVAILABLE';
+    }
+
+    showToast('Borrow Recorded', 'Book issued to ' + payload.memberName + '.', 'success');
+    document.getElementById('borrow-member').value = '';
+    document.getElementById('borrow-book').value   = '';
+    document.getElementById('borrow-notes').value  = '';
+    updateStats(); renderBorrows(); renderBooks(); renderAvailability();
+}
+
+function openBorrowStatusModal(id) {
+    const r = borrowsList.find(x => x.id === id);
+    if (!r) return;
+    activeBorrowId = id;
+    document.getElementById('borrow-status-info').innerHTML = 'Updating status for <strong>' + r.bookTitle + '</strong> borrowed by <strong>' + r.memberName + '</strong>';
+    document.getElementById('borrow-status-select').value = r.status || 'BORROWED';
+    document.getElementById('borrow-return-date').value   = r.returnDate || todayStr();
+    document.getElementById('borrow-status-notes').value  = r.notes || '';
+    openModal('modal-borrow-status');
+}
+
+async function confirmUpdateBorrowStatus() {
+    const r = borrowsList.find(x => x.id === activeBorrowId);
+    if (!r) return;
+    const ns = document.getElementById('borrow-status-select').value;
+    const rd = document.getElementById('borrow-return-date').value;
+    const nt = document.getElementById('borrow-status-notes').value;
+    try { await apiSave('/library/borrows/' + r.id + '/status', 'PUT', { status: ns, returnDate: rd, notes: nt }); } catch(e) {}
+    r.status = ns; r.returnDate = (ns === 'RETURNED' ? (rd || todayStr()) : rd); r.notes = nt;
+    
+    if (ns === 'RETURNED') {
+        const book = booksList.find(b => b.id === r.bookId || b.title === r.bookTitle);
+        if (book) {
+            book.copies = (book.copies || 0) + 1;
+            if (book.status === 'UNAVAILABLE' && book.copies > 0) book.status = 'AVAILABLE';
+        }
+    }
+
+    showToast('Status Updated', 'Borrowing status changed to ' + ns + '.', 'success');
+    closeModal('modal-borrow-status'); updateStats(); renderBorrows(); renderBooks(); renderAvailability();
+}
+
+async function deleteBorrowRecord() {
+    const r = borrowsList.find(x => x.id === activeBorrowId);
+    if (!r || !confirm('Delete borrow record for "' + r.bookTitle + '"?')) return;
+    try { await apiSave('/library/borrows/' + r.id, 'DELETE'); } catch(e) {}
+    borrowsList = borrowsList.filter(x => x.id !== r.id);
+    showToast('Record Deleted', 'Borrowing record removed.', 'success');
+    closeModal('modal-borrow-status'); updateStats(); renderBorrows();
+}
+
+/* ================================================================
+   RESERVATIONS
+================================================================ */
+function reservationStatusBadge(s) {
+    const c = { PENDING:'warning', APPROVED:'success', CANCELLED:'danger', FULFILLED:'teal' };
+    const labelMap = { PENDING:'Pending Approval', APPROVED:'Approved', CANCELLED:'Cancelled', FULFILLED:'Fulfilled' };
+    return `<span class="badge badge-${c[s]||'info'}">${labelMap[s]||s}</span>`;
+}
+
+function toggleReservationForm() {
+    const card = document.getElementById('res-manual-card');
+    if (!card) return;
+    if (card.style.display === 'none' || !card.style.display) {
+        card.style.display = 'block';
+        populateResDates();
+    } else {
+        card.style.display = 'none';
+    }
+}
+
+function filterReservationStatus(status) {
+    reservationFilter = status;
+    document.querySelectorAll('.res-filter-pill').forEach(btn => btn.classList.remove('active'));
+    const filterIdMap = {
+        'ALL': 'res-filter-all',
+        'PENDING': 'res-filter-pending',
+        'APPROVED': 'res-filter-approved',
+        'CANCELLED': 'res-filter-cancelled'
+    };
+    if (filterIdMap[status]) {
+        const activeBtn = document.getElementById(filterIdMap[status]);
+        if (activeBtn) activeBtn.classList.add('active');
+    }
+    renderReservations();
+}
+
+function renderReservations() {
+    const countAll = reservationsList.length;
+    const countPending = reservationsList.filter(r => r.status === 'PENDING').length;
+    const countApproved = reservationsList.filter(r => r.status === 'APPROVED').length;
+    const countCancelled = reservationsList.filter(r => r.status === 'CANCELLED').length;
+
+    const elAll = document.getElementById('res-count-all');
+    const elPending = document.getElementById('res-count-pending');
+    const elApproved = document.getElementById('res-count-approved');
+    const elCancelled = document.getElementById('res-count-cancelled');
+
+    if (elAll) elAll.textContent = countAll;
+    if (elPending) elPending.textContent = countPending;
+    if (elApproved) elApproved.textContent = countApproved;
+    if (elCancelled) elCancelled.textContent = countCancelled;
+
+    const tbody = document.getElementById('reservations-list');
+    if (!tbody) return;
+
+    const search = (document.getElementById('search-reservations')?.value || '').toLowerCase().trim();
+    const filtered = reservationsList.filter(r => {
+        const member     = membersList.find(m => m.id === r.memberId || m.name === r.memberName);
+        const midMatch   = member ? (member.mid || '').toLowerCase().includes(search) : false;
+        const emailMatch = member ? (member.email || '').toLowerCase().includes(search) : false;
+        const phoneMatch = member && member.phone ? (member.phone || '').toLowerCase().includes(search) : false;
+        const nameMatch  = (r.memberName || '').toLowerCase().includes(search);
+        const bookMatch  = (r.bookTitle || '').toLowerCase().includes(search);
+        const statusMatch = (r.status || '').toLowerCase().includes(search);
+
+        const matchesQuery = !search || nameMatch || bookMatch || midMatch || emailMatch || phoneMatch || statusMatch;
+        const matchesFilter = (reservationFilter === 'ALL' || r.status === reservationFilter);
+
+        return matchesQuery && matchesFilter;
+    });
+
+    if (!filtered.length) { tbody.innerHTML = emptyRow(6, 'No reservations match selected filter or search.'); return; }
+    tbody.innerHTML = filtered.map(r => {
+        const member = membersList.find(m => m.id === r.memberId || m.name === r.memberName);
+        const midStr = member ? ` <small style="color:var(--text-muted);">(${member.mid})</small>` : '';
+
+        let actionBtns = '';
+        if (r.status === 'PENDING') {
+            actionBtns = `
+                <button class="btn btn-teal btn-sm" onclick="approveReservation(${r.id})">✅ Approve</button>
+                <button class="btn btn-danger-soft btn-sm" onclick="cancelReservation(${r.id})">✕ Cancel</button>
+            `;
+        } else if (r.status === 'APPROVED') {
+            actionBtns = `
+                <button class="btn btn-outline btn-sm" onclick="cancelReservation(${r.id})">✕ Revoke/Cancel</button>
+            `;
+        } else {
+            actionBtns = `
+                <button class="btn btn-outline btn-sm" onclick="approveReservation(${r.id})">🔄 Re-Approve</button>
+            `;
+        }
+
+        return `
+        <tr>
+            <td>
+                <div class="member-chip">
+                    <div class="member-avatar">${r.memberName ? r.memberName.charAt(0) : 'M'}</div>
+                    <div>
+                        <strong>${r.memberName || 'Member'}</strong>${midStr}
+                    </div>
+                </div>
+            </td>
+            <td><strong>${r.bookTitle}</strong></td>
+            <td style="font-size:0.82rem">${r.reservedOn || todayStr()}</td>
+            <td style="font-size:0.82rem">${r.expiry || addDays(todayStr(), 7)}</td>
+            <td>${reservationStatusBadge(r.status)}</td>
+            <td style="white-space:nowrap;display:flex;gap:4px;">
+                ${actionBtns}
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+async function handleSaveReservation(event) {
+    event.preventDefault();
+    const payload = {
+        memberName: document.getElementById('res-member').value.trim(),
+        bookTitle:  document.getElementById('res-book').value.trim(),
+        reservedOn: document.getElementById('res-date').value || todayStr(),
+        expiry:     document.getElementById('res-expiry').value || addDays(todayStr(), 7),
+        status: 'PENDING',
+        memberId: membersList.find(m => m.mid === document.getElementById('res-member').value.trim() || m.name === document.getElementById('res-member').value.trim())?.id || 0,
+        bookId:   booksList.find(b => b.isbn === document.getElementById('res-book').value.trim() || b.title === document.getElementById('res-book').value.trim())?.id || 0,
+    };
+    if (!payload.memberName || !payload.bookTitle) { showToast('Error', 'Fill in member and book.', 'danger'); return; }
+    try { const s = await apiSave('/library/reservations', 'POST', payload); payload.id = s?.id || Date.now(); } catch(e) { payload.id = Date.now(); }
+    reservationsList.unshift(payload);
+    showToast('Reserved', '"' + payload.bookTitle + '" reserved for ' + payload.memberName + '.', 'success');
+    document.getElementById('res-member').value = '';
+    document.getElementById('res-book').value   = '';
+    toggleReservationForm();
+    updateStats(); renderReservations();
+}
+
+async function approveReservation(id) {
+    const r = reservationsList.find(x => x.id === id);
+    if (!r) return;
+    try { await apiSave('/library/reservations/' + id, 'PUT', { ...r, status: 'APPROVED' }); } catch(e) {}
+    r.status = 'APPROVED';
+    showToast('Reservation Approved', 'Reservation for "' + r.bookTitle + '" approved and student notified.', 'success');
+    updateStats(); renderReservations();
+}
+
+async function cancelReservation(id) {
+    const r = reservationsList.find(x => x.id === id);
+    if (!r || !confirm('Cancel reservation of "' + r.bookTitle + '" for ' + r.memberName + '?')) return;
+    try { await apiSave('/library/reservations/' + id, 'PUT', { ...r, status: 'CANCELLED' }); } catch(e) {}
+    r.status = 'CANCELLED';
+    showToast('Reservation Cancelled', 'Reservation cancelled and student notified.', 'info');
+    updateStats(); renderReservations();
+}
+
+/* ================================================================
+   ANNOUNCEMENTS
+================================================================ */
+function renderAnnouncements() {
+    const container = document.getElementById('announcements-list');
+    if (!announcementsList.length) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📣</div><p>No announcements posted yet.</p></div>';
+        return;
+    }
+    const typeColor = { General:'info', Notice:'warning', Holiday:'purple', Event:'teal' };
+    container.innerHTML = announcementsList.map(a => `
+        <div class="announcement-card">
+            <div class="announcement-body" style="flex:1;">
+                <h4>${a.title} <span class="badge badge-${typeColor[a.type]||'info'}" style="margin-left:0.4rem">${a.type}</span></h4>
+                <p>${a.content}</p>
+                <div class="announcement-meta">Posted by ${a.postedBy} · ${a.postedOn}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.4rem;flex-shrink:0;">
+                <button class="btn btn-outline btn-sm" onclick="editAnnouncement(${a.id})">✏️ Edit</button>
+                <button class="btn btn-danger-soft btn-sm" onclick="deleteAnnouncement(${a.id})">🗑 Delete</button>
+            </div>
+        </div>`).join('');
+}
+
+async function handleSaveAnnouncement(event) {
+    event.preventDefault();
+    const id = document.getElementById('ann-id').value;
+    const payload = {
+        title:    document.getElementById('ann-title').value.trim(),
+        type:     document.getElementById('ann-type').value,
+        content:  document.getElementById('ann-content').value.trim(),
+        postedBy: (typeof currentUser !== 'undefined' && currentUser?.fullName) || 'Librarian',
+        postedOn: todayStr(),
+    };
+    try {
+        if (id) {
+            await apiSave('/library/announcements/' + id, 'PUT', payload);
+            const idx = announcementsList.findIndex(a => a.id == id);
+            if (idx > -1) announcementsList[idx] = { ...announcementsList[idx], ...payload };
+            showToast('Updated', 'Announcement updated.', 'success');
+        } else {
+            const s = await apiSave('/library/announcements', 'POST', payload);
+            announcementsList.unshift({ id: s?.id || Date.now(), ...payload });
+            showToast('Posted', '"' + payload.title + '" posted.', 'success');
+        }
+    } catch(e) {}
+    resetAnnForm(); renderAnnouncements();
+}
+
+function editAnnouncement(id) {
+    const a = announcementsList.find(x => x.id === id);
+    if (!a) return;
+    document.getElementById('ann-id').value      = a.id;
+    document.getElementById('ann-title').value   = a.title;
+    document.getElementById('ann-type').value    = a.type;
+    document.getElementById('ann-content').value = a.content;
+    document.getElementById('ann-form-title').innerText = '✏️ Edit Announcement';
+    document.getElementById('btn-save-ann').innerText   = 'Save Changes';
+    document.getElementById('btn-cancel-ann').style.display = 'inline-flex';
+}
+
+async function deleteAnnouncement(id) {
+    if (!confirm('Delete this announcement?')) return;
+    try { await apiSave('/library/announcements/' + id, 'DELETE'); } catch(e) {}
+    announcementsList = announcementsList.filter(x => x.id !== id);
+    showToast('Deleted', 'Announcement removed.', 'success');
+    renderAnnouncements();
+}
+
+function resetAnnForm() {
+    document.getElementById('ann-id').value      = '';
+    document.getElementById('ann-title').value   = '';
+    document.getElementById('ann-type').value    = 'General';
+    document.getElementById('ann-content').value = '';
+    document.getElementById('ann-form-title').innerText = '📝 New Announcement';
+    document.getElementById('btn-save-ann').innerText   = 'Post Announcement';
+    document.getElementById('btn-cancel-ann').style.display = 'none';
+}
+
+/* ================================================================
+   EDITION / VERSION HISTORY
+================================================================ */
+function renderVersionHistory() {
+    const tbody = document.getElementById('version-history-list');
+    if (!tbody) return;
+    if (!versionHistoryList || !versionHistoryList.length) {
+        tbody.innerHTML = emptyRow(7, 'No edition updates published yet.');
+        return;
+    }
+    tbody.innerHTML = versionHistoryList.map(v => `
+        <tr>
+            <td><strong>${v.bookTitle || '—'}</strong></td>
+            <td><span class="badge badge-info">${v.previousEdition || '1st Ed'}</span></td>
+            <td><span class="badge badge-success">${v.newEdition || '—'}</span></td>
+            <td style="font-size:0.83rem;max-width:260px;line-height:1.4;">${v.notes || '—'}</td>
+            <td style="font-size:0.83rem;">${v.publishedBy || 'Librarian'}</td>
+            <td style="font-size:0.82rem;">${v.publishedDate || todayStr()}</td>
+            <td>
+                <button class="btn btn-danger-soft btn-sm" onclick="deleteVersionRecord(${v.id || 0})">🗑 Delete</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function openVersionModal(bookId) {
+    const selectGroup = document.getElementById('version-select-group');
+    const titleGroup  = document.getElementById('version-title-group');
+    const selectEl    = document.getElementById('version-book-select');
+
+    if (bookId) {
+        const b = booksList.find(x => x.id === bookId);
+        if (!b) return;
+        document.getElementById('version-book-id').value = b.id;
+        document.getElementById('version-book-title').value = b.title;
+        document.getElementById('version-current-edition').value = b.edition || '1st Ed';
+        if (selectGroup) selectGroup.style.display = 'none';
+        if (titleGroup)  titleGroup.style.display  = 'block';
+    } else {
+        document.getElementById('version-book-id').value = '';
+        if (selectGroup && selectEl) {
+            selectEl.innerHTML = '<option value="">-- Select a Book from Catalog --</option>' + 
+                booksList.map(b => `<option value="${b.id}">${b.title} (${b.edition || '1st Ed'})</option>`).join('');
+            selectGroup.style.display = 'block';
+            if (titleGroup) titleGroup.style.display = 'none';
+        }
+        document.getElementById('version-current-edition').value = 'Select a book above';
+    }
+
+    document.getElementById('version-new-edition').value = '';
+    document.getElementById('version-notes').value = '';
+    openModal('modal-version');
+}
+
+function onVersionBookSelectChange() {
+    const selectEl = document.getElementById('version-book-select');
+    const bookId   = parseInt(selectEl.value);
+    const b        = booksList.find(x => x.id === bookId);
+    if (b) {
+        document.getElementById('version-book-id').value = b.id;
+        document.getElementById('version-current-edition').value = b.edition || '1st Ed';
+    } else {
+        document.getElementById('version-book-id').value = '';
+        document.getElementById('version-current-edition').value = 'Select a book above';
+    }
+}
+
+async function handleUpdateVersion(event) {
+    event.preventDefault();
+    const rawId = document.getElementById('version-book-id').value || document.getElementById('version-book-select')?.value;
+    const bookId = parseInt(rawId);
+    const b = booksList.find(x => x.id === bookId);
+
+    const newEdition = document.getElementById('version-new-edition').value.trim();
+    const notes      = document.getElementById('version-notes').value.trim();
+
+    if (!b) {
+        showToast('Error', 'Please select a valid book.', 'danger');
+        return;
+    }
+    if (!newEdition || !notes) {
+        showToast('Error', 'Please enter both the new edition and release notes.', 'danger');
+        return;
+    }
+
+    const prevEd = b.edition || '1st Ed';
+    const payload = {
+        bookTitle: b.title,
+        previousEdition: prevEd,
+        newEdition: newEdition,
+        notes: notes,
+        publishedBy: (typeof currentUser !== 'undefined' && currentUser?.fullName) || 'Librarian',
+        publishedDate: todayStr()
+    };
+
+    try {
+        const res = await apiSave('/library/version-history', 'POST', payload);
+        payload.id = res?.id || Date.now();
+    } catch(e) {
+        payload.id = Date.now();
+    }
+
+    // Update local book edition
+    b.edition = newEdition;
+    try {
+        await apiSave('/library/books/' + b.id, 'PUT', b);
+    } catch(e) {}
+
+    versionHistoryList.unshift(payload);
+
+    showToast('Edition Published', `Published ${newEdition} for "${b.title}".`, 'success');
+    closeModal('modal-version');
+    renderBooks();
+    renderVersionHistory();
+}
+
+async function deleteVersionRecord(id) {
+    if (!confirm('Delete this version history entry?')) return;
+    try { if (id) await apiSave('/library/version-history/' + id, 'DELETE'); } catch(e) {}
+    versionHistoryList = versionHistoryList.filter(v => (v.id || 0) !== id);
+    showToast('Deleted', 'Edition record removed.', 'info');
+    renderVersionHistory();
+}
+
+/* ── Init ── */
+window.addEventListener('DOMContentLoaded', () => {
+    seedDemoData();
+    updateStats(); renderAll(); populateDataLists();
+    populateBorrowDefaults(); populateResDates();
+    if (typeof checkAuth === 'function') checkAuth();
+});
+</script>
+</body>
+</html>

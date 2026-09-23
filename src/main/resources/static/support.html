@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School360 - Support Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css?v=contrast-8">
+    <script>
+        (function() {
+            var t = localStorage.getItem('theme') || 'dark';
+            if (t === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <span>🏫 School360</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item active" id="menu-tickets"><a href="#" onclick="switchTab('tickets')">🎫 Support Tickets</a></li>
+            <li class="sidebar-item" id="menu-history"><a href="#" onclick="switchTab('history')">🕰️ Ticket History</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <button class="btn btn-qr btn-block" onclick="logout()">🚪 Logout</button>
+        </div>
+    </nav>
+
+    <!-- Main Workspace -->
+    <main class="main-content">
+        <header class="header-bar">
+            <div class="header-title">
+                <h2 id="welcome-message">Hello, Support Team</h2>
+                <p>Track student inquiries, reply to support threads, and manage system ticket escalations.</p>
+            </div>
+            <div class="header-actions">
+                <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme(); return false;" title="Toggle Theme">🌙</button>
+            </div>
+        </header>
+
+        <!-- Tab 1: Support Tickets -->
+        <section id="tab-tickets" class="tab-content active">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Active Student Tickets</h3>
+                    <div style="display:flex;gap:0.5rem;">
+                        <input type="text" id="search-tickets" class="form-input" placeholder="Search tickets..." style="padding:0.4rem 0.8rem;width:200px;" oninput="filterTickets()">
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Student Name</th>
+                                <th>Title Summary</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="support-tickets-list">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 2: Ticket History (RESOLVED/CLOSED) -->
+        <section id="tab-history" class="tab-content" style="display:none;">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Resolved Archive</h3>
+                </div>
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Student Name</th>
+                                <th>Title Summary</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Completed Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="support-history-list">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Reply Workspace Modal -->
+    <div id="ticket-reply-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 id="modal-ticket-title">Reply to Ticket</h3>
+                <span style="cursor:pointer;font-size:1.5rem;" onclick="closeReplyModal()">✕</span>
+            </div>
+
+            <!-- Toolbar Actions -->
+            <div style="margin-bottom:1.5rem;display:flex;gap:0.5rem;flex-wrap:wrap;background-color:var(--bg-primary);padding:0.75rem;border-radius:var(--border-radius-md);">
+                <div style="display:flex;align-items:center;gap:0.25rem;">
+                    <span style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);">Priority:</span>
+                    <select id="update-priority-select" class="form-input" style="padding:0.2rem 0.5rem;font-size:0.8rem;width:95px;" onchange="updateTicketPriority()">
+                        <option value="LOW">LOW</option>
+                        <option value="MEDIUM">MEDIUM</option>
+                        <option value="HIGH">HIGH</option>
+                    </select>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.25rem;">
+                    <span style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);">Status:</span>
+                    <select id="update-status-select" class="form-input" style="padding:0.2rem 0.5rem;font-size:0.8rem;width:120px;" onchange="updateTicketStatus()">
+                        <option value="OPEN">OPEN</option>
+                        <option value="PENDING">PENDING</option>
+                        <option value="IN_PROGRESS">IN PROGRESS</option>
+                        <option value="RESOLVED">RESOLVED</option>
+                        <option value="CLOSED">CLOSED</option>
+                    </select>
+                </div>
+                <button class="btn btn-qr" style="padding:0.35rem 0.65rem;font-size:0.8rem;margin:0;color:var(--warning);" onclick="escalateTicket()">⚠️ Escalate to Admin</button>
+            </div>
+
+            <div style="margin-bottom:1rem;">
+                <h5 style="margin-bottom:0.25rem;font-weight:700;">Issue Description:</h5>
+                <p id="modal-ticket-desc" style="padding:0.75rem;background-color:var(--bg-primary);border-radius:var(--border-radius-sm);font-size:0.88rem;color:var(--text-secondary);"></p>
+            </div>
+            
+            <div class="ticket-chat-area">
+                <div class="ticket-chat-messages" id="ticket-chat-messages">
+                    <!-- Dynamic chat bubbles -->
+                </div>
+                <div style="display:flex;gap:0.4rem;margin-bottom:0.4rem;padding:0.5rem 0.75rem;background:var(--bg-primary);border-radius:var(--border-radius-sm);align-items:center;flex-wrap:wrap;">
+                    <span style="font-size:0.75rem;font-weight:700;color:var(--text-muted);">Quick Request:</span>
+                    <button class="btn btn-qr" style="padding:0.25rem 0.5rem;font-size:0.75rem;margin:0;" onclick="requestAttachmentTemplate()">📎 Request File Attachment</button>
+                    <button class="btn btn-qr" style="padding:0.25rem 0.5rem;font-size:0.75rem;margin:0;" onclick="requestInfoTemplate()">ℹ️ Request Additional Details</button>
+                    <label style="font-size:0.75rem;display:flex;align-items:center;gap:0.3rem;margin-left:auto;cursor:pointer;color:var(--text-secondary);">
+                        <input type="checkbox" id="chk-request-file" checked> Notify Student (Push Alert)
+                    </label>
+                </div>
+                <div class="ticket-chat-input-bar">
+                    <input type="text" id="ticket-reply-msg" class="form-input" placeholder="Type reply or request details..." style="flex:1;">
+                    <button class="btn btn-primary" onclick="sendTicketReply()">Send Reply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js?v=contrast-8"></script>
+    <script>
+        let ticketsList = [];
+        let selectedTicketId = null;
+
+        const oldCheckAuth = checkAuth;
+        checkAuth = async function() {
+            oldCheckAuth();
+            if (currentUser && currentUser.role === 'SUPPORT') {
+                document.getElementById('welcome-message').innerText = `Hello, ${currentUser.fullName}`;
+                await loadTickets();
+            }
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabId}`).style.display = 'block';
+            document.getElementById(`menu-${tabId}`).classList.add('active');
+        }
+
+        async function loadTickets() {
+            try {
+                ticketsList = await apiCall('/support/tickets');
+                renderTickets();
+            } catch (err) {
+                showToast("Failed to load tickets", err.message, "danger");
+            }
+        }
+
+        function renderTickets() {
+            const tbodyActive = document.getElementById('support-tickets-list');
+            const tbodyHistory = document.getElementById('support-history-list');
+            tbodyActive.innerHTML = '';
+            tbodyHistory.innerHTML = '';
+
+            const active = ticketsList.filter(t => t.status !== 'RESOLVED' && t.status !== 'CLOSED');
+            const archive = ticketsList.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED');
+
+            if (active.length === 0) {
+                tbodyActive.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);">No active support requests.</td></tr>';
+            } else {
+                active.forEach(t => {
+                    let badgeClass = 'badge-info';
+                    if (t.status === 'PENDING') badgeClass = 'badge-warning';
+                    if (t.status === 'IN_PROGRESS') badgeClass = 'badge-success';
+
+                    tbodyActive.innerHTML += `
+                        <tr>
+                            <td>#${t.id}</td>
+                            <td><strong>${t.studentName}</strong></td>
+                            <td>
+                                ${t.title}
+                                ${t.escalationStatus === 'ESCALATED' ? '<span class="badge badge-danger" style="font-size:0.6rem;padding:1px 4px;margin-left:4px;">ESCALATED</span>' : ''}
+                            </td>
+                            <td><span class="badge ${t.priority === 'HIGH' ? 'badge-danger' : 'badge-info'}">${t.priority}</span></td>
+                            <td><span class="badge ${badgeClass}">${t.status}</span></td>
+                            <td>${t.createdDate}</td>
+                            <td>
+                                <button class="btn btn-primary" style="padding:0.35rem 0.7rem;font-size:0.8rem;" onclick="openReplyModal(${t.id})">Inspect & Reply</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            if (archive.length === 0) {
+                tbodyHistory.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);">No archived tickets.</td></tr>';
+            } else {
+                archive.forEach(t => {
+                    let badgeClass = t.status === 'RESOLVED' ? 'badge-success' : 'badge-danger';
+                    tbodyHistory.innerHTML += `
+                        <tr>
+                            <td>#${t.id}</td>
+                            <td><strong>${t.studentName}</strong></td>
+                            <td>${t.title}</td>
+                            <td><span class="badge ${t.priority === 'HIGH' ? 'badge-danger' : 'badge-info'}">${t.priority}</span></td>
+                            <td><span class="badge ${badgeClass}">${t.status}</span></td>
+                            <td>${t.createdDate}</td>
+                            <td>
+                                <button class="btn btn-danger" style="padding:0.3rem 0.65rem;font-size:0.78rem;" onclick="deleteTicket(${t.id})">🗑️ Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        function filterTickets() {
+            const val = (document.getElementById('search-tickets')?.value || '').toLowerCase().trim();
+            const tbody = document.getElementById('support-tickets-list');
+            if (!tbody) return;
+            const rows = tbody.getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i].cells && rows[i].cells.length === 1) continue;
+                const rowText = (rows[i].textContent || rows[i].innerText || '').toLowerCase();
+                rows[i].style.display = (!val || rowText.includes(val)) ? '' : 'none';
+            }
+        }
+
+        async function openReplyModal(ticketId) {
+            selectedTicketId = ticketId;
+            const ticket = ticketsList.find(t => t.id === ticketId);
+            if (!ticket) return;
+
+            document.getElementById('modal-ticket-title').innerText = `Reply to Ticket #${ticket.id}: ${ticket.title}`;
+            document.getElementById('modal-ticket-desc').innerText = ticket.description;
+            
+            document.getElementById('update-priority-select').value = ticket.priority;
+            document.getElementById('update-status-select').value = ticket.status;
+
+            await loadTicketReplies();
+            document.getElementById('ticket-reply-modal').classList.add('active');
+        }
+
+        function closeReplyModal() {
+            document.getElementById('ticket-reply-modal').classList.remove('active');
+        }
+
+        async function loadTicketReplies() {
+            try {
+                const replies = await apiCall(`/students/tickets/${selectedTicketId}/replies`);
+                const container = document.getElementById('ticket-chat-messages');
+                container.innerHTML = '';
+
+                replies.forEach(r => {
+                    const bubble = document.createElement('div');
+                    bubble.className = `chat-bubble ${r.senderRole.toLowerCase()}`;
+                    bubble.innerHTML = `
+                        <strong>${r.senderName} (${r.senderRole})</strong>
+                        <p style="margin-top:2px;">${r.message}</p>
+                        ${r.attachmentName ? `<div style="margin-top:5px;font-size:0.75rem;background:rgba(255,246,240,0.2);padding:0.25rem 0.5rem;border-radius:4px;"><a href="${r.attachmentData}" download="${r.attachmentName}" style="color:inherit;text-decoration:underline;">📎 ${r.attachmentName}</a></div>` : ''}
+                        <div class="meta">${r.createdDate}</div>
+                    `;
+                    container.appendChild(bubble);
+                });
+                container.scrollTop = container.scrollHeight;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function sendTicketReply() {
+            const input = document.getElementById('ticket-reply-msg');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const notifyStudent = document.getElementById('chk-request-file')?.checked;
+            const isAttachmentReq = message.toLowerCase().includes('attach') || message.toLowerCase().includes('file') || message.toLowerCase().includes('photo') || message.toLowerCase().includes('screenshot');
+            const isInfoReq       = message.toLowerCase().includes('detail') || message.toLowerCase().includes('info') || message.toLowerCase().includes('provide');
+
+            try {
+                await apiCall(`/support/tickets/${selectedTicketId}/reply`, 'POST', {
+                    senderName: currentUser ? currentUser.fullName : 'Support Team',
+                    message,
+                    requestAttachment: (notifyStudent && isAttachmentReq) ? 'true' : 'false',
+                    requestInfo: (notifyStudent && isInfoReq) ? 'true' : 'false'
+                });
+                input.value = '';
+                showToast("Reply Sent", notifyStudent ? "Reply sent & Student notified of request." : "Reply recorded.", "success");
+                await loadTicketReplies();
+                await loadTickets();
+            } catch (err) {
+                showToast("Reply Failed", err.message, "danger");
+            }
+        }
+
+        function requestAttachmentTemplate() {
+            const input = document.getElementById('ticket-reply-msg');
+            input.value = "Please attach a document, photo, or screenshot related to your issue so the support team can review it.";
+            const chk = document.getElementById('chk-request-file');
+            if (chk) chk.checked = true;
+            input.focus();
+        }
+
+        function requestInfoTemplate() {
+            const input = document.getElementById('ticket-reply-msg');
+            input.value = "Please provide additional details regarding your request (such as exact date, module name, or error code).";
+            const chk = document.getElementById('chk-request-file');
+            if (chk) chk.checked = true;
+            input.focus();
+        }
+
+        async function updateTicketPriority() {
+            const priority = document.getElementById('update-priority-select').value;
+            try {
+                await apiCall(`/support/tickets/${selectedTicketId}/priority`, 'POST', { priority });
+                showToast("Priority Updated", `Ticket priority changed to ${priority}`, "success");
+                await loadTickets();
+            } catch (err) {
+                showToast("Priority Update Failed", err.message, "danger");
+            }
+        }
+
+        async function updateTicketStatus() {
+            const status = document.getElementById('update-status-select').value;
+            try {
+                await apiCall(`/support/tickets/${selectedTicketId}/status`, 'POST', { status });
+                showToast("Status Updated", `Ticket status updated to ${status}`, "success");
+                await loadTickets();
+                
+                // If resolving/closing, close modal
+                if (status === 'RESOLVED' || status === 'CLOSED') {
+                    closeReplyModal();
+                }
+            } catch (err) {
+                showToast("Status Update Failed", err.message, "danger");
+            }
+        }
+
+        async function escalateTicket() {
+            if (!confirm("Escalate this support ticket directly to the System Administrator?")) return;
+            try {
+                await apiCall(`/support/tickets/${selectedTicketId}/escalate`, 'POST');
+                showToast("Ticket Escalated", "Ticket flagged for Senior Administrative review.", "warning");
+                closeReplyModal();
+                await loadTickets();
+            } catch (err) {
+                showToast("Escalation Failed", err.message, "danger");
+            }
+        }
+
+        async function deleteTicket(id) {
+            if (!confirm(`Are you sure you want to delete Ticket #${id}?`)) return;
+            try {
+                try {
+                    await apiCall(`/support/tickets/${id}`, 'DELETE');
+                } catch(e1) {
+                    await apiCall(`/support/tickets/${id}/delete`, 'POST');
+                }
+                showToast("Ticket Deleted", `Ticket #${id} has been permanently deleted.`, "success");
+                await loadTickets();
+            } catch (err) {
+                let msg = err.message;
+                if (msg.includes('404') || msg.includes('Not Found')) {
+                    msg = 'Please restart your Spring Boot backend application server to load the new delete ticket endpoint.';
+                }
+                showToast("Delete Failed", msg, "danger");
+            }
+        }
+
+        const oldSwitchTab = switchTab;
+        switchTab = function(tabId) {
+            oldSwitchTab(tabId);
+            if (tabId === 'history') {
+                loadTickets();
+            }
+        }
+    </script>
+</body>
+</html>
