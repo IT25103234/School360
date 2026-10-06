@@ -2,6 +2,7 @@ package com.school360.controller;
 
 import com.school360.model.*;
 import com.school360.repository.*;
+import com.school360.pattern.factory.UserFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,12 +55,12 @@ public class AdminController {
         }
         
         // Generate automatic QR code token for user
-        user.setQrCodeToken("QR-" + user.getRole() + "-" + user.getUsername().toUpperCase());
+        user = UserFactory.createUser(user);
         userRepository.save(user);
 
         // If user is a student, create student detail record as well
-        if ("STUDENT".equals(user.getRole())) {
-            Student student = new Student(user, null, null, null, null, null);
+        Student student = UserFactory.createStudentProfile(user);
+        if (student != null) {
             studentRepository.save(student);
         }
 

@@ -2,6 +2,7 @@ package com.school360.controller;
 
 import com.school360.model.*;
 import com.school360.repository.*;
+import com.school360.pattern.observer.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,7 @@ import java.util.*;
 @RequestMapping("/api/library")
 @CrossOrigin(origins = "*")
 public class LibraryController {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(LibraryController.class);
 
     @Autowired
     private BookRepository bookRepository;
@@ -257,6 +259,7 @@ public class LibraryController {
 
         return bookBorrowRepository.findById(id).map(borrow -> {
             String prevStatus = borrow.getStatus();
+            List<Book> newlyAvailable = new ArrayList<>();
             borrow.setStatus(newStatus);
             if (notes != null) borrow.setNotes(notes);
 
@@ -273,6 +276,9 @@ public class LibraryController {
                             book.setStatus("AVAILABLE");
                         }
                         bookRepository.save(book);
+                        if (currentCopies == 0 && "AVAILABLE".equalsIgnoreCase(book.getStatus())) {
+                            newlyAvailable.add(book);
+                        }
                     });
                 }
             } else if (returnDateParam != null) {
@@ -280,6 +286,7 @@ public class LibraryController {
             }
 
             BookBorrow updated = bookBorrowRepository.save(borrow);
+            newlyAvailable.forEach(this::notifyBookAvailability);
             return ResponseEntity.ok(updated);
         }).orElse(ResponseEntity.notFound().build());
     }
@@ -288,6 +295,7 @@ public class LibraryController {
     public ResponseEntity<BookBorrow> updateBorrow(@PathVariable("id") Long id, @RequestBody BookBorrow details) {
         return bookBorrowRepository.findById(id).map(borrow -> {
             String prevStatus = borrow.getStatus();
+            List<Book> newlyAvailable = new ArrayList<>();
             if (details.getMemberId() != null) borrow.setMemberId(details.getMemberId());
             if (details.getMemberName() != null) borrow.setMemberName(details.getMemberName());
             if (details.getBookId() != null) borrow.setBookId(details.getBookId());
@@ -310,11 +318,15 @@ public class LibraryController {
                                 book.setStatus("AVAILABLE");
                             }
                             bookRepository.save(book);
+                            if (currentCopies == 0 && "AVAILABLE".equalsIgnoreCase(book.getStatus())) {
+                                newlyAvailable.add(book);
+                            }
                         });
                     }
                 }
             }
             BookBorrow updated = bookBorrowRepository.save(borrow);
+            newlyAvailable.forEach(this::notifyBookAvailability);
             return ResponseEntity.ok(updated);
         }).orElse(ResponseEntity.notFound().build());
     }
@@ -397,6 +409,41 @@ public class LibraryController {
     // ════════════════════════════════════════════════
     // RESERVATIONS CRUD
     // ════════════════════════════════════════════════
+
+
+    private void notifyBookAvailability(Book book) {
+        try {
+            BookAvailabilitySubject subject = new BookAvailabilitySubject();
+            Set<Long> recipients = new HashSet<>();
+            for (BookReservation reservation : bookReservationRepository.findByStatus("PENDING")) {
+                if (!Objects.equals(book.getId(), reservation.getBookId()) || !unexpired(reservation)) continue;
+                Long studentId = reservation.getMemberId();
+                // memberId has two possible namespaces. Never guess across a collision or by name alone.
+                if (studentId == null || studentId <= 0 || bookMemberRepository.existsById(studentId)) continue;
+                studentRepository.findById(studentId).filter(student -> student.getUser() != null
+                        && "STUDENT".equals(student.getUser().getRole())
+                        && !"DELETED".equalsIgnoreCase(student.getEnrollmentStatus())
+                        && student.getUser().getFullName() != null
+                        && student.getUser().getFullName().equalsIgnoreCase(reservation.getMemberName()))
+                    .ifPresent(student -> {
+                        if (recipients.add(student.getId())) subject.addObserver(new MemberBookObserver(
+                                studentNotificationRepository, student.getId(), book.getTitle()));
+                    });
+            }
+            subject.bookAvailable(book);
+        } catch (RuntimeException ex) {
+            logger.warn("Book {} returned but availability notification failed", book.getId(), ex);
+        }
+    }
+
+    private boolean unexpired(BookReservation reservation) {
+        try {
+            return reservation.getExpiry() != null
+                    && !LocalDate.parse(reservation.getExpiry()).isBefore(LocalDate.now());
+        } catch (java.time.format.DateTimeParseException ex) {
+            return false;
+        }
+    }
 
     @GetMapping("/reservations")
     public List<BookReservation> getAllReservations() {

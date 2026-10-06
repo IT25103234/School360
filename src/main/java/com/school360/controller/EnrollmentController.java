@@ -2,6 +2,7 @@ package com.school360.controller;
 
 import com.school360.model.*;
 import com.school360.repository.*;
+import com.school360.pattern.observer.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,10 @@ import java.util.*;
 @RequestMapping("/api/enrollment")
 @CrossOrigin(origins = "*")
 public class EnrollmentController {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EnrollmentController.class);
+
+    @Autowired
+    private StudentNotificationRepository studentNotificationRepository;
 
     @Autowired
     private EnrollmentRequestRepository enrollmentRequestRepository;
@@ -238,6 +243,7 @@ public class EnrollmentController {
             String remarks   = payload.get("remarks");
             String docStatus = payload.get("docStatus");
 
+            String previousStatus = request.getEoStatus();
             request.setEoStatus(status);
             if (remarks   != null) request.setRemarks(remarks);
             if (docStatus != null) request.setDocStatus(docStatus);
@@ -248,6 +254,14 @@ public class EnrollmentController {
                 Student student = studentOpt.get();
                 student.setEnrollmentStatus("APPROVED".equalsIgnoreCase(status) ? "APPROVED_EO" : "REJECTED_EO");
                 studentRepository.save(student);
+                try {
+                    EnrollmentSubject subject = new EnrollmentSubject();
+                    subject.addObserver(new StudentEnrollmentObserver(studentNotificationRepository,
+                            student.getId(), request.getCourseName()));
+                    subject.statusChanged(previousStatus, status, false);
+                } catch (RuntimeException ex) {
+                    logger.warn("Enrollment {} saved but notification failed", request.getId(), ex);
+                }
             }
 
             logRepository.save(new SystemLog("Enrollment Officer processed Request ID " + id + " → " + status, "INFO"));

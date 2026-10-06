@@ -3,6 +3,7 @@ package com.school360.controller;
 import com.school360.model.*;
 import com.school360.model.Module;
 import com.school360.repository.*;
+import com.school360.pattern.observer.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,10 @@ import java.util.*;
 @RequestMapping("/api/teachers")
 @CrossOrigin(origins = "*")
 public class TeacherController {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(TeacherController.class);
+
+    @Autowired
+    private StudentNotificationRepository studentNotificationRepository;
 
     @Autowired
     private ModuleRepository moduleRepository;
@@ -174,6 +179,20 @@ public class TeacherController {
     @PostMapping("/announcements")
     public ResponseEntity<?> createAnnouncement(@RequestBody Announcement announcement) {
         announcementRepository.save(announcement);
+        // The existing announcement feed is school-wide.
+        try {
+            AnnouncementSubject subject = new AnnouncementSubject();
+            for (Student student : studentRepository.findAll()) {
+                if (student.getUser() != null && "STUDENT".equals(student.getUser().getRole())
+                        && !"DELETED".equalsIgnoreCase(student.getEnrollmentStatus())) {
+                    subject.addObserver(new StudentAnnouncementObserver(studentNotificationRepository,
+                            student.getId(), announcement.getTitle()));
+                }
+            }
+            subject.publishAnnouncement(announcement);
+        } catch (RuntimeException ex) {
+            logger.warn("Announcement {} saved but inbox delivery failed", announcement.getId(), ex);
+        }
         logRepository.save(new SystemLog("Teacher posted announcement: " + announcement.getTitle(), "INFO"));
         return ResponseEntity.ok(announcement);
     }

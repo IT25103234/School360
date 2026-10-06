@@ -567,6 +567,17 @@
             }
         }
 
+        function notificationLabel(type) {
+            const labels = {
+                BOOK_RESERVED: '🎉 Book Reserved', RESERVATION_CANCELLED: '🔴 Reservation Update',
+                ATTACHMENT_REQUEST: '📎 File Requested', INFO_REQUEST: 'ℹ️ Details Requested',
+                SUPPORT_REPLY: '📩 Support Reply', ANNOUNCEMENT: '📢 Announcement',
+                BOOK_AVAILABLE: '📚 Book Available', ENROLLMENT_STATUS: '🎓 Enrollment Update',
+                SUPPORT_STATUS: '🎫 Ticket Status Update'
+            };
+            return labels[type] || '📩 Support Reply';
+        }
+
         function renderNotificationsUI() {
             const unreadList = studentNotificationsList.filter(n => !n.isRead);
             const countBadge = document.getElementById('notif-count-badge');
@@ -587,7 +598,7 @@
                     container.innerHTML = studentNotificationsList.map(n => `
                         <div onclick="handleNotifClick('${n.type}', ${n.ticketId || 0}, ${n.id})" style="padding:0.6rem;background:${n.isRead ? 'var(--bg-primary)' : (n.type === 'BOOK_RESERVED' ? 'rgba(107,50,148,.12)' : 'var(--warning-light)')};border:1px solid ${n.isRead ? 'var(--border-color)' : (n.type === 'BOOK_RESERVED' ? 'var(--success)' : 'var(--warning)')};border-radius:8px;cursor:pointer;">
                             <div style="font-size:0.8rem;font-weight:700;color:${n.isRead ? 'var(--text-primary)' : (n.type === 'BOOK_RESERVED' ? 'var(--success)' : 'var(--warning)')};">
-                                ${n.type === 'BOOK_RESERVED' ? '🎉 Book Reserved' : (n.type === 'RESERVATION_CANCELLED' ? '🔴 Reservation Update' : (n.type === 'ATTACHMENT_REQUEST' ? '📎 File Requested' : (n.type === 'INFO_REQUEST' ? 'ℹ️ Details Requested' : '📩 Support Reply')))}
+                                ${notificationLabel(n.type)}
                             </div>
                             <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:2px;">${n.message}</div>
                             <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px;">${n.createdDate}</div>
@@ -1072,9 +1083,13 @@
             const dropdown = document.getElementById('notif-dropdown');
             if (dropdown) dropdown.style.display = 'none';
 
-            if (type === 'BOOK_RESERVED' || type === 'RESERVATION_CANCELLED') {
+            if (type === 'BOOK_RESERVED' || type === 'RESERVATION_CANCELLED' || type === 'BOOK_AVAILABLE') {
                 switchTab('library');
                 scrollToMyReservations();
+            } else if (type === 'ANNOUNCEMENT') {
+                switchTab('timetable');
+            } else if (type === 'ENROLLMENT_STATUS') {
+                switchTab('courses');
             } else if (ticketId) {
                 openNotifTicket(ticketId, notifId);
             }

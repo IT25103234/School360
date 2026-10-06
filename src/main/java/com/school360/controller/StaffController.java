@@ -2,6 +2,8 @@ package com.school360.controller;
 
 import com.school360.model.*;
 import com.school360.repository.*;
+import com.school360.pattern.observer.*;
+import com.school360.pattern.strategy.GradeCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +14,10 @@ import java.util.*;
 @RequestMapping("/api/staff")
 @CrossOrigin(origins = "*")
 public class StaffController {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(StaffController.class);
+
+    @Autowired
+    private StudentNotificationRepository studentNotificationRepository;
 
     @Autowired
     private EnrollmentRequestRepository enrollmentRequestRepository;
@@ -48,6 +54,7 @@ public class StaffController {
             EnrollmentRequest request = requestOpt.get();
             String status = payload.getOrDefault("status", "APPROVED"); // APPROVED or REJECTED
 
+            String previousStatus = request.getStaffStatus();
             request.setStaffStatus(status);
             enrollmentRequestRepository.save(request);
 
@@ -61,6 +68,14 @@ public class StaffController {
                     student.setEnrollmentStatus("REJECTED_STAFF");
                 }
                 studentRepository.save(student);
+                try {
+                    EnrollmentSubject subject = new EnrollmentSubject();
+                    subject.addObserver(new StudentEnrollmentObserver(studentNotificationRepository,
+                            student.getId(), request.getCourseName()));
+                    subject.statusChanged(previousStatus, status, true);
+                } catch (RuntimeException ex) {
+                    logger.warn("Enrollment {} saved but notification failed", request.getId(), ex);
+                }
             }
 
             logRepository.save(new SystemLog("Administrative Officer approved student enrollment for Request ID " + id, "INFO"));
@@ -148,10 +163,8 @@ public class StaffController {
         if (mark.getExamTitle() == null || mark.getStudentId() == null) {
             return ResponseEntity.badRequest().body("Exam title and Student ID are required.");
         }
-        // Auto-calculate grade if missing
-        if (mark.getGrade() == null || mark.getGrade().isBlank()) {
-            mark.setGrade(calculateGrade(mark.getMarksObtained(), mark.getTotalMarks()));
-        }
+        mark.setGrade(GradeCalculator.forGrade(mark.getGrade()).assignGrade(
+                mark.getGrade(), mark.getMarksObtained(), mark.getTotalMarks()));
         ExamMark saved = examMarkRepository.save(mark);
         logRepository.save(new SystemLog("Staff added exam mark record for student ID " + mark.getStudentId(), "INFO"));
         return ResponseEntity.ok(saved);
@@ -168,8 +181,8 @@ public class StaffController {
             mark.setSubject(updated.getSubject());
             mark.setMarksObtained(updated.getMarksObtained());
             mark.setTotalMarks(updated.getTotalMarks());
-            mark.setGrade(updated.getGrade() != null && !updated.getGrade().isBlank() ? 
-                updated.getGrade() : calculateGrade(updated.getMarksObtained(), updated.getTotalMarks()));
+            mark.setGrade(GradeCalculator.forGrade(updated.getGrade()).assignGrade(
+                    updated.getGrade(), updated.getMarksObtained(), updated.getTotalMarks()));
             mark.setRemarks(updated.getRemarks());
             if (updated.isPublished() != mark.isPublished()) {
                 mark.setPublished(updated.isPublished());
@@ -269,16 +282,8 @@ public class StaffController {
         return ResponseEntity.notFound().build();
     }
 
-    // Helper: calculate grade
+    // Existing helper delegates to the extracted automatic assignment strategy.
     private String calculateGrade(Double marks, Double total) {
-        if (marks == null || total == null || total <= 0) return "N/A";
-        double percentage = (marks / total) * 100.0;
-        if (percentage >= 90) return "A+";
-        if (percentage >= 80) return "A";
-        if (percentage >= 70) return "B";
-        if (percentage >= 60) return "C";
-        if (percentage >= 50) return "D";
-        return "F";
+        return GradeCalculator.forGrade(null).assignGrade(null, marks, total);
     }
 }
-

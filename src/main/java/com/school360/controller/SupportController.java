@@ -2,6 +2,7 @@ package com.school360.controller;
 
 import com.school360.model.*;
 import com.school360.repository.*;
+import com.school360.pattern.observer.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import java.util.*;
 @RequestMapping("/api/support")
 @CrossOrigin(origins = "*")
 public class SupportController {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(SupportController.class);
 
     @Autowired
     private TicketRepository ticketRepository;
@@ -38,8 +40,18 @@ public class SupportController {
         if (ticketOpt.isPresent()) {
             Ticket ticket = ticketOpt.get();
             String status = payload.get("status"); // OPEN, PENDING, IN_PROGRESS, RESOLVED, CLOSED
+            String previousStatus = ticket.getStatus();
             ticket.setStatus(status);
             ticketRepository.save(ticket);
+
+            if (status != null && !status.equalsIgnoreCase(previousStatus) && ticket.getStudentId() != null) {
+                try {
+                    notifyStudent(ticket, "SUPPORT_STATUS", "Ticket #" + id + ": " + ticket.getTitle()
+                            + " status changed to " + status + ".");
+                } catch (RuntimeException ex) {
+                    logger.warn("Ticket {} saved but status notification failed", id, ex);
+                }
+            }
 
             logRepository.save(new SystemLog("Ticket ID " + id + " status changed to " + status, "INFO"));
             return ResponseEntity.ok(ticket);
@@ -119,14 +131,7 @@ public class SupportController {
                         ("Support Team requested additional info for Ticket #" + id + ": " + ticket.getTitle()) :
                         ("Support Team replied to Ticket #" + id + ": " + ticket.getTitle()));
 
-                StudentNotification notification = new StudentNotification(
-                    ticket.getStudentId(),
-                    ticket.getId(),
-                    ticket.getTitle(),
-                    notifMsg,
-                    notifType
-                );
-                studentNotificationRepository.save(notification);
+                notifyStudent(ticket, notifType, notifMsg);
             }
 
             return ResponseEntity.ok(reply);
@@ -165,20 +170,19 @@ public class SupportController {
             ticketRepository.save(ticket);
 
             if (ticket.getStudentId() != null) {
-                StudentNotification notification = new StudentNotification(
-                    ticket.getStudentId(),
-                    ticket.getId(),
-                    ticket.getTitle(),
-                    "Action Required: " + msg,
-                    reqType
-                );
-                studentNotificationRepository.save(notification);
+                notifyStudent(ticket, reqType, "Action Required: " + msg);
             }
 
             logRepository.save(new SystemLog("Support team requested additional info/file for Ticket #" + id, "INFO"));
             return ResponseEntity.ok(reply);
         }
         return ResponseEntity.notFound().build();
+    }
+
+    private void notifyStudent(Ticket ticket, String type, String message) {
+        SupportTicketSubject subject = new SupportTicketSubject();
+        subject.addObserver(new StudentSupportObserver(studentNotificationRepository, ticket, type));
+        subject.ticketUpdated(message);
     }
 
     // Delete Ticket (Support Team / Admin)
