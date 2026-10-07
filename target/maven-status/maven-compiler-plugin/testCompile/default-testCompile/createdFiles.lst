@@ -1,0 +1,5 @@
+com\school360\config\DatabaseSeederProfileTest.class
+com\school360\pattern\ManagementWorkflowIntegrationTest$TestApplication.class
+com\school360\pattern\ManagementWorkflowIntegrationTest.class
+com\school360\pattern\ManagementPatternsTest.class
+com\school360\pattern\observer\AnnouncementObserverDemo.class

@@ -19,6 +19,9 @@ public class DatabaseSeeder implements CommandLineRunner {
     private StudentRepository studentRepository;
 
     @Autowired
+    private EnrollmentRequestRepository enrollmentRequestRepository;
+
+    @Autowired
     private CourseRepository courseRepository;
 
     @Autowired
@@ -308,6 +311,8 @@ public class DatabaseSeeder implements CommandLineRunner {
             }
         }
 
+        restoreSampleStudentProfile();
+
         // Seed initial Exam data if missing
         if (examTimetableRepository.count() == 0) {
             Course c1 = courseRepository.findAll().stream().findFirst().orElse(null);
@@ -354,6 +359,41 @@ public class DatabaseSeeder implements CommandLineRunner {
                     logRepository.save(new SystemLog("Updated ADMIN account username/fullname to 'Sameehaa'", "INFO"));
                 }
             });
+    }
+
+    // Older databases can contain the demo account without its seeded academic record.
+    void restoreSampleStudentProfile() {
+        User user = userRepository.findByUsernameIgnoreCase("Sameeha").orElse(null);
+        if (user == null || !"STUDENT".equalsIgnoreCase(user.getRole())) {
+            return;
+        }
+        Student student = studentRepository.findByUserId(user.getId()).orElse(null);
+        if (student != null) {
+            String generatedAdmission = "ADM-" + String.format("%04d", user.getId());
+            boolean placeholder = student.getCourseId() == null
+                    && (student.getClassName() == null || student.getClassName().isBlank())
+                    && (student.getSection() == null || student.getSection().isBlank())
+                    && (student.getEnrollmentStatus() == null || student.getEnrollmentStatus().isBlank()
+                        || "UNENROLLED".equals(student.getEnrollmentStatus()))
+                    && (student.getAdmissionNumber() == null || student.getAdmissionNumber().isBlank()
+                        || generatedAdmission.equals(student.getAdmissionNumber()));
+            if (!placeholder || !enrollmentRequestRepository.findByStudentId(student.getId()).isEmpty()) {
+                return;
+            }
+        }
+        Course course = courseRepository.findByCode("SE-101").orElseGet(() ->
+                courseRepository.save(new Course("BSc (Hons) in Software Engineering", "SE-101",
+                        "A standard program covering software development methodologies and fullstack development.")));
+        if (student == null) {
+            student = new Student(user, "ADM-360-001", course.getId(), "Year 3", "Section A", "APPROVED_STAFF");
+        } else {
+            student.setAdmissionNumber("ADM-360-001");
+            student.setCourseId(course.getId());
+            student.setClassName("Year 3");
+            student.setSection("Section A");
+            student.setEnrollmentStatus("APPROVED_STAFF");
+        }
+        studentRepository.save(student);
     }
 }
 
