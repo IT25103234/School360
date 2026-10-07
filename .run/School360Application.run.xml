@@ -1,0 +1,15 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="School360Application" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="school360" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.school360.School360Application" />
+    <option name="VM_PARAMETERS" value="-Xms128m -Xmx512m -Xss512k -XX:ActiveProcessorCount=2" />
+    <envs>
+      <env name="DB_URL" value="jdbc:h2:mem:school360_db;DB_CLOSE_DELAY=-1" />
+      <env name="DB_USERNAME" value="sa" />
+      <env name="DB_PASSWORD" value="" />
+    </envs>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
