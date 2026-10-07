@@ -387,6 +387,148 @@
             </div>
         </section>
 
+        <!-- Tab 5: Student Profile & Settings -->
+        <section id="tab-profile" class="tab-content" style="display:none;">
+            <!-- Profile Welcome / Quick Stats Bar -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:1rem;margin-bottom:1.5rem;">
+                <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:14px;padding:1.1rem 1.3rem;display:flex;align-items:center;gap:1rem;box-shadow:var(--card-shadow);">
+                    <div style="width:46px;height:46px;border-radius:12px;background:rgba(107,50,148,.12);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">🎓</div>
+                    <div style="overflow:hidden;">
+                        <div style="font-size:0.75rem;color:var(--text-muted);font-weight:500;">Enrolled Program</div>
+                        <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="profile-stat-course">Software Engineering</div>
+                    </div>
+                </div>
+                <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:14px;padding:1.1rem 1.3rem;display:flex;align-items:center;gap:1rem;box-shadow:var(--card-shadow);">
+                    <div style="width:46px;height:46px;border-radius:12px;background:rgba(107,50,148,.12);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">🪪</div>
+                    <div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);font-weight:500;">Admission ID</div>
+                        <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary);" id="profile-stat-adm">ADM-360-001</div>
+                    </div>
+                </div>
+                <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:14px;padding:1.1rem 1.3rem;display:flex;align-items:center;gap:1rem;box-shadow:var(--card-shadow);">
+                    <div style="width:46px;height:46px;border-radius:12px;background:rgba(107,50,148,.12);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">🏫</div>
+                    <div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);font-weight:500;">Class / Section</div>
+                        <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary);" id="profile-stat-class">Year 3 - Section A</div>
+                    </div>
+                </div>
+                <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:14px;padding:1.1rem 1.3rem;display:flex;align-items:center;gap:1rem;box-shadow:var(--card-shadow);">
+                    <div style="width:46px;height:46px;border-radius:12px;background:rgba(107,50,148,.12);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">📋</div>
+                    <div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);font-weight:500;">Status</div>
+                        <div style="font-size:1rem;font-weight:700;color:var(--text-primary);" id="profile-stat-status"><span class="badge badge-success">ACTIVE</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Main Content Grid -->
+            <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:1.5rem;align-items:start;" class="profile-layout-grid">
+                <!-- Left Column: Student Identity Card -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3>🪪 Student Identity</h3>
+                    </div>
+                    <div style="text-align:center;padding:0.8rem 0 1.2rem 0;border-bottom:1px solid var(--border-color);">
+                        <div id="profile-avatar-badge" style="width:74px;height:74px;border-radius:50%;background:linear-gradient(135deg, var(--primary), #8e44ad);color:#fff;font-size:2rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 0.8rem auto;box-shadow:0 6px 16px rgba(107,50,148,0.25);">
+                            S
+                        </div>
+                        <h3 id="profile-display-name" style="font-size:1.25rem;margin-bottom:0.2rem;color:var(--text-primary);">Sameeha</h3>
+                        <p id="profile-display-username" style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.5rem;">@sameeha</p>
+                        <span class="badge badge-primary" style="background:rgba(107,50,148,0.15);color:var(--primary);font-weight:700;padding:4px 12px;">Student</span>
+                    </div>
+
+                    <div style="padding-top:1.2rem;display:flex;flex-direction:column;gap:0.85rem;font-size:0.88rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="color:var(--text-muted);">Admission No:</span>
+                            <strong id="profile-info-adm" style="color:var(--text-primary);font-family:monospace;">ADM-360-001</strong>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="color:var(--text-muted);">Course:</span>
+                            <span id="profile-info-course" style="font-weight:600;color:var(--text-primary);text-align:right;max-width:180px;">Software Engineering</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="color:var(--text-muted);">Class & Sec:</span>
+                            <span id="profile-info-class" style="font-weight:600;color:var(--text-primary);">Year 3 - Sec A</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="color:var(--text-muted);">Enrollment:</span>
+                            <span id="profile-info-status" class="badge badge-success">ENROLLED</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="color:var(--text-muted);">Registered Email:</span>
+                            <span id="profile-info-email" style="color:var(--text-secondary);font-size:0.83rem;">student@school360.com</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="color:var(--text-muted);">Phone Number:</span>
+                            <span id="profile-info-phone" style="color:var(--text-secondary);">+94 77 123 4567</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:1.2rem;padding-top:1.2rem;border-top:1px solid var(--border-color);text-align:center;">
+                        <div id="profile-qr-box" style="display:inline-block;padding:6px;background:#ffffff;border-radius:8px;box-shadow:0 3px 10px rgba(0,0,0,0.08);"></div>
+                        <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.4rem;">Digital QR Security Signature</p>
+                    </div>
+                </div>
+
+                <!-- Right Column: Edit Profile Form -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div>
+                            <h3>✏️ Edit Personal Details</h3>
+                            <p style="font-size:0.83rem;color:var(--text-muted);margin-top:0.2rem;">Update your name, email, and phone contact number. Academic records are managed by System Registrar.</p>
+                        </div>
+                    </div>
+
+                    <form onsubmit="handleUpdateProfile(event)" id="form-update-profile">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" for="profile-username-input">Account Username</label>
+                                <input type="text" id="profile-username-input" class="form-input" readonly disabled style="opacity:0.75;cursor:not-allowed;">
+                                <small style="font-size:0.75rem;color:var(--text-muted);">Username cannot be changed</small>
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" for="profile-adm-input">Admission ID</label>
+                                <input type="text" id="profile-adm-input" class="form-input" readonly disabled style="opacity:0.75;cursor:not-allowed;">
+                                <small style="font-size:0.75rem;color:var(--text-muted);">Assigned by Registrar</small>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="profile-name">Full Name <span style="color:var(--danger);">*</span></label>
+                            <input type="text" id="profile-name" class="form-input" placeholder="e.g. Sameeha" required>
+                            <small style="font-size:0.75rem;color:var(--text-muted);">Letters and spaces only (no numbers or symbols)</small>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" for="profile-email">Email Address <span style="color:var(--danger);">*</span></label>
+                                <input type="email" id="profile-email" class="form-input" placeholder="e.g. sameeha@example.com" required>
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" for="profile-contact">Phone / Contact <span style="color:var(--danger);">*</span></label>
+                                <input type="tel" id="profile-contact" class="form-input" placeholder="e.g. 0771234567" required>
+                                <small style="font-size:0.75rem;color:var(--text-muted);">Numbers only, max 16 digits</small>
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" for="profile-course-input">Enrolled Program</label>
+                                <input type="text" id="profile-course-input" class="form-input" readonly disabled style="opacity:0.75;cursor:not-allowed;">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" for="profile-class-input">Assigned Class / Section</label>
+                                <input type="text" id="profile-class-input" class="form-input" readonly disabled style="opacity:0.75;cursor:not-allowed;">
+                            </div>
+                        </div>
+
+                        <div style="display:flex;gap:0.75rem;align-items:center;">
+                            <button type="submit" class="btn btn-primary" id="btn-save-profile">💾 Save Profile Changes</button>
+                            <button type="button" class="btn btn-outline" onclick="loadStudentProfile()">↺ Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </section>
     </main>
 
@@ -517,30 +659,64 @@
                 if (numElem) numElem.innerText = `ADM: ${student.admissionNumber || 'PENDING'}`;
                 
                 // Load course details
+                let courseName = 'Unenrolled';
                 const courseElem = document.getElementById('id-card-course');
-                if (courseElem) {
-                    if (student && student.courseId) {
-                        try {
-                            const courses = await apiCall('/students/courses');
-                            const course = courses.find(c => c.id === student.courseId);
-                            courseElem.innerText = course ? course.name : 'Unknown Program';
-                        } catch(ce) {
-                            courseElem.innerText = 'Unenrolled';
-                        }
-                    } else {
-                        courseElem.innerText = 'Unenrolled';
+                if (student && student.courseId) {
+                    try {
+                        const courses = await apiCall('/students/courses');
+                        const course = courses.find(c => c.id === student.courseId);
+                        courseName = course ? course.name : 'Unknown Program';
+                    } catch(ce) {
+                        courseName = 'Unenrolled';
                     }
                 }
+                if (courseElem) courseElem.innerText = courseName;
 
+                const classNameText = student && student.className ? `${student.className} - ${student.section || ''}` : 'Class Unassigned';
                 const classElem = document.getElementById('id-card-class');
                 if (classElem) {
-                    classElem.innerText = student && student.className ? `${student.className} - ${student.section || ''}` : 'Class Unassigned';
+                    classElem.innerText = classNameText;
                 }
                 
                 // Generate QR SVG
                 const qrVal = (student && student.user && student.user.qrCodeToken) ? student.user.qrCodeToken : (currentUser ? (currentUser.qrCodeToken || `QR-STUDENT-${currentUser.id}`) : 'QR-STUDENT');
                 const qrElem = document.getElementById('id-card-qr');
                 if (qrElem) qrElem.innerHTML = generateQRCodeSVG(qrVal, 70);
+
+                // --- Update My Profile Tab Elements ---
+                if (document.getElementById('profile-stat-course')) document.getElementById('profile-stat-course').innerText = courseName;
+                if (document.getElementById('profile-stat-adm')) document.getElementById('profile-stat-adm').innerText = student.admissionNumber || 'PENDING';
+                if (document.getElementById('profile-stat-class')) document.getElementById('profile-stat-class').innerText = classNameText;
+
+                let enrollmentBadge = '<span class="badge badge-success">ACTIVE</span>';
+                if (student.enrollmentStatus === 'APPROVED_STAFF') {
+                    enrollmentBadge = '<span class="badge badge-success">ENROLLED</span>';
+                } else if (student.enrollmentStatus === 'PENDING_EO') {
+                    enrollmentBadge = '<span class="badge badge-warning">PENDING</span>';
+                } else if (student.enrollmentStatus === 'REJECTED_EO') {
+                    enrollmentBadge = '<span class="badge badge-danger">REJECTED</span>';
+                } else if (student.enrollmentStatus) {
+                    enrollmentBadge = `<span class="badge badge-info">${student.enrollmentStatus}</span>`;
+                }
+
+                if (document.getElementById('profile-stat-status')) document.getElementById('profile-stat-status').innerHTML = enrollmentBadge;
+
+                if (document.getElementById('profile-avatar-badge')) document.getElementById('profile-avatar-badge').innerText = currentUser && currentUser.fullName ? currentUser.fullName.charAt(0).toUpperCase() : 'S';
+                if (document.getElementById('profile-display-name')) document.getElementById('profile-display-name').innerText = currentUser ? (currentUser.fullName || 'Student') : 'Student';
+                if (document.getElementById('profile-display-username')) document.getElementById('profile-display-username').innerText = currentUser ? `@${currentUser.username || 'student'}` : '@student';
+                if (document.getElementById('profile-info-adm')) document.getElementById('profile-info-adm').innerText = student.admissionNumber || 'PENDING';
+                if (document.getElementById('profile-info-course')) document.getElementById('profile-info-course').innerText = courseName;
+                if (document.getElementById('profile-info-class')) document.getElementById('profile-info-class').innerText = classNameText;
+                if (document.getElementById('profile-info-status')) document.getElementById('profile-info-status').innerHTML = enrollmentBadge;
+                if (document.getElementById('profile-info-email')) document.getElementById('profile-info-email').innerText = currentUser ? (currentUser.email || '—') : '—';
+                if (document.getElementById('profile-info-phone')) document.getElementById('profile-info-phone').innerText = currentUser ? (currentUser.contact || '—') : '—';
+
+                if (document.getElementById('profile-qr-box')) document.getElementById('profile-qr-box').innerHTML = generateQRCodeSVG(qrVal, 85);
+
+                if (document.getElementById('profile-username-input')) document.getElementById('profile-username-input').value = currentUser ? (currentUser.username || '') : '';
+                if (document.getElementById('profile-adm-input')) document.getElementById('profile-adm-input').value = student.admissionNumber || 'PENDING';
+                if (document.getElementById('profile-course-input')) document.getElementById('profile-course-input').value = courseName;
+                if (document.getElementById('profile-class-input')) document.getElementById('profile-class-input').value = classNameText;
 
                 // Update Enrollment Status Workflow Display
                 if (typeof renderEnrollmentWorkflow === 'function') {
@@ -903,6 +1079,9 @@
                 currentUser.contact = contact;
                 localStorage.setItem('s360_current_user', JSON.stringify(currentUser));
                 
+                const welcomeElem = document.getElementById('welcome-message');
+                if (welcomeElem) welcomeElem.innerText = `Hello, ${currentUser.fullName || 'Student'}`;
+
                 await loadStudentProfile();
             } catch (err) {
                 showToast("Update Failed", err.message, "danger");
@@ -1342,6 +1521,8 @@
             } else if (tabId === 'exams') {
                 loadStudentExamTimetables();
                 loadStudentExamResults();
+            } else if (tabId === 'profile') {
+                loadStudentProfile();
             }
         };
 

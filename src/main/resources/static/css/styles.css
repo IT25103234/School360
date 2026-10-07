@@ -628,6 +628,9 @@ body {
     .dashboard-grid {
         grid-template-columns: 1fr;
     }
+    .profile-layout-grid {
+        grid-template-columns: 1fr !important;
+    }
 }
 
 .section-card {
