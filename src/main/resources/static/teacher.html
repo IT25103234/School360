@@ -55,111 +55,109 @@
 
         <!-- Tab 1: Module Manager -->
         <section id="tab-modules" class="tab-content active">
-            <div class="dashboard-grid">
-                <div>
-                    <div class="section-card">
-                        <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;">
-                            <h3>My Modules</h3>
-                            <button type="button" class="btn btn-primary" style="padding:0.4rem 0.8rem;font-size:0.8rem;" onclick="switchTab('courses')">➕ Add New Course</button>
-                        </div>
-
-                        <div class="table-container">
-                            <table class="custom-table">
-                                <thead>
-                                    <tr>
-                                        <th>Code</th>
-                                        <th>Name</th>
-                                        <th>Course Reference</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="teacher-modules-list">
-                                    <!-- Loaded dynamically -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            <!-- Create Academic Module Section (Top) -->
+            <div class="section-card" style="margin-bottom: 1.5rem;">
+                <div class="section-header">
+                    <h3 id="module-form-title">Create Academic Module</h3>
                 </div>
-                <div>
-                    <div class="section-card">
-                        <div class="section-header">
-                            <h3 id="module-form-title">Create Academic Module</h3>
+                <form onsubmit="handleSaveModule(event)">
+                    <input type="hidden" id="module-id">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:1.2rem;margin-bottom:1.2rem;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="module-name">Module Name</label>
+                            <input type="text" id="module-name" class="form-input" placeholder="e.g. Advanced Programming in Java" required>
                         </div>
-                        <form onsubmit="handleSaveModule(event)">
-                            <input type="hidden" id="module-id">
-                            <div class="form-group">
-                                <label class="form-label" for="module-name">Module Name</label>
-                                <input type="text" id="module-name" class="form-input" placeholder="e.g. Advanced Programming in Java" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="module-code">Module Code</label>
-                                <input type="text" id="module-code" class="form-input" placeholder="e.g. SE-302" required>
-                            </div>
-                            <div class="form-group" style="margin-bottom: 2rem;">
-                                <label class="form-label" for="module-course">Target Course</label>
-                                <select id="module-course" class="form-input" required>
-                                    <!-- Populated dynamically -->
-                                </select>
-                            </div>
-
-
-                            <button type="submit" class="btn btn-primary btn-block" id="btn-save-module">Save Module</button>
-                            <button type="button" class="btn btn-qr btn-block" id="btn-cancel-edit-module" style="display:none;margin-top:0.5rem;" onclick="resetModuleForm()">Cancel</button>
-                        </form>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="module-code">Module Code</label>
+                            <input type="text" id="module-code" class="form-input" placeholder="e.g. SE-302" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="module-course">Target Course</label>
+                            <select id="module-course" class="form-input" required>
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
                     </div>
+
+                    <div style="display:flex;gap:0.75rem;align-items:center;">
+                        <button type="submit" class="btn btn-primary" id="btn-save-module" style="padding:0.75rem 2rem;">Save Module</button>
+                        <button type="button" class="btn btn-qr" id="btn-cancel-edit-module" style="display:none;padding:0.75rem 1.5rem;" onclick="resetModuleForm()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- My Modules Section (After / Below) -->
+            <div class="section-card">
+                <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;">
+                    <h3>My Modules</h3>
+                    <button type="button" class="btn btn-primary" style="padding:0.4rem 0.8rem;font-size:0.8rem;" onclick="switchTab('courses')">➕ Add New Course</button>
+                </div>
+
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Course Reference</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teacher-modules-list">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
 
         <!-- Tab 1.5: Course Manager -->
         <section id="tab-courses" class="tab-content" style="display:none;">
-            <div class="dashboard-grid">
-                <div>
-                    <div class="section-card">
-                        <div class="section-header">
-                            <h3>Academic Course Catalog</h3>
-                            <p style="color:var(--text-muted);font-size:0.85rem;">View existing academic programs and courses.</p>
-                        </div>
-                        <div class="table-container">
-                            <table class="custom-table">
-                                <thead>
-                                    <tr>
-                                        <th>Code</th>
-                                        <th>Course Title</th>
-                                        <th>Description</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="teacher-courses-list">
-                                    <!-- Loaded dynamically -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            <!-- Create Course Section (Top) -->
+            <div class="section-card" style="margin-bottom: 1.5rem;">
+                <div class="section-header">
+                    <h3>Create New Course</h3>
                 </div>
-                <div>
-                    <!-- Create Course Card -->
-                    <div class="section-card">
-                        <div class="section-header">
-                            <h3>Create New Course</h3>
+                <form onsubmit="handleCreateCourse(event)">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:1.2rem;margin-bottom:1.2rem;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="course-name">Course Title</label>
+                            <input type="text" id="course-name" class="form-input" placeholder="e.g. Cloud Computing" oninput="validateCourseTitle(this, 'course-name-error')" required>
+                            <span id="course-name-error" style="color:#6b3294;font-size:0.75rem;display:none;margin-top:0.25rem;">Course title must contain letters and spaces only (no numbers or symbols).</span>
                         </div>
-                        <form onsubmit="handleCreateCourse(event)">
-                            <div class="form-group">
-                                <label class="form-label" for="course-name">Course Title</label>
-                                <input type="text" id="course-name" class="form-input" placeholder="e.g. Cloud Computing" oninput="validateCourseTitle(this, 'course-name-error')" required>
-                                <span id="course-name-error" style="color:#6b3294;font-size:0.75rem;display:none;margin-top:0.25rem;">Course title must contain letters and spaces only (no numbers or symbols).</span>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="course-code">Course Code</label>
-                                <input type="text" id="course-code" class="form-input" placeholder="e.g. CC-401" required>
-                            </div>
-                            <div class="form-group" style="margin-bottom:1.5rem;">
-                                <label class="form-label" for="course-desc">Course Description</label>
-                                <textarea id="course-desc" class="form-input" rows="3" placeholder="Brief outline of syllabus & requirements..."></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-block">➕ Create Course</button>
-                        </form>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="course-code">Course Code</label>
+                            <input type="text" id="course-code" class="form-input" placeholder="e.g. CC-401" required>
+                        </div>
                     </div>
+                    <div class="form-group" style="margin-bottom:1.2rem;">
+                        <label class="form-label" for="course-desc">Course Description</label>
+                        <textarea id="course-desc" class="form-input" rows="2" placeholder="Brief outline of syllabus & requirements..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="padding:0.75rem 2rem;">➕ Create Course</button>
+                </form>
+            </div>
+
+            <!-- Academic Course Catalog Section (Below) -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Academic Course Catalog</h3>
+                    <p style="color:var(--text-muted);font-size:0.85rem;">View existing academic programs and courses.</p>
+                </div>
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Course Title</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teacher-courses-list">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
@@ -1023,7 +1021,11 @@
 
             document.getElementById('module-form-title').innerText = "Edit Module Details";
             document.getElementById('btn-save-module').innerText = "Update Details";
-            document.getElementById('btn-cancel-edit-module').style.display = 'block';
+            document.getElementById('btn-cancel-edit-module').style.display = 'inline-block';
+
+            const formCard = document.getElementById('module-form-title');
+            if (formCard) formCard.scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('module-name').focus();
         }
 
         function resetModuleForm() {

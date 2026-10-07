@@ -59,10 +59,35 @@
         .sidebar-item:hover a, .sidebar-item.active a {
             background: var(--lib-accent-light); color: var(--lib-accent);
         }
-        .sidebar-divider {
-            padding: 0.5rem 1.2rem; font-size: 0.7rem; font-weight: 700;
+        .sidebar-group {
+            margin-bottom: 0.25rem;
+        }
+        .sidebar-group-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.65rem 1.1rem; font-size: 0.73rem; font-weight: 700;
             letter-spacing: .08em; text-transform: uppercase;
-            color: var(--text-muted); margin-top: 0.5rem;
+            color: var(--text-muted); cursor: pointer; border-radius: 8px;
+            margin: 2px 8px; transition: all .2s; user-select: none;
+        }
+        .sidebar-group-header:hover {
+            color: var(--text-primary); background: var(--bg-tertiary);
+        }
+        .sidebar-group.open .sidebar-group-header {
+            color: var(--lib-accent); background: var(--lib-accent-light);
+        }
+        .sidebar-group .group-arrow {
+            font-size: 0.72rem; transition: transform .25s ease;
+            display: inline-block; opacity: 0.7;
+        }
+        .sidebar-group.open .group-arrow {
+            transform: rotate(90deg); opacity: 1;
+        }
+        .sidebar-group-items {
+            list-style: none; padding: 0; margin: 0;
+            display: none;
+        }
+        .sidebar-group.open .sidebar-group-items {
+            display: block;
         }
 
         /* ─── Stat Cards Row ─── */
@@ -353,25 +378,65 @@
 <nav class="sidebar">
     <div class="sidebar-brand"><span>🏫 School360</span></div>
     <ul class="sidebar-menu">
-        <div class="sidebar-divider">📚 Catalog</div>
-        <li class="sidebar-item active" id="menu-books"><a href="#" onclick="showPanel('books');return false;">📖 Book Catalog</a></li>
-        <li class="sidebar-item" id="menu-add-book"><a href="#" onclick="showPanel('add-book');return false;">➕ Add New Book</a></li>
-        <li class="sidebar-item" id="menu-availability"><a href="#" onclick="showPanel('availability');return false;">✅ Book Availability</a></li>
+        <!-- 1. Catalog -->
+        <li class="sidebar-group open" id="group-catalog">
+            <div class="sidebar-group-header" onclick="toggleSidebarGroup('group-catalog')">
+                <span class="group-title">📚 Catalog</span>
+                <span class="group-arrow">▸</span>
+            </div>
+            <ul class="sidebar-group-items">
+                <li class="sidebar-item active" id="menu-books"><a href="#" onclick="showPanel('books');return false;">📖 Book Catalog</a></li>
+                <li class="sidebar-item" id="menu-add-book"><a href="#" onclick="showPanel('add-book');return false;">➕ Add New Book</a></li>
+                <li class="sidebar-item" id="menu-availability"><a href="#" onclick="showPanel('availability');return false;">✅ Book Availability</a></li>
+            </ul>
+        </li>
 
-        <div class="sidebar-divider">👥 Members</div>
-        <li class="sidebar-item" id="menu-members"><a href="#" onclick="showPanel('members');return false;">🪪 Library Members</a></li>
-        <li class="sidebar-item" id="menu-add-member"><a href="#" onclick="showPanel('add-member');return false;">👤 Register Member</a></li>
+        <!-- 2. Members -->
+        <li class="sidebar-group" id="group-members">
+            <div class="sidebar-group-header" onclick="toggleSidebarGroup('group-members')">
+                <span class="group-title">👥 Members</span>
+                <span class="group-arrow">▸</span>
+            </div>
+            <ul class="sidebar-group-items">
+                <li class="sidebar-item" id="menu-members"><a href="#" onclick="showPanel('members');return false;">🪪 Library Members</a></li>
+                <li class="sidebar-item" id="menu-add-member"><a href="#" onclick="showPanel('add-member');return false;">👤 Register Member</a></li>
+            </ul>
+        </li>
 
-        <div class="sidebar-divider">🔄 Circulation</div>
-        <li class="sidebar-item" id="menu-borrow"><a href="#" onclick="showPanel('borrow');return false;">📤 Borrow Records</a></li>
-        <li class="sidebar-item" id="menu-reservations"><a href="#" onclick="showPanel('reservations');return false;" title="Library Book Reservations">🔖 <span class="nav-text">Library Book Reservations</span> <span id="pending-res-badge" class="badge badge-warning" style="display:none;font-size:0.7rem;padding:2px 7px;border-radius:10px;margin-left:auto;">0</span></a></li>
+        <!-- 3. Circulation -->
+        <li class="sidebar-group" id="group-circulation">
+            <div class="sidebar-group-header" onclick="toggleSidebarGroup('group-circulation')">
+                <span class="group-title">🔄 Circulation</span>
+                <span class="group-arrow">▸</span>
+            </div>
+            <ul class="sidebar-group-items">
+                <li class="sidebar-item" id="menu-borrow"><a href="#" onclick="showPanel('borrow');return false;">📤 Borrow Records</a></li>
+                <li class="sidebar-item" id="menu-reservations"><a href="#" onclick="showPanel('reservations');return false;" title="Library Book Reservations">🔖 <span class="nav-text">Library Book Reservations</span> <span id="pending-res-badge" class="badge badge-warning" style="display:none;font-size:0.7rem;padding:2px 7px;border-radius:10px;margin-left:auto;">0</span></a></li>
+            </ul>
+        </li>
 
-        <div class="sidebar-divider">📝 Other</div>
-        <li class="sidebar-item" id="menu-announcements"><a href="#" onclick="showPanel('announcements');return false;">📣 Announcements</a></li>
-        <li class="sidebar-item" id="menu-versions"><a href="#" onclick="showPanel('versions');return false;">🕘 Edition History</a></li>
+        <!-- 4. Other -->
+        <li class="sidebar-group" id="group-other">
+            <div class="sidebar-group-header" onclick="toggleSidebarGroup('group-other')">
+                <span class="group-title">📝 Other</span>
+                <span class="group-arrow">▸</span>
+            </div>
+            <ul class="sidebar-group-items">
+                <li class="sidebar-item" id="menu-announcements"><a href="#" onclick="showPanel('announcements');return false;">📣 Announcements</a></li>
+                <li class="sidebar-item" id="menu-versions"><a href="#" onclick="showPanel('versions');return false;">🕘 Edition History</a></li>
+            </ul>
+        </li>
 
-        <div class="sidebar-divider">🧑 Account</div>
-        <li class="sidebar-item" id="menu-digital-id"><a href="#" onclick="showPanel('digital-id');return false;">🪺 Digital Librarian ID</a></li>
+        <!-- 5. Account -->
+        <li class="sidebar-group" id="group-account">
+            <div class="sidebar-group-header" onclick="toggleSidebarGroup('group-account')">
+                <span class="group-title">🧑 Account</span>
+                <span class="group-arrow">▸</span>
+            </div>
+            <ul class="sidebar-group-items">
+                <li class="sidebar-item" id="menu-digital-id"><a href="#" onclick="showPanel('digital-id');return false;">🪺 Digital Librarian ID</a></li>
+            </ul>
+        </li>
     </ul>
     <div class="sidebar-footer">
         <button class="btn btn-outline btn-block" onclick="logout()" style="font-size:0.85rem;">🚪 Logout</button>
@@ -455,79 +520,65 @@
          PANEL 2 – ADD / EDIT BOOK
     ══════════════════════════════════════ -->
     <div class="lib-panel" id="panel-add-book">
-        <div class="lib-grid-2">
-            <div class="section-card">
-                <div class="section-header">
-                    <h3 id="book-form-title">➕ Add New Book</h3>
-                    <button class="btn btn-outline btn-sm" onclick="resetBookForm();showPanel('books')">← Back</button>
-                </div>
-                <form onsubmit="handleSaveBook(event)" id="book-form">
-                    <input type="hidden" id="book-id">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="book-title">Book Title *</label>
-                            <input type="text" id="book-title" class="form-input" placeholder="e.g. Introduction to Algorithms" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="book-author">Author *</label>
-                            <input type="text" id="book-author" class="form-input" placeholder="e.g. Thomas H. Cormen" required pattern="[A-Za-z\s.\-']+" title="Text letters and spaces only">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="book-isbn">ISBN *</label>
-                            <input type="text" id="book-isbn" class="form-input" placeholder="e.g. 9780262046305" required pattern="\d{13}" maxlength="13" inputmode="numeric" title="Exactly 13 numeric digits (numbers only)">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="book-category">Category *</label>
-                            <input type="text" id="book-category" class="form-input" placeholder="e.g. Computer Science" required pattern="[A-Za-z\s\-]+" title="Text letters and spaces only">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="book-edition">Edition *</label>
-                            <input type="text" id="book-edition" class="form-input" placeholder="e.g. 3rd Edition" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="book-copies">Copies Available *</label>
-                            <input type="number" id="book-copies" class="form-input" placeholder="e.g. 5" min="0" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="book-status">Availability Status</label>
-                            <select id="book-status" class="form-input">
-                                <option value="AVAILABLE">Available</option>
-                                <option value="UNAVAILABLE">Unavailable</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="book-location">Shelf / Location</label>
-                            <input type="text" id="book-location" class="form-input" placeholder="e.g. Section B, Row 4">
-                        </div>
+        <div class="section-card">
+            <div class="section-header">
+                <h3 id="book-form-title">➕ Add New Book</h3>
+                <button class="btn btn-outline btn-sm" onclick="resetBookForm();showPanel('books')">← Back</button>
+            </div>
+            <form onsubmit="handleSaveBook(event)" id="book-form">
+                <input type="hidden" id="book-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="book-title">Book Title *</label>
+                        <input type="text" id="book-title" class="form-input" placeholder="e.g. Introduction to Algorithms" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="book-desc">Description</label>
-                        <textarea id="book-desc" class="form-input" rows="3" placeholder="Brief description…"></textarea>
+                        <label class="form-label" for="book-author">Author *</label>
+                        <input type="text" id="book-author" class="form-input" placeholder="e.g. Thomas H. Cormen" required pattern="[A-Za-z\s.\-']+" title="Text letters and spaces only">
                     </div>
-                    <div style="display:flex;gap:0.7rem;margin-top:0.5rem;">
-                        <button type="submit" class="btn btn-primary" style="flex:1;" id="btn-save-book">Publish Book</button>
-                        <button type="button" class="btn btn-outline" id="btn-cancel-edit-book" style="display:none;" onclick="resetBookForm()">Cancel Edit</button>
-                    </div>
-                </form>
-            </div>
-            <div>
-                <div class="section-card" style="background:var(--lib-accent-light);border-color:var(--lib-accent);">
-                    <h4 style="color:var(--lib-accent);margin-bottom:0.8rem;">📋 Quick Guidelines</h4>
-                    <ul style="font-size:0.83rem;color:var(--text-secondary);line-height:1.9;padding-left:1.1rem;">
-                        <li>ISBN must contain exactly 13 numeric digits (no symbols or text).</li>
-                        <li>Author and Category fields accept text values only (no numbers).</li>
-                        <li>Set copies to 0 and status <em>Unavailable</em> for out-of-stock books.</li>
-                        <li>Use <strong>Edition History</strong> to track version updates.</li>
-                        <li>Only books marked <em>Unavailable</em> can be permanently removed.</li>
-                    </ul>
                 </div>
-            </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="book-isbn">ISBN *</label>
+                        <input type="text" id="book-isbn" class="form-input" placeholder="e.g. 9780262046305" required pattern="\d{13}" maxlength="13" inputmode="numeric" title="Exactly 13 numeric digits (numbers only)">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="book-category">Category *</label>
+                        <input type="text" id="book-category" class="form-input" placeholder="e.g. Computer Science" required pattern="[A-Za-z\s\-]+" title="Text letters and spaces only">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="book-edition">Edition *</label>
+                        <input type="text" id="book-edition" class="form-input" placeholder="e.g. 3rd Edition" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="book-copies">Copies Available *</label>
+                        <input type="number" id="book-copies" class="form-input" placeholder="e.g. 5" min="0" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="book-status">Availability Status</label>
+                        <select id="book-status" class="form-input">
+                            <option value="AVAILABLE">Available</option>
+                            <option value="UNAVAILABLE">Unavailable</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="book-location">Shelf / Location</label>
+                        <input type="text" id="book-location" class="form-input" placeholder="e.g. Section B, Row 4">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="book-desc">Description</label>
+                    <textarea id="book-desc" class="form-input" rows="3" placeholder="Brief description…"></textarea>
+                </div>
+                <div style="display:flex;gap:0.7rem;margin-top:0.5rem;">
+                    <button type="submit" class="btn btn-primary" style="padding:0.75rem 2rem;" id="btn-save-book">Publish Book</button>
+                    <button type="button" class="btn btn-outline" id="btn-cancel-edit-book" style="display:none;" onclick="resetBookForm()">Cancel Edit</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -584,75 +635,62 @@
          PANEL 5 – REGISTER MEMBER
     ══════════════════════════════════════ -->
     <div class="lib-panel" id="panel-add-member">
-        <div class="lib-grid-2">
-            <div class="section-card">
-                <div class="section-header">
-                    <h3 id="member-form-title">👤 Register Library Member</h3>
-                    <button class="btn btn-outline btn-sm" onclick="resetMemberForm();showPanel('members')">← Back</button>
-                </div>
-                <form onsubmit="handleSaveMember(event)">
-                    <input type="hidden" id="member-id">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="member-name">Full Name *</label>
-                            <input type="text" id="member-name" class="form-input" placeholder="e.g. Alice Johnson" required pattern="[A-Za-z\s]+" title="Letters and spaces only">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="member-mid">Member ID *</label>
-                            <input type="text" id="member-mid" class="form-input" placeholder="e.g. LIB-2024-001" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="member-type">Member Type *</label>
-                            <select id="member-type" class="form-input" required>
-                                <option value="">Select Type</option>
-                                <option value="Student">Student</option>
-                                <option value="Teacher">Teacher</option>
-                                <option value="Staff">Staff</option>
-                                <option value="Guest">Guest</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="member-class">Class / Department</label>
-                            <input type="text" id="member-class" class="form-input" placeholder="e.g. Grade 10 / Science">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="member-email">Email *</label>
-                            <input type="email" id="member-email" class="form-input" placeholder="e.g. alice@school.edu" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="member-phone">Phone</label>
-                            <input type="text" id="member-phone" class="form-input" placeholder="e.g. 0771234567" pattern="\d{1,16}" maxlength="16" inputmode="numeric">
-                        </div>
+        <div class="section-card">
+            <div class="section-header">
+                <h3 id="member-form-title">👤 Register Library Member</h3>
+                <button class="btn btn-outline btn-sm" onclick="resetMemberForm();showPanel('members')">← Back</button>
+            </div>
+            <form onsubmit="handleSaveMember(event)">
+                <input type="hidden" id="member-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="member-name">Full Name *</label>
+                        <input type="text" id="member-name" class="form-input" placeholder="e.g. Alice Johnson" required pattern="[A-Za-z\s]+" title="Letters and spaces only">
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="member-status-field">Member Status</label>
-                        <select id="member-status-field" class="form-input">
-                            <option value="ACTIVE">Active</option>
-                            <option value="SUSPENDED">Suspended</option>
-                            <option value="INACTIVE">Inactive</option>
+                        <label class="form-label" for="member-mid">Member ID *</label>
+                        <input type="text" id="member-mid" class="form-input" placeholder="e.g. LIB-2024-001" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="member-type">Member Type *</label>
+                        <select id="member-type" class="form-input" required>
+                            <option value="">Select Type</option>
+                            <option value="Student">Student</option>
+                            <option value="Teacher">Teacher</option>
+                            <option value="Staff">Staff</option>
+                            <option value="Guest">Guest</option>
                         </select>
                     </div>
-                    <div style="display:flex;gap:0.7rem;margin-top:0.5rem;">
-                        <button type="submit" class="btn btn-primary" style="flex:1;" id="btn-save-member">Register Member</button>
-                        <button type="button" class="btn btn-outline" id="btn-cancel-edit-member" style="display:none;" onclick="resetMemberForm()">Cancel Edit</button>
+                    <div class="form-group">
+                        <label class="form-label" for="member-class">Class / Department</label>
+                        <input type="text" id="member-class" class="form-input" placeholder="e.g. Grade 10 / Science">
                     </div>
-                </form>
-            </div>
-            <div>
-                <div class="section-card" style="background:var(--lib-teal-light);border-color:var(--lib-teal);">
-                    <h4 style="color:var(--lib-teal);margin-bottom:0.8rem;">📋 Registration Notes</h4>
-                    <ul style="font-size:0.83rem;color:var(--text-secondary);line-height:1.9;padding-left:1.1rem;">
-                        <li>Member ID must be unique across all records.</li>
-                        <li>Students may borrow up to <strong>3 books</strong> at a time.</li>
-                        <li>Teachers may borrow up to <strong>5 books</strong> at a time.</li>
-                        <li>Suspended members cannot borrow or reserve books.</li>
-                    </ul>
                 </div>
-            </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="member-email">Email *</label>
+                        <input type="email" id="member-email" class="form-input" placeholder="e.g. alice@school.edu" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="member-phone">Phone</label>
+                        <input type="text" id="member-phone" class="form-input" placeholder="e.g. 0771234567" pattern="\d{1,16}" maxlength="16" inputmode="numeric">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="member-status-field">Member Status</label>
+                    <select id="member-status-field" class="form-input">
+                        <option value="ACTIVE">Active</option>
+                        <option value="SUSPENDED">Suspended</option>
+                        <option value="INACTIVE">Inactive</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:0.7rem;margin-top:0.5rem;">
+                    <button type="submit" class="btn btn-primary" style="padding:0.75rem 2rem;" id="btn-save-member">Register Member</button>
+                    <button type="button" class="btn btn-outline" id="btn-cancel-edit-member" style="display:none;" onclick="resetMemberForm()">Cancel Edit</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -663,82 +701,81 @@
          PANEL 6 – BORROW RECORDS & RETURNABLE CUSTOMERS
     ══════════════════════════════════════ -->
     <div class="lib-panel" id="panel-borrow">
-        <div class="lib-grid-2">
-            <div>
-                <div class="section-card">
-                    <div class="section-header">
-                        <h3>📤 Borrowing Records</h3>
-                        <div class="search-input-wrap">
-                            <span class="search-icon">🔍</span>
-                            <input type="text" id="search-borrow" class="form-input" placeholder="Search customer, ID or book…" style="padding-left:2.1rem;width:230px;" oninput="renderBorrows()">
-                        </div>
-                    </div>
-                    <div class="lib-tabs">
-                        <button class="lib-tab-btn active" id="borrow-filter-ALL" onclick="setBorrowFilter('ALL')">All</button>
-                        <button class="lib-tab-btn" id="borrow-filter-BORROWED" onclick="setBorrowFilter('BORROWED')">Active</button>
-                        <button class="lib-tab-btn" id="borrow-filter-RETURNED" onclick="setBorrowFilter('RETURNED')">Returned</button>
-                        <button class="lib-tab-btn" id="borrow-filter-OVERDUE" onclick="setBorrowFilter('OVERDUE')">Overdue</button>
-                    </div>
-                    <div class="table-container">
-                        <table class="custom-table">
-                            <thead>
-                                <tr><th>Customer / Member</th><th>Book</th><th>Borrowed</th><th>Due Date</th><th>Return Status</th><th>Actions</th></tr>
-                            </thead>
-                            <tbody id="borrow-list"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Returnable Customer Details Card -->
-                <div class="section-card" style="margin-top:1.2rem;border-color:var(--lib-teal);">
-                    <div class="section-header">
-                        <h3 style="color:var(--lib-teal);">👥 Returnable Customers (Active Holders)</h3>
-                        <div class="search-input-wrap">
-                            <span class="search-icon">🔍</span>
-                            <input type="text" id="search-returnable" class="form-input" placeholder="Search returnable customers…" style="padding-left:2.1rem;width:220px;" oninput="renderReturnableCustomers()">
-                        </div>
-                    </div>
-                    <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:1rem;">Members currently holding returnable books with due dates, contact details, and instant return processing.</p>
-                    <div class="table-container">
-                        <table class="custom-table">
-                            <thead>
-                                <tr><th>Customer Details</th><th>Book Title</th><th>Due Date</th><th>Return Status</th><th>Contact Info</th><th>Action</th></tr>
-                            </thead>
-                            <tbody id="returnable-customers-list"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="section-card">
-                <div class="section-header"><h3>📝 Record Borrow</h3></div>
-                <form onsubmit="handleSaveBorrow(event)">
-                    <input type="hidden" id="borrow-id">
-                    <div class="form-group">
+        <!-- Record Borrow Card (Top) -->
+        <div class="section-card" style="margin-bottom: 1.5rem;">
+            <div class="section-header"><h3>📝 Record Borrow</h3></div>
+            <form onsubmit="handleSaveBorrow(event)">
+                <input type="hidden" id="borrow-id">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:1.2rem;margin-bottom:1.2rem;">
+                    <div class="form-group" style="margin-bottom:0;">
                         <label class="form-label" for="borrow-member">Member ID / Name *</label>
                         <input type="text" id="borrow-member" class="form-input" placeholder="e.g. LIB-2024-001" required list="member-datalist">
                         <datalist id="member-datalist"></datalist>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="margin-bottom:0;">
                         <label class="form-label" for="borrow-book">Book Title / ISBN *</label>
                         <input type="text" id="borrow-book" class="form-input" placeholder="Search book…" required list="book-datalist">
                         <datalist id="book-datalist"></datalist>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="borrow-date">Borrow Date *</label>
-                            <input type="date" id="borrow-date" class="form-input" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="borrow-due">Due Date *</label>
-                            <input type="date" id="borrow-due" class="form-input" required>
-                        </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label" for="borrow-date">Borrow Date *</label>
+                        <input type="date" id="borrow-date" class="form-input" required>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" for="borrow-notes">Notes</label>
-                        <input type="text" id="borrow-notes" class="form-input" placeholder="Optional notes…">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label" for="borrow-due">Due Date *</label>
+                        <input type="date" id="borrow-due" class="form-input" required>
                     </div>
-                    <button type="submit" class="btn btn-teal btn-block">📤 Record Borrow</button>
-                </form>
+                </div>
+                <div class="form-group" style="margin-bottom:1.2rem;">
+                    <label class="form-label" for="borrow-notes">Notes</label>
+                    <input type="text" id="borrow-notes" class="form-input" placeholder="Optional notes…">
+                </div>
+                <button type="submit" class="btn btn-teal" style="padding:0.75rem 2rem;">📤 Record Borrow</button>
+            </form>
+        </div>
+
+        <!-- Borrowing Records Table Card (Below) -->
+        <div class="section-card" style="margin-bottom: 1.5rem;">
+            <div class="section-header">
+                <h3>📤 Borrowing Records</h3>
+                <div class="search-input-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-borrow" class="form-input" placeholder="Search customer, ID or book…" style="padding-left:2.1rem;width:230px;" oninput="renderBorrows()">
+                </div>
+            </div>
+            <div class="lib-tabs">
+                <button class="lib-tab-btn active" id="borrow-filter-ALL" onclick="setBorrowFilter('ALL')">All</button>
+                <button class="lib-tab-btn" id="borrow-filter-BORROWED" onclick="setBorrowFilter('BORROWED')">Active</button>
+                <button class="lib-tab-btn" id="borrow-filter-RETURNED" onclick="setBorrowFilter('RETURNED')">Returned</button>
+                <button class="lib-tab-btn" id="borrow-filter-OVERDUE" onclick="setBorrowFilter('OVERDUE')">Overdue</button>
+            </div>
+            <div class="table-container">
+                <table class="custom-table">
+                    <thead>
+                        <tr><th>Customer / Member</th><th>Book</th><th>Borrowed</th><th>Due Date</th><th>Return Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="borrow-list"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Returnable Customer Details Card -->
+        <div class="section-card" style="border-color:var(--lib-teal);">
+            <div class="section-header">
+                <h3 style="color:var(--lib-teal);">👥 Returnable Customers (Active Holders)</h3>
+                <div class="search-input-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-returnable" class="form-input" placeholder="Search returnable customers…" style="padding-left:2.1rem;width:220px;" oninput="renderReturnableCustomers()">
+                </div>
+            </div>
+            <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:1rem;">Members currently holding returnable books with due dates, contact details, and instant return processing.</p>
+            <div class="table-container">
+                <table class="custom-table">
+                    <thead>
+                        <tr><th>Customer Details</th><th>Book Title</th><th>Due Date</th><th>Return Status</th><th>Contact Info</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="returnable-customers-list"></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -835,22 +872,17 @@
          PANEL 8 – ANNOUNCEMENTS
     ══════════════════════════════════════ -->
     <div class="lib-panel" id="panel-announcements">
-        <div class="lib-grid-2">
-            <div>
-                <div class="section-card">
-                    <div class="section-header"><h3>📣 Library Announcements</h3></div>
-                    <div id="announcements-list"></div>
-                </div>
-            </div>
-            <div class="section-card">
-                <div class="section-header"><h3 id="ann-form-title">📝 New Announcement</h3></div>
-                <form onsubmit="handleSaveAnnouncement(event)">
-                    <input type="hidden" id="ann-id">
-                    <div class="form-group">
+        <!-- New Announcement Card (Top) -->
+        <div class="section-card" style="margin-bottom: 1.5rem;">
+            <div class="section-header"><h3 id="ann-form-title">📝 New Announcement</h3></div>
+            <form onsubmit="handleSaveAnnouncement(event)">
+                <input type="hidden" id="ann-id">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:1.2rem;margin-bottom:1.2rem;">
+                    <div class="form-group" style="margin-bottom:0;">
                         <label class="form-label" for="ann-title">Title *</label>
                         <input type="text" id="ann-title" class="form-input" placeholder="e.g. Library Closed on Friday" required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="margin-bottom:0;">
                         <label class="form-label" for="ann-type">Type</label>
                         <select id="ann-type" class="form-input">
                             <option value="General">General</option>
@@ -859,16 +891,22 @@
                             <option value="Event">Event</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" for="ann-content">Content *</label>
-                        <textarea id="ann-content" class="form-input" rows="5" placeholder="Write announcement details…" required></textarea>
-                    </div>
-                    <div style="display:flex;gap:0.7rem;">
-                        <button type="submit" class="btn btn-primary" style="flex:1;" id="btn-save-ann">Post Announcement</button>
-                        <button type="button" class="btn btn-outline" id="btn-cancel-ann" style="display:none;" onclick="resetAnnForm()">Cancel</button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                <div class="form-group" style="margin-bottom:1.2rem;">
+                    <label class="form-label" for="ann-content">Content *</label>
+                    <textarea id="ann-content" class="form-input" rows="4" placeholder="Write announcement details…" required></textarea>
+                </div>
+                <div style="display:flex;gap:0.75rem;align-items:center;">
+                    <button type="submit" class="btn btn-primary" style="padding:0.75rem 2rem;" id="btn-save-ann">Post Announcement</button>
+                    <button type="button" class="btn btn-outline" id="btn-cancel-ann" style="display:none;padding:0.75rem 1.5rem;" onclick="resetAnnForm()">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Library Announcements List (Below) -->
+        <div class="section-card">
+            <div class="section-header"><h3>📣 Library Announcements</h3></div>
+            <div id="announcements-list"></div>
         </div>
     </div>
 
@@ -1284,6 +1322,33 @@ async function refreshLibrarianData(showToastFeedback = true) {
     }
 }
 
+/* ── Sidebar group toggling ── */
+function toggleSidebarGroup(groupId) {
+    const targetGroup = document.getElementById(groupId);
+    if (!targetGroup) return;
+    const wasOpen = targetGroup.classList.contains('open');
+
+    // Close all groups
+    document.querySelectorAll('.sidebar-group').forEach(g => {
+        g.classList.remove('open');
+    });
+
+    // If it was closed, open it; if it was open, toggle it closed
+    if (!wasOpen) {
+        targetGroup.classList.add('open');
+    }
+}
+
+function openSidebarGroup(groupIdOrElem) {
+    let group = typeof groupIdOrElem === 'string'
+        ? document.getElementById(groupIdOrElem)
+        : groupIdOrElem;
+    if (group) {
+        document.querySelectorAll('.sidebar-group').forEach(g => g.classList.remove('open'));
+        group.classList.add('open');
+    }
+}
+
 /* ── Panel navigation ── */
 function showPanel(panelId) {
     document.querySelectorAll('.lib-panel').forEach(p  => p.classList.remove('active'));
@@ -1291,7 +1356,13 @@ function showPanel(panelId) {
     const panel = document.getElementById('panel-' + panelId);
     const menu  = document.getElementById('menu-'  + panelId);
     if (panel) panel.classList.add('active');
-    if (menu)  menu.classList.add('active');
+    if (menu)  {
+        menu.classList.add('active');
+        const parentGroup = menu.closest('.sidebar-group');
+        if (parentGroup && !parentGroup.classList.contains('open')) {
+            openSidebarGroup(parentGroup);
+        }
+    }
     if (panelId === 'borrow')       { populateBorrowDefaults(); renderBorrows(); }
     if (panelId === 'reservations') { populateResDates();       renderReservations(); }
     if (panelId === 'availability') renderAvailability();
@@ -2550,6 +2621,10 @@ function editAnnouncement(id) {
     document.getElementById('ann-form-title').innerText = '✏️ Edit Announcement';
     document.getElementById('btn-save-ann').innerText   = 'Save Changes';
     document.getElementById('btn-cancel-ann').style.display = 'inline-flex';
+
+    const formTitle = document.getElementById('ann-form-title');
+    if (formTitle) formTitle.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('ann-title').focus();
 }
 
 async function deleteAnnouncement(id) {

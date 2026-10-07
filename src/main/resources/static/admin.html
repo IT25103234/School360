@@ -233,54 +233,26 @@
 
 
 
-        <!-- Tab 3: Program Registry (Courses CRUD) -->
+        <!-- Tab 3: Program Registry (Courses View) -->
         <section id="tab-courses" class="tab-content" style="display:none;">
-            <div class="dashboard-grid">
-                <div>
-                    <div class="section-card">
-                        <div class="section-header">
-                            <h3>Academic Course Registers</h3>
-                        </div>
-                        <div class="table-container">
-                            <table class="custom-table">
-                                <thead>
-                                    <tr>
-                                        <th>Code</th>
-                                        <th>Course Name</th>
-                                        <th>Description</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="admin-courses-list">
-                                    <!-- Loaded dynamically -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>Academic Course Registers</h3>
                 </div>
-                <div>
-                    <div class="section-card">
-                        <div class="section-header">
-                            <h3 id="course-form-title">Create Course Program</h3>
-                        </div>
-                        <form onsubmit="handleSaveCourse(event)">
-                            <input type="hidden" id="course-id">
-                            <div class="form-group">
-                                <label class="form-label" for="course-name">Course Name</label>
-                                <input type="text" id="course-name" class="form-input" placeholder="e.g. BSc (Hons) in Cyber Security" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="course-code">Course Code</label>
-                                <input type="text" id="course-code" class="form-input" placeholder="e.g. CS-303" required>
-                            </div>
-                            <div class="form-group" style="margin-bottom:2rem;">
-                                <label class="form-label" for="course-desc">Syllabus Summary</label>
-                                <textarea id="course-desc" class="form-input" rows="4" placeholder="Course outline..." required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-block" id="btn-save-course">Create Course</button>
-                            <button type="button" class="btn btn-qr btn-block" id="btn-cancel-edit-course" style="display:none;margin-top:0.5rem;" onclick="resetCourseForm()">Cancel</button>
-                        </form>
-                    </div>
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Course Name</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-courses-list">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
@@ -360,7 +332,36 @@
         </section>
     </main>
 
-
+    <!-- Modal: Edit Academic Course -->
+    <div id="edit-course-modal" class="modal-backdrop" onclick="if(event.target === this) closeEditCourseModal()">
+        <div class="modal-content" style="max-width:520px;">
+            <div class="modal-header">
+                <h3>✏️ Edit Course Program</h3>
+                <button type="button" class="modal-close" onclick="closeEditCourseModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="handleSaveCourse(event)">
+                    <input type="hidden" id="course-id">
+                    <div class="form-group">
+                        <label class="form-label" for="course-name">Course Name</label>
+                        <input type="text" id="course-name" class="form-input" placeholder="e.g. BSc (Hons) in Cyber Security" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="course-code">Course Code</label>
+                        <input type="text" id="course-code" class="form-input" placeholder="e.g. CS-303" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom:1.5rem;">
+                        <label class="form-label" for="course-desc">Syllabus Summary</label>
+                        <textarea id="course-desc" class="form-input" rows="4" placeholder="Course outline..." required></textarea>
+                    </div>
+                    <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+                        <button type="button" class="btn btn-qr" onclick="closeEditCourseModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="btn-save-course">Update Course</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script src="js/app.js?v=contrast-8"></script>
     <script>
@@ -753,19 +754,21 @@
             document.getElementById('course-code').value = c.code;
             document.getElementById('course-desc').value = c.description;
 
-            document.getElementById('course-form-title').innerText = "Modify Course Details";
-            document.getElementById('btn-save-course').innerText = "Update Course";
-            document.getElementById('btn-cancel-edit-course').style.display = 'block';
+            const modal = document.getElementById('edit-course-modal');
+            if (modal) modal.style.display = 'flex';
         }
 
-        function resetCourseForm() {
+        function closeEditCourseModal() {
+            const modal = document.getElementById('edit-course-modal');
+            if (modal) modal.style.display = 'none';
             document.getElementById('course-id').value = '';
             document.getElementById('course-name').value = '';
             document.getElementById('course-code').value = '';
             document.getElementById('course-desc').value = '';
-            document.getElementById('course-form-title').innerText = "Create Course Program";
-            document.getElementById('btn-save-course').innerText = "Create Course";
-            document.getElementById('btn-cancel-edit-course').style.display = 'none';
+        }
+
+        function resetCourseForm() {
+            closeEditCourseModal();
         }
 
         async function deleteCourse(id) {

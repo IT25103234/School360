@@ -452,8 +452,8 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="reg-nic">NIC / Passport No. (16 digits)</label>
-                        <input type="text" id="reg-nic" class="form-input" placeholder="e.g. 2001123456789012" pattern="\d{16}" minlength="16" maxlength="16" inputmode="numeric">
+                        <label class="form-label" for="reg-nic">NIC / Passport No. *</label>
+                        <input type="text" id="reg-nic" class="form-input" placeholder="e.g. 2001123456789012 (10 or 16 digits)" pattern="^(\d{10}|\d{16})$" minlength="10" maxlength="16" inputmode="numeric" required title="NIC / Passport No. must be either 10 or 16 digits">
                     </div>
                 </div>
 
@@ -1727,7 +1727,7 @@ async function handleRegisterStudent(event) {
     }
 
     const nicVal = document.getElementById('reg-nic').value.trim();
-    const nicCheck = validateNIC(nicVal, false);
+    const nicCheck = validateNIC(nicVal, true);
     if (!nicCheck.valid) {
         showToast('Validation Error', nicCheck.message, 'warning');
         btn.disabled = false;

@@ -108,8 +108,8 @@ public class EnrollmentController {
             return ResponseEntity.badRequest().body("Phone number must contain numbers only and be at most 16 digits.");
         }
         String nic = clean(payload.get("nic"));
-        if (nic != null && !nic.matches("^\\d{16}$")) {
-            return ResponseEntity.badRequest().body("NIC must be exactly 16 digits (numbers only, no symbols or letters).");
+        if (nic == null || !nic.matches("^(\\d{10}|\\d{16})$")) {
+            return ResponseEntity.badRequest().body("NIC / Passport No. is required and must be either 10 or 16 digits (numbers only, no symbols or letters).");
         }
         if (userRepository.findByUsername(username).isPresent()) {
             return ResponseEntity.badRequest().body("Username already taken. Please choose another.");

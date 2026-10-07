@@ -50,13 +50,13 @@ function validatePhone(phone) {
 
 function validateNIC(nic, required = false) {
     if (!nic || !nic.trim()) {
-        if (required) return { valid: false, message: "NIC is required." };
+        if (required) return { valid: false, message: "NIC / Passport No. is required." };
         return { valid: true };
     }
     const cleanNic = nic.trim();
-    const nicRegex = /^\d{16}$/;
+    const nicRegex = /^(\d{10}|\d{16})$/;
     if (!nicRegex.test(cleanNic)) {
-        return { valid: false, message: "NIC must be exactly 16 digits (numbers only, no symbols or letters)." };
+        return { valid: false, message: "NIC / Passport No. must be either 10 or 16 digits (numbers only, no symbols or letters)." };
     }
     return { valid: true };
 }
@@ -1093,6 +1093,7 @@ function handleDemoRequest(endpoint, method, body) {
             if (body.fullName) users[userIdx].fullName = body.fullName;
             if (body.email) users[userIdx].email = body.email;
             if (body.contact) users[userIdx].contact = body.contact;
+            if (body.avatar !== undefined) users[userIdx].avatar = body.avatar;
             set('s360_users', users);
             
             const students = get('s360_students');
