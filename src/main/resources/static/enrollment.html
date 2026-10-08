@@ -1127,7 +1127,7 @@ function renderHistory() {
     }
     tbody.innerHTML = processed.map(r => {
         const eoBadge   = r.eoStatus === 'APPROVED'
-            ? `<span class="status-pill pill-approved">✅ Approved</span>`
+            ? `<span class="status-pill pill-approved">Approved</span>`
             : `<span class="status-pill pill-rejected">❌ Rejected</span>`;
         const docStatus = getDocBadge(r);
         return `<tr>
@@ -1198,10 +1198,10 @@ function renderDeletedStudents() {
 }
 
 function getDocBadge(r) {
-    if (!r.docStatus) return `<span class="status-pill pill-pending">📄 Pending</span>`;
+    if (!r.docStatus) return `<span class="status-pill pill-pending">Pending</span>`;
     if (r.docStatus === 'VERIFIED') return `<span class="status-pill pill-verified">✅ Verified</span>`;
     if (r.docStatus === 'REJECTED') return `<span class="status-pill pill-rejected">❌ Issues</span>`;
-    return `<span class="status-pill pill-pending">📄 Pending</span>`;
+    return `<span class="status-pill pill-pending">Pending</span>`;
 }
 
 // ══════════════════════════════════════════════════
