@@ -34,9 +34,9 @@ test('startup reveals existing login and restores page at 10000ms',()=>{
     app.timer.fn();
     assert.equal(app.opened,1);
 });
-test('signed-in and returning tab entries skip startup',()=>{
-    assert.equal(setup({user:{id:1,role:'STUDENT'}}).timer,undefined);
-    assert.equal(setup({seen:true}).timer,undefined);
+test('saved login and returning tab entries still play startup',()=>{
+    assert.equal(setup({user:{id:1,role:'STUDENT'}}).timer.delay,10000);
+    assert.equal(setup({seen:true}).timer.delay,10000);
 });
 test('reduced motion and throttled frames still complete on deadline',()=>{
     const app=setup({reduced:true});

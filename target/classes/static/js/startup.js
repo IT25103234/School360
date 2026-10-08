@@ -1,13 +1,7 @@
 (() => {
     'use strict';
     const DURATION = 10000;
-    const KEY = 's360_intro_seen_v1';
-    // Public home is also reachable by authenticated users. Never alter their routing.
-    try {
-        if (JSON.parse(localStorage.getItem('s360_current_user') || 'null')) return;
-        if (sessionStorage.getItem(KEY)) return;
-        sessionStorage.setItem(KEY, '1');
-    } catch (_) { /* Storage restrictions must not prevent entry. */ }
+    // Always show the intro when the public index page loads.
     const overlay = document.createElement('section');
     overlay.id = 's360-startup';
     overlay.setAttribute('role', 'dialog');
