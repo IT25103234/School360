@@ -54,9 +54,9 @@ function validateNIC(nic, required = false) {
         return { valid: true };
     }
     const cleanNic = nic.trim();
-    const nicRegex = /^(\d{10}|\d{16})$/;
+    const nicRegex = /^(\d{12}|\d{16})$/;
     if (!nicRegex.test(cleanNic)) {
-        return { valid: false, message: "NIC must be exactly 10 digits or Passport No. exactly 16 digits (numbers only, no symbols or letters)." };
+        return { valid: false, message: "NIC must be exactly 12 digits or Passport No. exactly 16 digits (numbers only, no symbols or letters)." };
     }
     return { valid: true };
 }

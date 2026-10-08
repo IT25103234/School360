@@ -86,7 +86,7 @@ test('server and network failures never mutate local demo data', async () => {
 });
 
 
-test('enrollment accepts only 10-digit phones and 10/16-digit identity numbers', () => {
+test('enrollment accepts only 10-digit phones and 12/16-digit identity numbers', () => {
     const app = setup('enrollment.html');
     for (const value of ['0771234567', '0000000000']) {
         assert.equal(app.run(`validatePhone('${value}', 10).valid`), true);
@@ -94,8 +94,8 @@ test('enrollment accepts only 10-digit phones and 10/16-digit identity numbers',
     for (const value of ['', '077123456', '07712345678', '0771234567890123', '077123456a', '+771234567']) {
         assert.equal(app.run(`validatePhone('${value}', 10).valid`), false);
     }
-    for (const length of [9, 10, 11, 15, 16, 17]) {
-        assert.equal(app.run(`validateNIC('${'1'.repeat(length)}', true).valid`), [10, 16].includes(length));
+    for (const length of [9, 10, 11, 12, 13, 15, 16, 17]) {
+        assert.equal(app.run(`validateNIC('${'1'.repeat(length)}', true).valid`), [12, 16].includes(length));
     }
     for (const value of ['', '123456789V', '123456789012345a', '12345-6789']) {
         assert.equal(app.run(`validateNIC('${value}', true).valid`), false);

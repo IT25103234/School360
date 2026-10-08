@@ -497,11 +497,6 @@
                     <button class="btn btn-outline btn-sm" onclick="refreshLibrarianData(true)">🔄 Refresh</button>
                 </div>
             </div>
-            <div class="action-bar">
-                <button class="btn btn-primary btn-sm" onclick="showPanel('add-book')">➕ Add Book</button>
-                <button class="btn btn-teal btn-sm" onclick="showPanel('borrow')">📤 Record Borrow</button>
-                <button class="btn btn-outline btn-sm" onclick="showPanel('reservations')">🔖 Reserve</button>
-            </div>
             <div class="table-container">
                 <table class="custom-table">
                     <thead>
@@ -1764,7 +1759,6 @@ function renderMembers() {
             <td style="white-space:nowrap;">
                 <div style="display:flex;gap:4px;flex-wrap:wrap;">
                     <button class="btn btn-outline btn-sm" onclick="viewMemberRecord(${m.id})" title="View full member record details">👁 Record</button>
-                    <button class="btn btn-primary btn-sm" onclick="openReserveForMemberModal(${m.id})" title="Reserve a book for this member">🔖 Reserve Book</button>
                     <button class="btn btn-outline btn-sm" onclick="openEditMemberModal(${m.id})" title="Edit member details">✏️ Edit</button>
                     <button class="btn btn-teal btn-sm" onclick="viewMemberHistory(${m.id})" title="Borrowing history">📋 History</button>
                 </div>
