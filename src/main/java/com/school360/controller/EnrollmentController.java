@@ -104,8 +104,8 @@ public class EnrollmentController {
         if (!fullName.matches("^[a-zA-Z\\s]+$")) {
             return ResponseEntity.badRequest().body("Name must contain letters and spaces only (no numbers or symbols).");
         }
-        if (!contact.matches("^\\d{1,16}$")) {
-            return ResponseEntity.badRequest().body("Phone number must contain numbers only and be at most 16 digits.");
+        if (!contact.matches("^[0-9]{10}$")) {
+            return ResponseEntity.badRequest().body("Phone number must be exactly 10 digits (numbers only).");
         }
         String nic = clean(payload.get("nic"));
         if (nic == null || !nic.matches("^(\\d{10}|\\d{16})$")) {

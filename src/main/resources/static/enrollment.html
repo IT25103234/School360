@@ -437,7 +437,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="reg-contact">Contact Number *</label>
-                        <input type="text" id="reg-contact" class="form-input" placeholder="e.g. 0771234567" required pattern="\d{1,16}" maxlength="16" inputmode="numeric" autocomplete="off">
+                        <input type="text" id="reg-contact" class="form-input" placeholder="e.g. 0771234567" required pattern="[0-9]{10}" inputmode="numeric" autocomplete="off" title="Phone number must be exactly 10 digits">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="reg-dob">Date of Birth</label>
@@ -453,7 +453,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="reg-nic">NIC / Passport No. *</label>
-                        <input type="text" id="reg-nic" class="form-input" placeholder="e.g. 2001123456789012 (10 or 16 digits)" pattern="^(\d{10}|\d{16})$" minlength="10" maxlength="16" inputmode="numeric" required title="NIC / Passport No. must be either 10 or 16 digits">
+                        <input type="text" id="reg-nic" class="form-input" placeholder="10 digits for NIC or 16 digits for passport" pattern="^([0-9]{10}|[0-9]{16})$" minlength="10" inputmode="numeric" required title="NIC / Passport No. must be either 10 or 16 digits">
                     </div>
                 </div>
 
@@ -477,11 +477,11 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="reg-class">Class Name *</label>
-                        <input type="text" id="reg-class" class="form-input" placeholder="e.g. Year 1" required>
+                        <select id="reg-class" class="form-input" required><option value="">— Select Class —</option><option value="Year 1">Year 1</option><option value="Year 2">Year 2</option><option value="Year 3">Year 3</option><option value="Year 4">Year 4</option><option value="Year 5">Year 5</option><option value="Year 6">Year 6</option><option value="Year 7">Year 7</option></select>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="reg-section">Section *</label>
-                        <input type="text" id="reg-section" class="form-input" placeholder="e.g. Section A" required>
+                        <select id="reg-section" class="form-input" required><option value="">— Select Section —</option><option value="Section A">Section A</option><option value="Section B">Section B</option><option value="Section C">Section C</option><option value="Section D">Section D</option></select>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="reg-admission">Admission Number *</label>
@@ -786,11 +786,11 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Class Name *</label>
-                    <input type="text" id="proc-class" class="form-input" placeholder="Year 1">
+                    <select id="proc-class" class="form-input"><option value="">— Select Class —</option><option value="Year 1">Year 1</option><option value="Year 2">Year 2</option><option value="Year 3">Year 3</option><option value="Year 4">Year 4</option><option value="Year 5">Year 5</option><option value="Year 6">Year 6</option><option value="Year 7">Year 7</option></select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Section *</label>
-                    <input type="text" id="proc-section" class="form-input" placeholder="Section A">
+                    <select id="proc-section" class="form-input"><option value="">— Select Section —</option><option value="Section A">Section A</option><option value="Section B">Section B</option><option value="Section C">Section C</option><option value="Section D">Section D</option></select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Batch / Year</label>
@@ -921,11 +921,11 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Class Name *</label>
-                <input type="text" id="ac-class" class="form-input" placeholder="Year 1" required>
+                <select id="ac-class" class="form-input" required><option value="">— Select Class —</option><option value="Year 1">Year 1</option><option value="Year 2">Year 2</option><option value="Year 3">Year 3</option><option value="Year 4">Year 4</option><option value="Year 5">Year 5</option><option value="Year 6">Year 6</option><option value="Year 7">Year 7</option></select>
             </div>
             <div class="form-group">
                 <label class="form-label">Section *</label>
-                <input type="text" id="ac-section" class="form-input" placeholder="Section A" required>
+                <select id="ac-section" class="form-input" required><option value="">— Select Section —</option><option value="Section A">Section A</option><option value="Section B">Section B</option><option value="Section C">Section C</option><option value="Section D">Section D</option></select>
             </div>
             <div class="form-group">
                 <label class="form-label">Batch Year</label>
@@ -963,7 +963,7 @@
 </div>
 
 <!-- ═══════════════════════ SCRIPTS ═══════════════════════ -->
-<script src="js/app.js?v=contrast-8"></script>
+<script src="js/app.js?v=enrollment-validation-9"></script>
 <script>
 // ══════════════════════════════════════════════════
 // ENROLLMENT OFFICER — PAGE STATE
@@ -1717,7 +1717,7 @@ async function handleRegisterStudent(event) {
         return;
     }
 
-    const phoneCheck = validatePhone(contact);
+    const phoneCheck = validatePhone(contact, 10);
     if (!phoneCheck.valid) {
         showToast('Validation Error', phoneCheck.message, 'warning');
         btn.disabled = false;
@@ -1789,6 +1789,7 @@ function resetSuccessCard() {
 
 function clearRegisterForm() {
     document.getElementById('register-student-form').reset();
+    ['reg-contact', 'reg-nic'].forEach(id => document.getElementById(id).setCustomValidity(''));
     document.getElementById('reg-username').value = '';
     document.getElementById('reg-password').value = '';
     formUploadedDocs = {};
@@ -1800,6 +1801,15 @@ function clearRegisterForm() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    ['reg-contact', 'reg-nic'].forEach(id => {
+        const field = document.getElementById(id);
+        const validate = () => {
+            const result = id === 'reg-contact' ? validatePhone(field.value, 10) : validateNIC(field.value, true);
+            field.setCustomValidity(result.valid ? '' : result.message);
+        };
+        field.addEventListener('input', validate);
+        field.addEventListener('blur', () => { validate(); if (field.value) field.reportValidity(); });
+    });
     clearRegisterForm();
     setTimeout(clearRegisterForm, 100);
 });
