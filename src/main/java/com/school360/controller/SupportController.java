@@ -97,6 +97,9 @@ public class SupportController {
         if (ticketOpt.isPresent()) {
             Ticket ticket = ticketOpt.get();
             String message = payload.get("message");
+            if (message == null || message.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Reply message cannot be empty"));
+            }
             String senderName = payload.get("senderName");
             boolean requestInfo = "true".equalsIgnoreCase(payload.get("requestInfo"));
             boolean requestAttachment = "true".equalsIgnoreCase(payload.get("requestAttachment"));

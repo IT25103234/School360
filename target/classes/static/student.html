@@ -589,9 +589,45 @@
         </div>
     </div>
 
-    <script src="js/app.js?v=contrast-8"></script>
+    <!-- Ticket Detail & Reply Modal -->
+    <div id="ticket-modal" class="modal">
+        <div class="modal-content" style="max-width: 650px;">
+            <div class="modal-header">
+                <h3 id="modal-ticket-title">Ticket Details</h3>
+                <span style="cursor:pointer;font-size:1.5rem;" onclick="closeTicketModal()">✕</span>
+            </div>
+            <div style="margin: 0.8rem 0; display:flex; gap:0.5rem; align-items:center;">
+                <span id="modal-ticket-priority" class="badge badge-info">MEDIUM</span>
+                <span id="modal-ticket-status" class="badge badge-info">OPEN</span>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <h5 style="margin-bottom:0.25rem;font-weight:700;">Issue Description:</h5>
+                <p id="modal-ticket-desc" style="padding:0.75rem;background-color:var(--bg-primary);border-radius:var(--border-radius-sm);font-size:0.88rem;color:var(--text-secondary);"></p>
+            </div>
+            <div class="ticket-chat-area">
+                <div class="ticket-chat-messages" id="ticket-chat-messages" style="max-height: 280px; overflow-y:auto;">
+                    <!-- Dynamic chat bubbles -->
+                </div>
+                <div id="attachment-preview-badge" style="display:none;align-items:center;gap:0.5rem;margin-top:0.5rem;padding:0.4rem 0.8rem;background:var(--bg-tertiary);border-radius:6px;font-size:0.8rem;">
+                    <span>📎 <strong id="attachment-name"></strong></span>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="clearSelectedAttachment()" style="padding:2px 6px;font-size:0.7rem;color:var(--danger);border-color:var(--danger);margin-left:auto;">✕ Remove</button>
+                </div>
+                <div class="ticket-chat-input-bar" style="margin-top:0.6rem;display:flex;gap:0.5rem;align-items:center;">
+                    <label class="btn btn-outline" style="cursor:pointer;padding:0.5rem 0.75rem;font-size:0.85rem;" title="Attach a file or screenshot">
+                        📎
+                        <input type="file" id="ticket-attachment" style="display:none;" onchange="handleFileSelected(event)">
+                    </label>
+                    <input type="text" id="ticket-reply-msg" class="form-input" placeholder="Type reply message..." style="flex:1;" onkeydown="if(event.key==='Enter') sendTicketReply();">
+                    <button class="btn btn-primary" onclick="sendTicketReply()">Send Reply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js?v=upload-fix-1"></script>
     <script>
         let currentStudentData = null;
+        let currentStudentTickets = [];
         let selectedTicketId = null;
         let selectedFileBase64 = null;
         let selectedFileName = null;
@@ -1393,28 +1429,46 @@
             try {
                 const student = await ensureStudentData();
                 if (!student || !student.id) return;
-                const tickets = await apiCall(`/students/${student.id}/tickets`);
+                let tickets = await apiCall(`/students/${student.id}/tickets`);
+                
+                // Fallback for demo mode if empty
+                if (!Array.isArray(tickets) || tickets.length === 0) {
+                    try {
+                        const localTickets = JSON.parse(localStorage.getItem('s360_tickets') || '[]');
+                        const validIds = [student.id];
+                        if (student.userId) validIds.push(student.userId);
+                        if (currentUser && currentUser.id) validIds.push(currentUser.id);
+                        const matched = localTickets.filter(t => validIds.some(vid => t.studentId == vid));
+                        if (matched.length > 0) {
+                            tickets = matched;
+                        }
+                    } catch(e) {}
+                }
+
+                currentStudentTickets = Array.isArray(tickets) ? tickets : [];
                 const tbody = document.getElementById('student-tickets-list');
+                if (!tbody) return;
                 tbody.innerHTML = '';
 
-                if (tickets.length === 0) {
+                if (currentStudentTickets.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">No tickets raised yet.</td></tr>';
                     return;
                 }
 
-                tickets.forEach(t => {
+                currentStudentTickets.forEach(t => {
                     let badgeClass = 'badge-info';
-                    if (t.status === 'RESOLVED') badgeClass = 'badge-success';
-                    if (t.status === 'CLOSED') badgeClass = 'badge-danger';
-                    if (t.status === 'PENDING') badgeClass = 'badge-warning';
+                    const st = (t.status || 'OPEN').toUpperCase();
+                    if (st === 'RESOLVED') badgeClass = 'badge-success';
+                    else if (st === 'CLOSED') badgeClass = 'badge-danger';
+                    else if (st === 'PENDING') badgeClass = 'badge-warning';
 
                     tbody.innerHTML += `
                         <tr>
                             <td>#${t.id}</td>
-                            <td>${t.title}</td>
-                            <td><span class="badge ${t.priority === 'HIGH' ? 'badge-danger' : 'badge-info'}">${t.priority}</span></td>
-                            <td><span class="badge ${badgeClass}">${t.status}</span></td>
-                            <td>${t.createdDate}</td>
+                            <td>${t.title || 'Untitled Ticket'}</td>
+                            <td><span class="badge ${t.priority === 'HIGH' ? 'badge-danger' : 'badge-info'}">${t.priority || 'MEDIUM'}</span></td>
+                            <td><span class="badge ${badgeClass}">${st}</span></td>
+                            <td>${t.createdDate || '—'}</td>
                             <td>
                                 <button class="btn btn-qr" style="padding:0.3rem 0.6rem;font-size:0.8rem;" onclick="viewTicketDetails(${t.id})">View/Reply</button>
                             </td>
@@ -1422,7 +1476,7 @@
                     `;
                 });
             } catch (err) {
-                console.error(err);
+                console.error("Error loading student tickets:", err);
             }
         }
 
@@ -1453,52 +1507,128 @@
         }
 
         async function viewTicketDetails(ticketId) {
-            selectedTicketId = ticketId;
-            try {
-                const student = await ensureStudentData();
-                if (!student || !student.id) return;
-                const tickets = await apiCall(`/students/${student.id}/tickets`);
-                const ticket = tickets.find(t => t.id === ticketId);
-                if (!ticket) return;
+            selectedTicketId = parseInt(ticketId);
 
-                document.getElementById('modal-ticket-title').innerText = `Ticket #${ticket.id}: ${ticket.title}`;
-                document.getElementById('modal-ticket-desc').innerText = ticket.description;
-                
-                const statusBadge = document.getElementById('modal-ticket-status');
-                statusBadge.innerText = ticket.status;
-                statusBadge.className = `badge ${ticket.status === 'RESOLVED' ? 'badge-success' : 'badge-info'}`;
+            // 1. Look in cached tickets array first
+            let ticket = currentStudentTickets.find(t => t && (t.id == ticketId || String(t.id) === String(ticketId)));
 
-                const prioBadge = document.getElementById('modal-ticket-priority');
-                prioBadge.innerText = ticket.priority;
-                prioBadge.className = `badge ${ticket.priority === 'HIGH' ? 'badge-danger' : 'badge-info'}`;
-
-                await loadTicketReplies();
-                document.getElementById('ticket-modal').classList.add('active');
-            } catch (err) {
-                console.error(err);
+            // 2. Check localStorage fallback if not found
+            if (!ticket) {
+                try {
+                    const localTickets = JSON.parse(localStorage.getItem('s360_tickets') || '[]');
+                    ticket = localTickets.find(t => t && (t.id == ticketId || String(t.id) === String(ticketId)));
+                } catch(e){}
             }
+
+            // 3. Check server re-fetch if still not found
+            if (!ticket) {
+                try {
+                    const student = await ensureStudentData();
+                    if (student && student.id) {
+                        const tickets = await apiCall(`/students/${student.id}/tickets`);
+                        if (Array.isArray(tickets)) {
+                            currentStudentTickets = tickets;
+                            ticket = tickets.find(t => t && (t.id == ticketId || String(t.id) === String(ticketId)));
+                        }
+                    }
+                } catch(e) {
+                    console.warn("Could not fetch ticket details from server:", e);
+                }
+            }
+
+            if (!ticket) {
+                showToast("Ticket Not Found", "Could not find details for ticket #" + ticketId, "warning");
+                return;
+            }
+
+            // Populate ticket details
+            const modalTitle = document.getElementById('modal-ticket-title');
+            if (modalTitle) modalTitle.innerText = `Ticket #${ticket.id}: ${ticket.title || 'Untitled'}`;
+
+            const modalDesc = document.getElementById('modal-ticket-desc');
+            if (modalDesc) modalDesc.innerText = ticket.description || 'No description provided.';
+            
+            const statusBadge = document.getElementById('modal-ticket-status');
+            if (statusBadge) {
+                const st = (ticket.status || 'OPEN').toUpperCase();
+                statusBadge.innerText = st;
+                let sClass = 'badge-info';
+                if (st === 'RESOLVED') sClass = 'badge-success';
+                else if (st === 'CLOSED') sClass = 'badge-danger';
+                else if (st === 'PENDING') sClass = 'badge-warning';
+                statusBadge.className = `badge ${sClass}`;
+            }
+
+            const prioBadge = document.getElementById('modal-ticket-priority');
+            if (prioBadge) {
+                const prio = (ticket.priority || 'MEDIUM').toUpperCase();
+                prioBadge.innerText = prio;
+                prioBadge.className = `badge ${prio === 'HIGH' ? 'badge-danger' : 'badge-info'}`;
+            }
+
+            // Clear input & attachment
+            const input = document.getElementById('ticket-reply-msg');
+            if (input) input.value = '';
+            clearSelectedAttachment();
+
+            // Open modal immediately so user has instant visual feedback
+            const modal = document.getElementById('ticket-modal');
+            if (modal) {
+                modal.classList.add('active');
+            }
+
+            // Load chat conversation
+            const container = document.getElementById('ticket-chat-messages');
+            if (container) {
+                container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:1.5rem;font-size:0.85rem;">Loading conversation...</div>';
+            }
+            await loadTicketReplies();
         }
 
         async function loadTicketReplies() {
+            const container = document.getElementById('ticket-chat-messages');
+            if (!container || !selectedTicketId) return;
+
             try {
-                const replies = await apiCall(`/students/tickets/${selectedTicketId}/replies`);
-                const container = document.getElementById('ticket-chat-messages');
+                let replies = null;
+                try {
+                    replies = await apiCall(`/students/tickets/${selectedTicketId}/replies`);
+                } catch(apiErr) {
+                    console.warn("apiCall for replies failed, trying local storage:", apiErr);
+                }
+
+                if (!Array.isArray(replies)) {
+                    try {
+                        const localReplies = JSON.parse(localStorage.getItem('s360_ticket_replies') || '[]');
+                        replies = localReplies.filter(r => r && (r.ticketId == selectedTicketId || String(r.ticketId) === String(selectedTicketId)));
+                    } catch(e) {
+                        replies = [];
+                    }
+                }
+
                 container.innerHTML = '';
+
+                if (!replies || replies.length === 0) {
+                    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:1.5rem;font-size:0.85rem;">No replies yet. Type a message below to reply to support.</div>';
+                    return;
+                }
 
                 replies.forEach(r => {
                     const bubble = document.createElement('div');
-                    bubble.className = `chat-bubble ${r.senderRole.toLowerCase()}`;
+                    const role = (r.senderRole || 'STUDENT').toLowerCase();
+                    bubble.className = `chat-bubble ${role}`;
                     bubble.innerHTML = `
-                        <strong>${r.senderName} (${r.senderRole})</strong>
-                        <p style="margin-top:2px;">${r.message}</p>
+                        <strong>${r.senderName || 'User'} (${(r.senderRole || 'STUDENT').toUpperCase()})</strong>
+                        <p style="margin-top:2px;">${r.message || ''}</p>
                         ${r.attachmentName ? `<div style="margin-top:5px;font-size:0.75rem;background:rgba(255,246,240,0.2);padding:0.25rem 0.5rem;border-radius:4px;"><a href="${r.attachmentData}" download="${r.attachmentName}" style="color:inherit;text-decoration:underline;">📎 ${r.attachmentName}</a></div>` : ''}
-                        <div class="meta">${r.createdDate}</div>
+                        <div class="meta">${r.createdDate || ''}</div>
                     `;
                     container.appendChild(bubble);
                 });
                 container.scrollTop = container.scrollHeight;
             } catch (err) {
-                console.error(err);
+                console.error("Error loading ticket replies:", err);
+                container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:1.5rem;font-size:0.85rem;">No replies yet. Type a message below to reply to support.</div>';
             }
         }
 
@@ -1525,29 +1655,72 @@
 
         async function sendTicketReply() {
             const input = document.getElementById('ticket-reply-msg');
-            const message = input.value.trim();
+            const message = input ? input.value.trim() : '';
             
-            if (!message && !selectedFileBase64) return;
+            if (!message && !selectedFileBase64) {
+                showToast("Validation Error", "Please enter a message before sending your reply.", "warning");
+                if (input) {
+                    input.focus();
+                    input.style.borderColor = "var(--danger)";
+                    setTimeout(() => { input.style.borderColor = ""; }, 2500);
+                }
+                return;
+            }
+
+            if (!selectedTicketId) {
+                showToast("Error", "No ticket selected.", "danger");
+                return;
+            }
+
+            const senderName = (currentUser && (currentUser.fullName || currentUser.username)) 
+                ? (currentUser.fullName || currentUser.username) 
+                : 'Student';
 
             try {
                 await apiCall(`/students/tickets/${selectedTicketId}/replies`, 'POST', {
-                    senderName: currentUser.fullName,
+                    senderName,
                     message,
                     attachmentName: selectedFileName,
                     attachmentData: selectedFileBase64
                 });
                 
-                input.value = '';
+                if (input) input.value = '';
                 clearSelectedAttachment();
                 await loadTicketReplies();
                 await loadStudentTickets();
+                showToast("Reply Sent", "Your message has been sent.", "success");
             } catch (err) {
+                if (CONFIG.isDemoMode) {
+                    try {
+                        const localReplies = JSON.parse(localStorage.getItem('s360_ticket_replies') || '[]');
+                        localReplies.push({
+                            id: localReplies.length + 1,
+                            ticketId: selectedTicketId,
+                            senderName,
+                            senderRole: "STUDENT",
+                            message,
+                            attachmentName: selectedFileName,
+                            attachmentData: selectedFileBase64,
+                            createdDate: new Date().toISOString().replace('T', ' ').substring(0, 19)
+                        });
+                        localStorage.setItem('s360_ticket_replies', JSON.stringify(localReplies));
+                        if (input) input.value = '';
+                        clearSelectedAttachment();
+                        await loadTicketReplies();
+                        await loadStudentTickets();
+                        showToast("Reply Sent", "Your message has been sent.", "success");
+                        return;
+                    } catch(e){}
+                }
                 showToast("Reply Failed", err.message, "danger");
             }
         }
 
         function closeTicketModal() {
-            document.getElementById('ticket-modal').classList.remove('active');
+            const modal = document.getElementById('ticket-modal');
+            if (modal) modal.classList.remove('active');
+            selectedTicketId = null;
+            clearSelectedAttachment();
         }
 
         async function handleNotifClick(type, ticketId, notifId) {

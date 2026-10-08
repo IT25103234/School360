@@ -288,6 +288,10 @@ public class StudentController {
         String attachmentName = payload.get("attachmentName");
         String attachmentData = payload.get("attachmentData");
 
+        if ((message == null || message.trim().isEmpty()) && (attachmentData == null || attachmentData.trim().isEmpty())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Reply message cannot be empty"));
+        }
+
         Optional<Ticket> ticketOpt = ticketRepository.findById(ticketId);
         if (ticketOpt.isPresent()) {
             Ticket ticket = ticketOpt.get();

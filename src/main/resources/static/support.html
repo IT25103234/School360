@@ -153,7 +153,7 @@
                     </label>
                 </div>
                 <div class="ticket-chat-input-bar">
-                    <input type="text" id="ticket-reply-msg" class="form-input" placeholder="Type reply or request details..." style="flex:1;">
+                    <input type="text" id="ticket-reply-msg" class="form-input" placeholder="Type reply or request details..." style="flex:1;" onkeydown="if(event.key==='Enter') sendTicketReply();">
                     <button class="btn btn-primary" onclick="sendTicketReply()">Send Reply</button>
                 </div>
             </div>
@@ -306,8 +306,16 @@
 
         async function sendTicketReply() {
             const input = document.getElementById('ticket-reply-msg');
-            const message = input.value.trim();
-            if (!message) return;
+            const message = input ? input.value.trim() : '';
+            if (!message) {
+                showToast("Validation Error", "Please enter a message before sending your reply.", "warning");
+                input.focus();
+                input.style.borderColor = "var(--danger)";
+                setTimeout(() => {
+                    input.style.borderColor = "";
+                }, 2500);
+                return;
+            }
 
             const notifyStudent = document.getElementById('chk-request-file')?.checked;
             const isAttachmentReq = message.toLowerCase().includes('attach') || message.toLowerCase().includes('file') || message.toLowerCase().includes('photo') || message.toLowerCase().includes('screenshot');

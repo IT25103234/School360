@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="School360Application" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <module name="school360" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.school360.School360Application" />
+    <option name="VM_PARAMETERS" value="-Xmx768m -Xms256m" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="com.school360.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

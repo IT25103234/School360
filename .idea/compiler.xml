@@ -12,8 +12,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="School360" options="-parameters -parameters" />
-      <module name="school360" options="-parameters -parameters" />
+      <module name="school360" options="-parameters" />
     </option>
   </component>
 </project>

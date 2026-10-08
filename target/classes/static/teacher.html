@@ -165,70 +165,70 @@
 
         <!-- Tab 1.6: Timetable Reschedule Requests (Teacher -> Staff) -->
         <section id="tab-exam-requests" class="tab-content" style="display:none;">
-            <div class="dashboard-grid">
-                <div>
-                    <div class="section-card">
-                        <div class="section-header">
-                            <h3>My Reschedule Requests</h3>
-                            <p style="color:var(--text-muted);font-size:0.85rem;">Track timetable change requests submitted to Administrative Staff.</p>
-                        </div>
-                        <div class="table-container">
-                            <table class="custom-table">
-                                <thead>
-                                    <tr>
-                                        <th>Exam / Subject</th>
-                                        <th>Current Date</th>
-                                        <th>Proposed Date & Time</th>
-                                        <th>Proposed Venue</th>
-                                        <th>Reason</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="teacher-requests-list">
-                                    <!-- Loaded dynamically -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            <!-- Request Timetable Reschedule Section (Upper / Top) -->
+            <div class="section-card" style="margin-bottom: 1.5rem;">
+                <div class="section-header">
+                    <h3>Request Timetable Reschedule</h3>
+                    <p style="color:var(--text-muted);font-size:0.85rem;">Submit a change request to Staff for exam or lecture schedule adjustment.</p>
                 </div>
-                <div>
-                    <div class="section-card">
-                        <div class="section-header">
-                            <h3>Request Timetable Reschedule</h3>
-                            <p style="color:var(--text-muted);font-size:0.85rem;">Submit a change request to Staff for exam or lecture schedule adjustment.</p>
+                <form onsubmit="handleSaveExamRequest(event)">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1.2rem;margin-bottom:1.2rem;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="req-timetable-select">Select Schedule / Exam</label>
+                            <select id="req-timetable-select" class="form-input" required>
+                                <!-- Loaded dynamically -->
+                            </select>
                         </div>
-                        <form onsubmit="handleSaveExamRequest(event)">
-                            <div class="form-group">
-                                <label class="form-label" for="req-timetable-select">Select Schedule / Exam</label>
-                                <select id="req-timetable-select" class="form-input" required>
-                                    <!-- Loaded dynamically -->
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="req-proposed-date">Proposed New Date</label>
-                                <input type="date" id="req-proposed-date" class="form-input" required>
-                            </div>
-                            <div class="form-group" style="display:flex;gap:0.5rem;">
-                                <div style="flex:1;">
-                                    <label class="form-label" for="req-start-time">Proposed Start Time</label>
-                                    <input type="time" id="req-start-time" class="form-input" required>
-                                </div>
-                                <div style="flex:1;">
-                                    <label class="form-label" for="req-end-time">Proposed End Time</label>
-                                    <input type="time" id="req-end-time" class="form-input" required>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="req-proposed-venue">Proposed Room / Hall</label>
-                                <input type="text" id="req-proposed-venue" class="form-input" placeholder="e.g. Lab Complex 3" required>
-                            </div>
-                            <div class="form-group" style="margin-bottom:1.5rem;">
-                                <label class="form-label" for="req-reason">Reason for Reschedule</label>
-                                <textarea id="req-reason" class="form-input" rows="3" placeholder="Explain why schedule needs modification..." required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-block">📩 Send Request to Staff</button>
-                        </form>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="req-proposed-date">Proposed New Date</label>
+                            <input type="date" id="req-proposed-date" class="form-input" required>
+                            <small style="color:var(--text-muted);font-size:0.75rem;">Cannot select past dates</small>
+                        </div>
                     </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:1.2rem;margin-bottom:1.2rem;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="req-start-time">Proposed Start Time</label>
+                            <input type="time" id="req-start-time" class="form-input" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="req-end-time">Proposed End Time</label>
+                            <input type="time" id="req-end-time" class="form-input" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="req-proposed-venue">Proposed Room / Hall</label>
+                            <input type="text" id="req-proposed-venue" class="form-input" placeholder="e.g. Lab Complex 3" required>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:1.5rem;">
+                        <label class="form-label" for="req-reason">Reason for Reschedule</label>
+                        <textarea id="req-reason" class="form-input" rows="3" placeholder="Explain why schedule needs modification..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="padding:0.75rem 2rem;">📩 Send Request to Staff</button>
+                </form>
+            </div>
+
+            <!-- My Reschedule Requests Section (Lower / Below) -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>My Reschedule Requests</h3>
+                    <p style="color:var(--text-muted);font-size:0.85rem;">Track timetable change requests submitted to Administrative Staff.</p>
+                </div>
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Exam / Subject</th>
+                                <th>Current Date</th>
+                                <th>Proposed Date & Time</th>
+                                <th>Proposed Venue</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teacher-requests-list">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
@@ -577,29 +577,33 @@
         </div>
     </div>
 
-    <!-- Modal: Add / Edit Module -->
+    <!-- Modal: Add Module to Semester -->
     <div class="bm-overlay" id="bm-mod-overlay">
         <div class="bm-box">
             <div class="bm-box-hdr">
-                <h3 id="bm-mod-title">Add Module</h3>
+                <h3 id="bm-mod-title">Add Module to Semester</h3>
                 <button class="bm-close" onclick="closeBatchModModal()">&#10005;</button>
             </div>
             <input type="hidden" id="bm-mod-year-id">
             <input type="hidden" id="bm-mod-sem">
-            <input type="hidden" id="bm-mod-id">
             <div class="form-group">
-                <label class="form-label">Module Name *</label>
-                <input type="text" id="bm-mod-name" class="form-input" placeholder="e.g. Introduction to Programming">
+                <label class="form-label">Select Created Module *</label>
+                <select id="bm-mod-select" class="form-input" onchange="handleBatchModuleSelectChange()">
+                    <!-- Populated dynamically from teacherModules -->
+                </select>
+                <small style="color:var(--text-muted);font-size:0.75rem;margin-top:4px;display:block;">
+                    Choose from modules created in the "My Modules" section.
+                </small>
             </div>
-            <div class="form-group">
-                <label class="form-label">Module Code *</label>
-                <input type="text" id="bm-mod-code" class="form-input" placeholder="e.g. CS-101">
+            <div id="bm-mod-preview" style="display:none;background:var(--bg-tertiary);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1.2rem;border:1px solid var(--border-color);">
+                <div style="font-size:0.85rem;font-weight:700;color:var(--text-primary);" id="bm-mod-preview-name"></div>
+                <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem;" id="bm-mod-preview-code"></div>
+                <div style="font-size:0.75rem;color:var(--primary);margin-top:0.35rem;" id="bm-mod-preview-course"></div>
             </div>
-            <div class="form-group" style="margin-bottom:1.4rem">
-                <label class="form-label">Description</label>
-                <textarea id="bm-mod-desc" class="form-input" rows="2" placeholder="Brief description..."></textarea>
+            <div id="bm-mod-no-mods-msg" style="display:none;padding:0.8rem;background:rgba(239,68,68,0.1);border:1px solid var(--danger);border-radius:8px;color:var(--danger);font-size:0.82rem;margin-bottom:1.2rem;">
+                No modules found. Please create modules in the <strong>My Modules</strong> tab first.
             </div>
-            <button class="btn btn-primary btn-block" onclick="saveBatchModule()">Save Module</button>
+            <button id="bm-mod-submit-btn" class="btn btn-primary btn-block" onclick="saveBatchModule()">➕ Add Selected Module</button>
         </div>
     </div>
 
@@ -627,7 +631,7 @@
 
     </main>
 
-    <script src="js/app.js?v=contrast-8"></script>
+    <script src="js/app.js?v=upload-fix-1"></script>
     <script>
         let teacherModules = [];
         let allCourses = [];
@@ -908,6 +912,10 @@
                 timetables.forEach(t => {
                     reqSelect.innerHTML += `<option value="${t.id}">${t.examTitle} - ${t.subject} (${t.examDate} @ ${t.venue})</option>`;
                 });
+                const dateInp = document.getElementById('req-proposed-date');
+                if (dateInp) {
+                    dateInp.min = new Date().toISOString().split('T')[0];
+                }
             } catch (err) {
                 console.error("Error loading exam timetables for request:", err);
             }
@@ -925,6 +933,34 @@
             if (!timetableId || !proposedDate || !proposedStartTime || !proposedEndTime || !proposedVenue || !reason) {
                 showToast("Validation Error", "All fields are required.", "danger");
                 return;
+            }
+
+            // Date validation: do not allow past dates
+            const todayStr = new Date().toISOString().split('T')[0];
+            if (proposedDate < todayStr) {
+                showToast("Validation Error", "Proposed date cannot be in the past. Please select today or a future date.", "warning");
+                document.getElementById('req-proposed-date').focus();
+                return;
+            }
+
+            // Time validation: proposed end time must be after start time
+            if (proposedStartTime >= proposedEndTime) {
+                showToast("Validation Error", "Proposed end time must be after the proposed start time.", "warning");
+                document.getElementById('req-end-time').focus();
+                return;
+            }
+
+            // If proposed date is today, start time must not have already passed
+            if (proposedDate === todayStr) {
+                const now = new Date();
+                const curHours = String(now.getHours()).padStart(2, '0');
+                const curMins = String(now.getMinutes()).padStart(2, '0');
+                const curTimeStr = `${curHours}:${curMins}`;
+                if (proposedStartTime <= curTimeStr) {
+                    showToast("Validation Error", "Proposed start time cannot be in the past for today.", "warning");
+                    document.getElementById('req-start-time').focus();
+                    return;
+                }
             }
 
             try {
@@ -1506,29 +1542,83 @@
         }
 
         // ── Module CRUD ──────────────────────────────
-        function openBatchModModal(yearId, sem, modId) {
+        // ── Module CRUD (Select from existing modules) ────────────────
+        async function openBatchModModal(yearId, sem) {
             document.getElementById('bm-mod-year-id').value = yearId;
             document.getElementById('bm-mod-sem').value = sem;
-            document.getElementById('bm-mod-id').value = '';
-            document.getElementById('bm-mod-name').value = '';
-            document.getElementById('bm-mod-code').value = '';
-            document.getElementById('bm-mod-desc').value = '';
             document.getElementById('bm-mod-title').innerText = 'Add Module — ' + sem;
-            if (modId) {
-                const b = currentBatches.find(x => x.id === yearId);
-                if (b) {
-                    const semKey = sem === 'Semester 1' ? 'sem1' : 'sem2';
-                    const m = (b[semKey] && b[semKey].modules) ? b[semKey].modules.find(x => x.id === modId) : null;
-                    if (m) {
-                        document.getElementById('bm-mod-id').value = m.id;
-                        document.getElementById('bm-mod-name').value = m.name;
-                        document.getElementById('bm-mod-code').value = m.code;
-                        document.getElementById('bm-mod-desc').value = m.desc || '';
-                        document.getElementById('bm-mod-title').innerText = 'Edit Module — ' + sem;
-                    }
+
+            // Make sure teacherModules are available
+            if (!teacherModules || teacherModules.length === 0) {
+                try {
+                    teacherModules = await apiCall(`/teachers/${currentUser.id}/modules`);
+                } catch (e) {
+                    console.error("Could not load modules", e);
                 }
             }
+
+            const b = currentBatches.find(x => x.id === yearId);
+            const semKey = sem === 'Semester 1' ? 'sem1' : 'sem2';
+            const existingModIds = (b && b[semKey] && Array.isArray(b[semKey].modules)) 
+                ? b[semKey].modules.map(m => m.id) 
+                : [];
+
+            const select = document.getElementById('bm-mod-select');
+            const preview = document.getElementById('bm-mod-preview');
+            const noModsMsg = document.getElementById('bm-mod-no-mods-msg');
+            const submitBtn = document.getElementById('bm-mod-submit-btn');
+
+            select.innerHTML = '<option value="">-- Choose Created Module --</option>';
+            preview.style.display = 'none';
+
+            if (!teacherModules || teacherModules.length === 0) {
+                noModsMsg.style.display = 'block';
+                select.disabled = true;
+                if (submitBtn) submitBtn.disabled = true;
+            } else {
+                noModsMsg.style.display = 'none';
+                select.disabled = false;
+                if (submitBtn) submitBtn.disabled = false;
+
+                teacherModules.forEach(m => {
+                    const isAlreadyAdded = existingModIds.includes(m.id);
+                    const opt = document.createElement('option');
+                    opt.value = m.id;
+                    opt.textContent = `${m.name} (${m.code})${isAlreadyAdded ? ' — [Already in ' + sem + ']' : ''}`;
+                    if (isAlreadyAdded) {
+                        opt.disabled = true;
+                    }
+                    select.appendChild(opt);
+                });
+            }
+
             document.getElementById('bm-mod-overlay').classList.add('open');
+        }
+
+        function handleBatchModuleSelectChange() {
+            const select = document.getElementById('bm-mod-select');
+            const modId = parseInt(select.value);
+            const preview = document.getElementById('bm-mod-preview');
+            const previewName = document.getElementById('bm-mod-preview-name');
+            const previewCode = document.getElementById('bm-mod-preview-code');
+            const previewCourse = document.getElementById('bm-mod-preview-course');
+
+            if (!modId) {
+                preview.style.display = 'none';
+                return;
+            }
+
+            const mod = teacherModules.find(m => m.id === modId);
+            if (!mod) {
+                preview.style.display = 'none';
+                return;
+            }
+
+            const course = allCourses.find(c => c.id === mod.courseId);
+            previewName.textContent = mod.name;
+            previewCode.textContent = 'Module Code: ' + mod.code;
+            previewCourse.textContent = 'Course: ' + (course ? `${course.name} (${course.code})` : 'General / Not specified');
+            preview.style.display = 'block';
         }
 
         function closeBatchModModal() {
@@ -1538,11 +1628,19 @@
         async function saveBatchModule() {
             const yearId = parseInt(document.getElementById('bm-mod-year-id').value);
             const sem    = document.getElementById('bm-mod-sem').value;
-            const modId  = document.getElementById('bm-mod-id').value;
-            const name   = document.getElementById('bm-mod-name').value.trim();
-            const code   = document.getElementById('bm-mod-code').value.trim();
-            const desc   = document.getElementById('bm-mod-desc').value.trim();
-            if (!name || !code) { showToast('Validation', 'Module name and code are required.', 'danger'); return; }
+            const select = document.getElementById('bm-mod-select');
+            const modId  = parseInt(select.value);
+
+            if (!modId) {
+                showToast('Validation Error', 'Please select a created module to add.', 'warning');
+                return;
+            }
+
+            const selectedMod = teacherModules.find(m => m.id === modId);
+            if (!selectedMod) {
+                showToast('Validation Error', 'Selected module could not be found.', 'danger');
+                return;
+            }
 
             const b = currentBatches.find(x => x.id === yearId);
             if (!b) return;
@@ -1551,26 +1649,32 @@
             if (!b[semKey]) b[semKey] = { modules: [] };
             if (!Array.isArray(b[semKey].modules)) b[semKey].modules = [];
 
-            if (modId) {
-                const m = b[semKey].modules.find(x => x.id === parseInt(modId));
-                if (m) { m.name = name; m.code = code; m.desc = desc; }
-            } else {
-                const nextModId = b[semKey].modules.length ? Math.max(...b[semKey].modules.map(x => x.id)) + 1 : 1;
-                b[semKey].modules.push({ id: nextModId, name, code, desc, materials: [] });
+            if (b[semKey].modules.some(m => m.id === selectedMod.id)) {
+                showToast('Already Added', `"${selectedMod.name}" is already in ${sem}.`, 'warning');
+                return;
             }
+
+            const course = allCourses.find(c => c.id === selectedMod.courseId);
+            b[semKey].modules.push({
+                id: selectedMod.id,
+                name: selectedMod.name,
+                code: selectedMod.code,
+                desc: course ? `${course.name} (${course.code})` : '',
+                materials: Array.isArray(selectedMod.materials) ? [...selectedMod.materials] : []
+            });
 
             try {
                 await bmSaveBatchToDb(b);
                 closeBatchModModal();
                 await renderBatches();
-                showToast('Saved', '"' + name + '" saved to database.', 'success');
+                showToast('Module Added', `"${selectedMod.name}" added to ${sem}.`, 'success');
             } catch (err) {
                 showToast('Save Failed', err.message, 'danger');
             }
         }
 
         async function deleteBatchMod(yearId, sem, modId) {
-            if (!confirm('Delete this module and all its materials?')) return;
+            if (!confirm('Remove this module from ' + sem + '?')) return;
             const b = currentBatches.find(x => x.id === yearId);
             if (!b) return;
             const semKey = sem === 'Semester 1' ? 'sem1' : 'sem2';
@@ -1580,7 +1684,7 @@
             try {
                 await bmSaveBatchToDb(b);
                 await renderBatches();
-                showToast('Deleted', 'Module removed.', 'success');
+                showToast('Removed', 'Module removed from ' + sem + '.', 'success');
             } catch (err) {
                 showToast('Delete Failed', err.message, 'danger');
             }
@@ -1702,8 +1806,7 @@
                                 </div>
                                 <div class="bm-mod-btns">
                                     <button onclick="openBatchMatModal(${b.id},'${semLabel}',${m.id})">&#128206; Materials (${(m.materials||[]).length})</button>
-                                    <button onclick="openBatchModModal(${b.id},'${semLabel}',${m.id})">&#9998; Edit</button>
-                                    <button class="bdel" onclick="deleteBatchMod(${b.id},'${semLabel}',${m.id})">&#128465;</button>
+                                    <button class="bdel" onclick="deleteBatchMod(${b.id},'${semLabel}',${m.id})" title="Remove from semester">&#128465;</button>
                                 </div>
                             </div>`).join('');
 

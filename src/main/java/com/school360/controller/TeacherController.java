@@ -92,6 +92,80 @@ public class TeacherController {
         return ResponseEntity.notFound().build();
     }
 
+    // Upload Lecture Material to Module
+    @PostMapping("/modules/{moduleId}/materials")
+    public ResponseEntity<?> uploadModuleMaterial(@PathVariable("moduleId") Long moduleId, @RequestBody Map<String, Object> payload) {
+        Optional<Module> modOpt = moduleRepository.findById(moduleId);
+        if (modOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Module module = modOpt.get();
+        String name = (String) payload.get("name");
+        String data = (String) payload.get("data");
+
+        if (name == null || name.isBlank() || data == null || data.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "File name and content are required."));
+        }
+
+        List<Map<String, Object>> materials = module.getMaterials();
+        if (materials == null) {
+            materials = new ArrayList<>();
+        }
+
+        long nextId = 1;
+        for (Map<String, Object> m : materials) {
+            Object idObj = m.get("id");
+            if (idObj instanceof Number num) {
+                nextId = Math.max(nextId, num.longValue() + 1);
+            }
+        }
+
+        Map<String, Object> newMat = new HashMap<>();
+        newMat.put("id", nextId);
+        newMat.put("name", name.trim());
+        newMat.put("data", data);
+        newMat.put("uploadedDate", java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
+        materials.add(newMat);
+        module.setMaterials(materials);
+        moduleRepository.save(module);
+
+        logRepository.save(new SystemLog("Teacher uploaded lecture material: " + name + " for module " + module.getName(), "INFO"));
+        return ResponseEntity.ok(module);
+    }
+
+    // Delete Lecture Material from Module
+    @RequestMapping(value = {"/modules/{moduleId}/materials/{materialId}", "/modules/{moduleId}/materials/{materialId}/delete"}, method = {RequestMethod.DELETE, RequestMethod.POST})
+    public ResponseEntity<?> deleteModuleMaterial(@PathVariable("moduleId") Long moduleId, @PathVariable("materialId") Long materialId) {
+        Optional<Module> modOpt = moduleRepository.findById(moduleId);
+        if (modOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Module module = modOpt.get();
+        List<Map<String, Object>> materials = module.getMaterials();
+        if (materials != null) {
+            materials.removeIf(m -> {
+                Object idObj = m.get("id");
+                return idObj instanceof Number num && num.longValue() == materialId;
+            });
+            module.setMaterials(materials);
+            moduleRepository.save(module);
+        }
+
+        logRepository.save(new SystemLog("Teacher removed lecture material ID " + materialId + " from module " + module.getName(), "INFO"));
+        return ResponseEntity.ok(Map.of("message", "Material removed successfully.", "moduleId", moduleId, "materialId", materialId));
+    }
+
+    // Get Lecture Materials for Module
+    @GetMapping("/modules/{moduleId}/materials")
+    public ResponseEntity<?> getModuleMaterials(@PathVariable("moduleId") Long moduleId) {
+        Optional<Module> modOpt = moduleRepository.findById(moduleId);
+        if (modOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(modOpt.get().getMaterials());
+    }
+
     // Create Timetable Entry
     @PostMapping("/timetable")
     public ResponseEntity<?> createSchedule(@RequestBody Schedule schedule) {
