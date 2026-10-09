@@ -47,8 +47,8 @@ public class AdminController {
         if (user.getFullName() != null && !user.getFullName().matches("^[a-zA-Z\\s]+$")) {
             return ResponseEntity.badRequest().body("Name must contain letters and spaces only (no numbers or symbols).");
         }
-        if (user.getContact() != null && !user.getContact().matches("^\\d{1,16}$")) {
-            return ResponseEntity.badRequest().body("Phone number must contain numbers only and be at most 16 digits.");
+        if (user.getContact() == null || !user.getContact().matches("^[0-9]{10}$")) {
+            return ResponseEntity.badRequest().body("Phone number must be exactly 10 digits (numbers only).");
         }
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             return ResponseEntity.badRequest().body("Username already exists.");
@@ -76,8 +76,8 @@ public class AdminController {
             if (updated.getFullName() != null && !updated.getFullName().matches("^[a-zA-Z\\s]+$")) {
                 return ResponseEntity.badRequest().body("Name must contain letters and spaces only (no numbers or symbols).");
             }
-            if (updated.getContact() != null && !updated.getContact().matches("^\\d{1,16}$")) {
-                return ResponseEntity.badRequest().body("Phone number must contain numbers only and be at most 16 digits.");
+            if (updated.getContact() == null || !updated.getContact().matches("^[0-9]{10}$")) {
+                return ResponseEntity.badRequest().body("Phone number must be exactly 10 digits (numbers only).");
             }
             User user = userOpt.get();
             user.setFullName(updated.getFullName());

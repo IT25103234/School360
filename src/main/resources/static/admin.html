@@ -201,7 +201,7 @@
                     <div class="form-group" id="password-form-group">
                         <label class="form-label" for="user-password">Password</label>
                         <input type="password" id="user-password" class="form-input" placeholder="••••••••" minlength="8" required autocomplete="new-password">
-                        <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.35rem;">Min 8 characters, with at least one letter, one number, and one symbol.</p>
+                        <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.35rem;">At least 8 characters.</p>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="user-role">Stakeholder Role</label>
@@ -221,7 +221,7 @@
                     </div>
                     <div class="form-group" style="margin-bottom: 2rem;">
                         <label class="form-label" for="user-contact">Contact Number</label>
-                        <input type="text" id="user-contact" class="form-input" placeholder="e.g. 0771234567" required pattern="\d{1,16}" maxlength="16" inputmode="numeric">
+                        <input type="text" id="user-contact" class="form-input" placeholder="e.g. 0771234567" required pattern="[0-9]{10}" minlength="10" maxlength="10" inputmode="numeric" title="Enter exactly 10 digits">
                     </div>
                     <div style="display: flex; gap: 1rem; align-items: center; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
                         <button type="button" class="btn btn-qr" id="btn-cancel-edit-user" style="display:none; padding: 0.75rem 1.5rem;" onclick="resetUserForm(); switchTab('users');">Cancel Edit</button>
@@ -565,7 +565,7 @@
                 showToast("Validation Error", nameCheck.message, "danger");
                 return;
             }
-            const phoneCheck = validatePhone(contact);
+            const phoneCheck = validatePhone(contact, 10);
             if (!phoneCheck.valid) {
                 showToast("Validation Error", phoneCheck.message, "danger");
                 return;
@@ -590,11 +590,9 @@
                         showToast("Validation Error", "Password is required for new users.", "danger");
                         return;
                     }
-                    const hasLetter = /[A-Za-z]/.test(password);
-                    const hasNumber = /\d/.test(password);
-                    const hasSymbol = /[^A-Za-z0-9]/.test(password);
-                    if (password.length < 8 || !hasLetter || !hasNumber || !hasSymbol) {
-                        showToast("Weak Password", "Password must be at least 8 characters and include a letter, a number, and a symbol.", "danger");
+                    const passwordCheck = validatePassword(password);
+                    if (!passwordCheck.valid) {
+                        showToast("Invalid Password", passwordCheck.message, "danger");
                         return;
                     }
                     await apiCall('/admin/users', 'POST', { fullName, username, password, role, email, contact });

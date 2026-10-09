@@ -36,14 +36,14 @@ function validateName(name) {
     return { valid: true };
 }
 
-function validatePhone(phone) {
+function validatePhone(phone, exactLength = null) {
     if (!phone || !phone.trim()) {
         return { valid: false, message: "Phone number is required." };
     }
-    const phoneRegex = /^\d{1,16}$/;
+    const phoneRegex = exactLength ? new RegExp(`^[0-9]{${exactLength}}$`) : /^\d{1,16}$/;
     const cleanPhone = phone.trim();
     if (!phoneRegex.test(cleanPhone)) {
-        return { valid: false, message: "Phone number must contain numbers only and be at most 16 digits." };
+        return { valid: false, message: exactLength ? `Phone number must be exactly ${exactLength} digits (numbers only).` : "Phone number must contain numbers only and be at most 16 digits." };
     }
     return { valid: true };
 }
@@ -54,9 +54,9 @@ function validateNIC(nic, required = false) {
         return { valid: true };
     }
     const cleanNic = nic.trim();
-    const nicRegex = /^(\d{10}|\d{16})$/;
+    const nicRegex = /^(\d{12}|\d{16})$/;
     if (!nicRegex.test(cleanNic)) {
-        return { valid: false, message: "NIC / Passport No. must be either 10 or 16 digits (numbers only, no symbols or letters)." };
+        return { valid: false, message: "NIC must be exactly 12 digits or Passport No. exactly 16 digits (numbers only, no symbols or letters)." };
     }
     return { valid: true };
 }
@@ -75,7 +75,7 @@ function attachInputRestrictions() {
     });
 
     // Restrict phone fields to numbers only, max 16 digits
-    const phoneFields = document.querySelectorAll('#user-contact, #reg-contact, #profile-contact, #member-phone, #edit-member-phone');
+    const phoneFields = document.querySelectorAll('#user-contact, #profile-contact, #member-phone, #edit-member-phone');
     phoneFields.forEach(field => {
         field.addEventListener('input', (e) => {
             const prev = e.target.value;
@@ -89,20 +89,8 @@ function attachInputRestrictions() {
         });
     });
 
-    // Restrict NIC fields to numbers only, max 16 digits
-    const nicFields = document.querySelectorAll('#reg-nic');
-    nicFields.forEach(field => {
-        field.addEventListener('input', (e) => {
-            const prev = e.target.value;
-            let cleaned = prev.replace(/\D/g, '');
-            if (cleaned.length > 16) {
-                cleaned = cleaned.slice(0, 16);
-            }
-            if (prev !== cleaned) {
-                e.target.value = cleaned;
-            }
-        });
-    });
+    // Enrollment values are validated without silently truncating invalid input.
+
 }
 
 // --- Theme Management ---

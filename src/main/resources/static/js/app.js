@@ -74,14 +74,15 @@ function attachInputRestrictions() {
         });
     });
 
-    // Restrict phone fields to numbers only, max 16 digits
+    // Restrict phone fields to numbers only, respecting each field's maximum length
     const phoneFields = document.querySelectorAll('#user-contact, #profile-contact, #member-phone, #edit-member-phone');
     phoneFields.forEach(field => {
         field.addEventListener('input', (e) => {
             const prev = e.target.value;
             let cleaned = prev.replace(/\D/g, '');
-            if (cleaned.length > 16) {
-                cleaned = cleaned.slice(0, 16);
+            const maxLength = field.maxLength > 0 ? field.maxLength : 16;
+            if (cleaned.length > maxLength) {
+                cleaned = cleaned.slice(0, maxLength);
             }
             if (prev !== cleaned) {
                 e.target.value = cleaned;
